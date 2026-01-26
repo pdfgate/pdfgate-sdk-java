@@ -25,6 +25,7 @@ replay_pid*
 
 # IntelliJ IDEA
 .idea
+build
 
 # Gradle
 .gradle

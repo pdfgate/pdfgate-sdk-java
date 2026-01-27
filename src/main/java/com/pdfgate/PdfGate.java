@@ -5,12 +5,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import java.io.IOException;
 import java.time.Instant;
-import okhttp3.OkHttpClient;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 
 public final class PdfGate {
     private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
@@ -53,17 +50,49 @@ public final class PdfGate {
 
     public PdfGateDocument generatePdf(GeneratePdfParams params)
             throws IOException {
-        if (params == null) {
-            throw new IllegalArgumentException("params must be provided.");
-        }
-        String html = params.getHtml();
-        String url = params.getUrl();
-        if ((html == null || html.isBlank()) && (url == null || url.isBlank())) {
-            throw new IllegalArgumentException(
-                    "Either the 'html' or 'url' parameters must be provided to generate a PDF."
-            );
-        }
+        try {
+            try (Response response = generatePdfCall(params).execute()) {
+                if (!response.isSuccessful()) {
+                    throw PdfGateException.fromResponse(response);
+                }
+                ResponseBody responseBody = response.body();
+                if (params.isJsonResponse()) {
+                    String responseJson = responseBody == null ? "" : responseBody.string();
+                    return GSON.fromJson(responseJson, PdfGateDocument.class);
+                }
 
+                return new PdfGateDocument();
+            }
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    public void enqueue(Call call, PDFGateCallback<PdfGateDocument> callback) {
+        call.enqueue(new Callback() {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                callback.onFailure(call, e);
+            }
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try (Response r = response) {
+                    if (!r.isSuccessful()) {
+                        callback.onFailure(call, PdfGateException.fromResponse(r));
+                        return;
+                    }
+                    ResponseBody responseBody = response.body();
+                    String responseJson = responseBody == null ? "" : responseBody.string();
+                    PdfGateDocument document = GSON.fromJson(responseJson, PdfGateDocument.class);
+                    callback.onSuccess(call, document);
+                } catch (Exception e) {
+                    callback.onFailure(call, e);
+                }
+            }
+        });
+    }
+
+    public Call generatePdfCall(GeneratePdfParams params) {
+        validateGeneratePdfParams(params);
         String jsonBody = GSON.toJson(params);
         RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
         String requestUrl = urlBuilder.generatePdf();
@@ -78,19 +107,19 @@ public final class PdfGate {
                 .readTimeout(config.getGeneratePdfTimeout())
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            int statusCode = response.code();
-            ResponseBody responseBody = response.body();
-            if (statusCode < 200 || statusCode >= 300) {
-                String errorBody = responseBody == null ? "" : responseBody.string();
-                throw new IOException("PdfGate API request failed with status " + statusCode + ": " + errorBody);
-            }
-            if (params.isJsonResponse()) {
-                String responseJson = responseBody == null ? "" : responseBody.string();
-                return GSON.fromJson(responseJson, PdfGateDocument.class);
-            }
+        return client.newCall(request);
+    }
 
-            return new PdfGateDocument();
+    private void validateGeneratePdfParams(GeneratePdfParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        String html = params.getHtml();
+        String url = params.getUrl();
+        if ((html == null || html.isBlank()) && (url == null || url.isBlank())) {
+            throw new IllegalArgumentException(
+                    "Either the 'html' or 'url' parameters must be provided to generate a PDF."
+            );
         }
     }
 

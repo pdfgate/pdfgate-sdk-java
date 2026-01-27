@@ -1,28 +1,12 @@
 package com.pdfgate;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
 import java.io.IOException;
-import java.time.Instant;
 
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 
 public final class PdfGate {
     private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
-    private static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(Instant.class, (JsonDeserializer<Instant>) (json, type, ctx) -> {
-                if (json == null || json.isJsonNull()) {
-                    return null;
-                }
-                String value = json.getAsString();
-                if (value == null || value.isBlank()) {
-                    return null;
-                }
-                return Instant.parse(value);
-            })
-            .create();
 
     private final String apiKey;
     private final OkHttpClient httpClient;
@@ -58,7 +42,7 @@ public final class PdfGate {
                 ResponseBody responseBody = response.body();
                 if (params.isJsonResponse()) {
                     String responseJson = responseBody == null ? "" : responseBody.string();
-                    return GSON.fromJson(responseJson, PdfGateDocument.class);
+                    return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
                 }
 
                 return new PdfGateDocument();
@@ -82,7 +66,7 @@ public final class PdfGate {
                     }
                     ResponseBody responseBody = response.body();
                     String responseJson = responseBody == null ? "" : responseBody.string();
-                    PdfGateDocument document = GSON.fromJson(responseJson, PdfGateDocument.class);
+                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
                     callback.onSuccess(call, document);
                 } catch (Exception e) {
                     callback.onFailure(call, e);
@@ -93,7 +77,7 @@ public final class PdfGate {
 
     public Call generatePdfCall(GeneratePdfParams params) {
         validateGeneratePdfParams(params);
-        String jsonBody = GSON.toJson(params);
+        String jsonBody = PdfGateJson.gson().toJson(params);
         RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
         String requestUrl = urlBuilder.generatePdf();
         Request request = new Request.Builder()

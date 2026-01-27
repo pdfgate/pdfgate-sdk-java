@@ -1,6 +1,7 @@
 package com.pdfgate;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +51,46 @@ public final class PdfGate {
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
         }
+    }
+
+    public CompletableFuture<PdfGateDocument> generatePdfAsync(GeneratePdfParams params) {
+        Call call = generatePdfCall(params);
+        CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                future.completeExceptionally(PdfGateException.fromException(e));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                try (Response r = response) {
+                    if (!r.isSuccessful()) {
+                        future.completeExceptionally(PdfGateException.fromResponse(r));
+                        return;
+                    }
+
+                    ResponseBody responseBody = r.body();
+                    if (params.isJsonResponse()) {
+                        String responseJson = responseBody == null ? "" : responseBody.string();
+                        future.complete(PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class));
+                    }
+
+                    future.complete(new PdfGateDocument());
+                } catch (IOException e) {
+                    future.completeExceptionally(e);
+                }
+            }
+        });
+
+        future.whenComplete((r, t) -> {
+            if (future.isCancelled()) {
+                call.cancel();
+            }
+        });
+
+        return future;
     }
 
     public void enqueue(Call call, PDFGateCallback<PdfGateDocument> callback) {

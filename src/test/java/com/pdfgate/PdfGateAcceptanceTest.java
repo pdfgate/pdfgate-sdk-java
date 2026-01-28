@@ -9,7 +9,7 @@ public class PdfGateAcceptanceTest {
     private static PdfGate client;
 
     @BeforeAll
-    static void setUpApiKey() {
+    static void setUpClient() {
         String apiKey = System.getenv("PDFGATE_API_KEY");
 
         Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "PDFGATE_API_KEY not set");

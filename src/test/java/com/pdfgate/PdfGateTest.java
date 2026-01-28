@@ -1,5 +1,6 @@
 package com.pdfgate;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okio.Buffer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -44,10 +46,10 @@ public class PdfGateTest {
                     .setBody(body));
             server.start();
 
-            GeneratePdfParams params = GeneratePdfParams.builder()
+            GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .jsonResponse(true)
-                    .build();
+                    .buildJson();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -101,10 +103,10 @@ public class PdfGateTest {
                     .setBody(body));
             server.start();
 
-            GeneratePdfParams params = GeneratePdfParams.builder()
+            GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .jsonResponse(true)
-                    .build();
+                    .buildJson();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -140,6 +142,107 @@ public class PdfGateTest {
     }
 
     @Test
+    public void generatePdfCallWithBytesResponse() throws Exception {
+        byte[] pdfBytes = "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(StandardCharsets.UTF_8);
+        Buffer buffer = new Buffer().write(pdfBytes);
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(201)
+                    .setHeader("Content-Type", "application/octet-stream")
+                    .setBody(buffer));
+            server.start();
+
+            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+                    .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                    .buildBytes();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<byte[]> success = new AtomicReference<>();
+            AtomicReference<Throwable> failure = new AtomicReference<>();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+                @Override
+                public void onSuccess(okhttp3.Call call, byte[] value) {
+                    success.set(value);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onFailure(okhttp3.Call call, Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            });
+
+            Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
+            Assertions.assertNull(failure.get(), "failure callback should not be invoked");
+            Assertions.assertArrayEquals(pdfBytes, success.get(), "bytes should match response");
+        }
+    }
+
+    @Test
+    public void generatePdfWithJsonResponse() throws Exception {
+        Random random = new Random();
+        Instant now = Instant.now();
+        String createdAt = DateTimeFormatter.ISO_INSTANT.format(now);
+        Map<String, Object> payload = Map.of(
+                "id", "6642381c5c61",
+                "status", "completed",
+                "type", "from_html",
+                "size", random.nextInt(99999),
+                "createdAt", createdAt
+        );
+        String body = PdfGateJson.gson().toJson(payload);
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(201)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody(body));
+            server.start();
+
+            GeneratePdfJsonParams params = GeneratePdfParams.builder()
+                    .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                    .jsonResponse(true)
+                    .buildJson();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            PdfGateDocument result = pdfGateClient.generatePdf(params);
+
+            PdfGateDocument expected = PdfGateJson.gson().fromJson(body, PdfGateDocument.class);
+            Assertions.assertEquals(
+                    expected,
+                    result,
+                    "document should match JSON response"
+            );
+        }
+    }
+
+    @Test
+    public void generatePdfWithBytesResponse() throws Exception {
+        byte[] pdfBytes = "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(StandardCharsets.UTF_8);
+        Buffer buffer = new Buffer().write(pdfBytes);
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(201)
+                    .setHeader("Content-Type", "application/octet-stream")
+                    .setBody(buffer));
+            server.start();
+
+            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+                    .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                    .buildBytes();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            byte[] result = pdfGateClient.generatePdf(params);
+            Assertions.assertArrayEquals(pdfBytes, result, "bytes should match response");
+        }
+    }
+
+    @Test
     public void generatePdfAsyncWithJsonResponseWithError() throws Exception {
         String errorMessage = "Required field 'pdf' is missing";
         Map<String, Object> payload = Map.of(
@@ -156,10 +259,10 @@ public class PdfGateTest {
                     .setBody(body));
             server.start();
 
-            GeneratePdfParams params = GeneratePdfParams.builder()
+            GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .jsonResponse(true)
-                    .build();
+                    .buildJson();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             ExecutionException exception = Assertions.assertThrows(
@@ -197,10 +300,10 @@ public class PdfGateTest {
                     .setBody(body));
             server.start();
 
-            GeneratePdfParams params = GeneratePdfParams.builder()
+            GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .jsonResponse(true)
-                    .build();
+                    .buildJson();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             PdfGateDocument result = pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS);
@@ -212,6 +315,28 @@ public class PdfGateTest {
                     result,
                     "document should match JSON response"
             );
+        }
+    }
+
+    @Test
+    public void generatePdfAsyncWithBytesResponse() throws Exception {
+        byte[] pdfBytes = "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(StandardCharsets.UTF_8);
+        Buffer buffer = new Buffer().write(pdfBytes);
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(201)
+                    .setHeader("Content-Type", "application/octet-stream")
+                    .setBody(buffer));
+            server.start();
+
+            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+                    .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                    .buildBytes();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            byte[] result = pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS);
+            Assertions.assertArrayEquals(pdfBytes, result, "bytes should match response");
         }
     }
 }

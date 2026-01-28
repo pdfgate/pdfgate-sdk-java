@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 import java.util.Map;
 
-public final class GeneratePdfParams {
+public abstract class GeneratePdfParams {
     public enum PageSizeType {
         @SerializedName("a0")
         A0,
@@ -171,7 +171,7 @@ public final class GeneratePdfParams {
     private final GeneratePdfAuthentication authentication;
     private final Viewport viewport;
 
-    private GeneratePdfParams(Builder builder) {
+    protected GeneratePdfParams(Builder builder) {
         this.html = builder.html;
         this.url = builder.url;
         this.jsonResponse = builder.jsonResponse;
@@ -518,7 +518,24 @@ public final class GeneratePdfParams {
         }
 
         public GeneratePdfParams build() {
-            return new GeneratePdfParams(this);
+            if (Boolean.TRUE.equals(jsonResponse)) {
+                return new GeneratePdfJsonParams(this);
+            }
+            return new GeneratePdfBytesParams(this);
+        }
+
+        public GeneratePdfBytesParams buildBytes() {
+            if (Boolean.TRUE.equals(jsonResponse)) {
+                throw new IllegalStateException("jsonResponse is true; use buildJson() instead.");
+            }
+            return new GeneratePdfBytesParams(this);
+        }
+
+        public GeneratePdfJsonParams buildJson() {
+            if (!Boolean.TRUE.equals(jsonResponse)) {
+                throw new IllegalStateException("jsonResponse is false; use buildBytes() instead.");
+            }
+            return new GeneratePdfJsonParams(this);
         }
     }
 }

@@ -20,15 +20,14 @@ public class PdfGateAcceptanceTest {
 
     @Test
     public void generatePdfWithJsonResponse() throws Exception {
-        GeneratePdfParams params = GeneratePdfParams.builder()
+        GeneratePdfJsonParams params = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                 .jsonResponse(true)
-                .build();
+                .buildJson();
 
-        PdfGateDocument response = client.generatePdf(params);
-
-        Assertions.assertNotNull(response.getId(), "document id should be present");
-        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, response.getStatus(), "document status should be present");
-        Assertions.assertNotNull(response.getCreatedAt(), "document createdAt should be present");
+        PdfGateDocument document = client.generatePdf(params);
+        Assertions.assertNotNull(document.getId(), "document id should be present");
+        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be present");
+        Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
     }
 }

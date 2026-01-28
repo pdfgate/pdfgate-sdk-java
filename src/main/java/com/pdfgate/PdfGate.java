@@ -33,7 +33,10 @@ public final class PdfGate {
                 .build();
     }
 
-    public PdfGateDocument generatePdf(GeneratePdfParams params)
+    /**
+     * Generates a PDF and returns raw bytes.
+     */
+    public byte[] generatePdf(GeneratePdfBytesParams params)
             throws IOException {
         try {
             try (Response response = generatePdfCall(params).execute()) {
@@ -41,30 +44,47 @@ public final class PdfGate {
                     throw PdfGateException.fromResponse(response);
                 }
                 ResponseBody responseBody = response.body();
-                if (params.isJsonResponse()) {
-                    String responseJson = responseBody == null ? "" : responseBody.string();
-                    return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
-                }
-
-                return new PdfGateDocument();
+                return responseBody == null ? new byte[0] : responseBody.bytes();
             }
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
         }
     }
 
-    public CompletableFuture<PdfGateDocument> generatePdfAsync(GeneratePdfParams params) {
+    /**
+     * Generates a PDF and returns the document metadata from a JSON response.
+     */
+    public PdfGateDocument generatePdf(GeneratePdfJsonParams params)
+            throws IOException {
+        try {
+            try (Response response = generatePdfCall(params).execute()) {
+                if (!response.isSuccessful()) {
+                    throw PdfGateException.fromResponse(response);
+                }
+                ResponseBody responseBody = response.body();
+                String responseJson = responseBody == null ? "" : responseBody.string();
+                return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+            }
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Generates a PDF asynchronously and returns raw bytes.
+     */
+    public CompletableFuture<byte[]> generatePdfAsync(GeneratePdfBytesParams params) {
         Call call = generatePdfCall(params);
-        CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
 
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 future.completeExceptionally(PdfGateException.fromException(e));
             }
 
             @Override
-            public void onResponse(Call call, Response response) {
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
                 try (Response r = response) {
                     if (!r.isSuccessful()) {
                         future.completeExceptionally(PdfGateException.fromResponse(r));
@@ -72,12 +92,8 @@ public final class PdfGate {
                     }
 
                     ResponseBody responseBody = r.body();
-                    if (params.isJsonResponse()) {
-                        String responseJson = responseBody == null ? "" : responseBody.string();
-                        future.complete(PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class));
-                    }
-
-                    future.complete(new PdfGateDocument());
+                    byte[] bytes = responseBody == null ? new byte[0] : responseBody.bytes();
+                    future.complete(bytes);
                 } catch (IOException e) {
                     future.completeExceptionally(e);
                 }
@@ -93,7 +109,76 @@ public final class PdfGate {
         return future;
     }
 
-    public void enqueue(Call call, PDFGateCallback<PdfGateDocument> callback) {
+    /**
+     * Generates a PDF asynchronously and returns the document metadata from a JSON response.
+     */
+    public CompletableFuture<PdfGateDocument> generatePdfAsync(GeneratePdfJsonParams params) {
+        Call call = generatePdfCall(params);
+        CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(PdfGateException.fromException(e));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try (Response r = response) {
+                    if (!r.isSuccessful()) {
+                        future.completeExceptionally(PdfGateException.fromResponse(r));
+                        return;
+                    }
+
+                    ResponseBody responseBody = r.body();
+                    String responseJson = responseBody == null ? "" : responseBody.string();
+                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+                    future.complete(document);
+                } catch (IOException e) {
+                    future.completeExceptionally(e);
+                }
+            }
+        });
+
+        future.whenComplete((r, t) -> {
+            if (future.isCancelled()) {
+                call.cancel();
+            }
+        });
+
+        return future;
+    }
+
+    /**
+     * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
+     */
+    public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {
+        call.enqueue(new Callback() {
+            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                callback.onFailure(call, e);
+            }
+
+            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try (Response r = response) {
+                    if (!r.isSuccessful()) {
+                        callback.onFailure(call, PdfGateException.fromResponse(r));
+                        return;
+                    }
+                    ResponseBody responseBody = r.body();
+                    String responseJson = responseBody == null ? "" : responseBody.string();
+                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+                    callback.onSuccess(call, document);
+                } catch (Exception e) {
+                    callback.onFailure(call, e);
+                }
+            }
+        });
+    }
+
+    /**
+     * Enqueues a bytes response call and returns the raw response bytes.
+     */
+    public void enqueue(CallBytes call, PDFGateCallback<byte[]> callback) {
         call.enqueue(new Callback() {
             @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 callback.onFailure(call, e);
@@ -106,9 +191,8 @@ public final class PdfGate {
                         return;
                     }
                     ResponseBody responseBody = response.body();
-                    String responseJson = responseBody == null ? "" : responseBody.string();
-                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
-                    callback.onSuccess(call, document);
+                    byte[] bytes = responseBody == null ? new byte[0] : responseBody.bytes();
+                    callback.onSuccess(call, bytes);
                 } catch (Exception e) {
                     callback.onFailure(call, e);
                 }
@@ -116,7 +200,21 @@ public final class PdfGate {
         });
     }
 
-    public Call generatePdfCall(GeneratePdfParams params) {
+    /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson generatePdfCall(GeneratePdfJsonParams params) {
+        return new PdfGateJsonCall(buildGeneratePdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes generatePdfCall(GeneratePdfBytesParams params) {
+        return new PdfGateBytesCall(buildGeneratePdfCall(params));
+    }
+
+    private Call buildGeneratePdfCall(GeneratePdfParams params) {
         validateGeneratePdfParams(params);
         String jsonBody = PdfGateJson.gson().toJson(params);
         RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);

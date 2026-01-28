@@ -22,7 +22,6 @@ public class PdfGateAcceptanceTest {
     public void generatePdfWithJsonResponse() throws Exception {
         GeneratePdfJsonParams params = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                .jsonResponse(true)
                 .buildJson();
 
         PdfGateDocument document = client.generatePdf(params);
@@ -35,7 +34,6 @@ public class PdfGateAcceptanceTest {
     public void generatePdfWithBytesResponse() throws Exception {
         GeneratePdfBytesParams params = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                .jsonResponse(false)
                 .buildBytes();
 
         byte[] result = client.generatePdf(params);

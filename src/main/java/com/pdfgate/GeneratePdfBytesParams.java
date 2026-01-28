@@ -9,6 +9,6 @@ public final class GeneratePdfBytesParams extends GeneratePdfParams {
     }
 
     public static Builder builder() {
-        return GeneratePdfParams.builder().jsonResponse(false);
+        return GeneratePdfParams.builder();
     }
 }

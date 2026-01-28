@@ -377,11 +377,6 @@ public abstract class GeneratePdfParams {
             return this;
         }
 
-        public Builder jsonResponse(Boolean jsonResponse) {
-            this.jsonResponse = jsonResponse;
-            return this;
-        }
-
         public Builder preSignedUrlExpiresIn(Long preSignedUrlExpiresIn) {
             this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
             return this;
@@ -517,24 +512,13 @@ public abstract class GeneratePdfParams {
             return this;
         }
 
-        public GeneratePdfParams build() {
-            if (Boolean.TRUE.equals(jsonResponse)) {
-                return new GeneratePdfJsonParams(this);
-            }
-            return new GeneratePdfBytesParams(this);
-        }
-
         public GeneratePdfBytesParams buildBytes() {
-            if (Boolean.TRUE.equals(jsonResponse)) {
-                throw new IllegalStateException("jsonResponse is true; use buildJson() instead.");
-            }
+            this.jsonResponse = false;
             return new GeneratePdfBytesParams(this);
         }
 
         public GeneratePdfJsonParams buildJson() {
-            if (!Boolean.TRUE.equals(jsonResponse)) {
-                throw new IllegalStateException("jsonResponse is false; use buildBytes() instead.");
-            }
+            this.jsonResponse = true;
             return new GeneratePdfJsonParams(this);
         }
     }

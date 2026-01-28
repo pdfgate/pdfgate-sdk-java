@@ -48,7 +48,6 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .jsonResponse(true)
                     .buildJson();
 
             CountDownLatch latch = new CountDownLatch(1);
@@ -105,7 +104,6 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .jsonResponse(true)
                     .buildJson();
 
             CountDownLatch latch = new CountDownLatch(1);
@@ -205,7 +203,6 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .jsonResponse(true)
                     .buildJson();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
@@ -261,7 +258,6 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .jsonResponse(true)
                     .buildJson();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
@@ -302,7 +298,6 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .jsonResponse(true)
                     .buildJson();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());

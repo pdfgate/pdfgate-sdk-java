@@ -30,4 +30,18 @@ public class PdfGateAcceptanceTest {
         Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be present");
         Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
     }
+
+    @Test
+    public void generatePdfWithBytesResponse() throws Exception {
+        GeneratePdfBytesParams params = GeneratePdfParams.builder()
+                .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                .jsonResponse(false)
+                .buildBytes();
+
+        byte[] result = client.generatePdf(params);
+        Assertions.assertNotNull(result, "pdf bytes should be present");
+        Assertions.assertTrue(result.length > 0, "pdf bytes should not be empty");
+        String header = new String(result, 0, Math.min(result.length, 4), java.nio.charset.StandardCharsets.US_ASCII);
+        Assertions.assertEquals("%PDF", header, "pdf bytes should start with %PDF");
+    }
 }

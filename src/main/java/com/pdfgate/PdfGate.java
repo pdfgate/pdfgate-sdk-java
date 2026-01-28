@@ -1,6 +1,7 @@
 package com.pdfgate;
 
 import java.io.IOException;
+import java.net.URLConnection;
 import java.util.concurrent.CompletableFuture;
 
 import okhttp3.*;
@@ -244,6 +245,224 @@ public final class PdfGate {
                     "Either the 'html' or 'url' parameters must be provided to generate a PDF."
             );
         }
+    }
+
+    /**
+     * Flattens a PDF provided as a file and returns raw bytes.
+     */
+    public byte[] flattenPdf(FlattenPdfBytesParams params)
+            throws IOException {
+        try {
+            try (Response response = flattenPdfCall(params).execute()) {
+                if (!response.isSuccessful()) {
+                    throw PdfGateException.fromResponse(response);
+                }
+                ResponseBody responseBody = response.body();
+                return responseBody == null ? new byte[0] : responseBody.bytes();
+            }
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Flattens a PDF provided as a file and returns the document metadata from a JSON response.
+     */
+    public PdfGateDocument flattenPdf(FlattenPdfJsonParams params)
+            throws IOException {
+        try {
+            try (Response response = flattenPdfCall(params).execute()) {
+                if (!response.isSuccessful()) {
+                    throw PdfGateException.fromResponse(response);
+                }
+                ResponseBody responseBody = response.body();
+                String responseJson = responseBody == null ? "" : responseBody.string();
+                return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+            }
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Flattens a PDF provided as a document ID and returns raw bytes.
+     */
+    /**
+     * Flattens a PDF asynchronously and returns raw bytes.
+     */
+    public CompletableFuture<byte[]> flattenPdfAsync(FlattenPdfBytesParams params) {
+        Call call = flattenPdfCall(params);
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(PdfGateException.fromException(e));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try (Response r = response) {
+                    if (!r.isSuccessful()) {
+                        future.completeExceptionally(PdfGateException.fromResponse(r));
+                        return;
+                    }
+
+                    ResponseBody responseBody = r.body();
+                    byte[] bytes = responseBody == null ? new byte[0] : responseBody.bytes();
+                    future.complete(bytes);
+                } catch (IOException e) {
+                    future.completeExceptionally(e);
+                }
+            }
+        });
+
+        future.whenComplete((r, t) -> {
+            if (future.isCancelled()) {
+                call.cancel();
+            }
+        });
+
+        return future;
+    }
+
+    /**
+     * Flattens a PDF provided as a file asynchronously and returns the document metadata from a JSON response.
+     */
+    public CompletableFuture<PdfGateDocument> flattenPdfAsync(FlattenPdfJsonParams params) {
+        Call call = flattenPdfCall(params);
+        CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(PdfGateException.fromException(e));
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try (Response r = response) {
+                    if (!r.isSuccessful()) {
+                        future.completeExceptionally(PdfGateException.fromResponse(r));
+                        return;
+                    }
+
+                    ResponseBody responseBody = r.body();
+                    String responseJson = responseBody == null ? "" : responseBody.string();
+                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+                    future.complete(document);
+                } catch (IOException e) {
+                    future.completeExceptionally(e);
+                }
+            }
+        });
+
+        future.whenComplete((r, t) -> {
+            if (future.isCancelled()) {
+                call.cancel();
+            }
+        });
+
+        return future;
+    }
+
+    /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson flattenPdfCall(FlattenPdfJsonParams params) {
+        return new PdfGateJsonCall(buildFlattenPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes flattenPdfCall(FlattenPdfBytesParams params) {
+        return new PdfGateBytesCall(buildFlattenPdfCall(params));
+    }
+
+    private Call buildFlattenPdfCall(FlattenPdfParams params) {
+        validateFlattenPdfParams(params);
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+        addFlattenPdfCommonFields(bodyBuilder, params.getJsonResponse(), params.getPreSignedUrlExpiresIn(), params.getMetadata());
+
+        FileParam file = params.getFile();
+        if (file != null) {
+            MediaType mediaType = resolveFileMediaType(file);
+            bodyBuilder.addFormDataPart(
+                    "file",
+                    file.getName(),
+                    RequestBody.create(file.getData(), mediaType)
+            );
+        } else {
+            String documentId = params.getDocumentId();
+            if (documentId != null && !documentId.isBlank()) {
+                bodyBuilder.addFormDataPart("documentId", documentId);
+            }
+        }
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.flattenPdf())
+                .header("Authorization", "Bearer " + apiKey)
+                .post(bodyBuilder.build())
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getFlattenPdfTimeout())
+                .readTimeout(config.getFlattenPdfTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    private void addFlattenPdfCommonFields(
+            MultipartBody.Builder bodyBuilder,
+            Boolean jsonResponse,
+            Long preSignedUrlExpiresIn,
+            Object metadata
+    ) {
+        if (jsonResponse != null) {
+            bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
+        }
+        if (preSignedUrlExpiresIn != null) {
+            bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
+        }
+        if (metadata != null) {
+            String metadataValue = metadata instanceof String
+                    ? (String) metadata
+                    : PdfGateJson.gson().toJson(metadata);
+            bodyBuilder.addFormDataPart("metadata", metadataValue);
+        }
+    }
+
+    private void validateFlattenPdfParams(FlattenPdfParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        FileParam file = params.getFile();
+        String documentId = params.getDocumentId();
+        if (file == null && (documentId == null || documentId.isBlank())) {
+            throw new IllegalArgumentException("Either file or documentId must be provided.");
+        }
+        if (file != null) {
+            if (file.getName() == null || file.getName().isBlank()) {
+                throw new IllegalArgumentException("file name must be provided.");
+            }
+            if (file.getData() == null || file.getData().length == 0) {
+                throw new IllegalArgumentException("file data must be provided.");
+            }
+        }
+    }
+
+    private MediaType resolveFileMediaType(FileParam file) {
+        String mimeType = file.getType();
+        if (mimeType == null || mimeType.isBlank()) {
+            mimeType = URLConnection.guessContentTypeFromName(file.getName());
+        }
+        if (mimeType == null || mimeType.isBlank()) {
+            mimeType = "application/octet-stream";
+        }
+        return MediaType.get(mimeType);
     }
 
 }

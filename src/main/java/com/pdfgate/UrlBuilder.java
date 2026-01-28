@@ -28,6 +28,10 @@ final class UrlBuilder {
         return baseUrl + "/" + API_VERSION + "/generate/pdf";
     }
 
+    String flattenPdf() {
+        return baseUrl + "/forms/flatten";
+    }
+
     private static String normalizeBase(String domain) {
         String trimmed = domain.trim();
         if (trimmed.endsWith("/")) {

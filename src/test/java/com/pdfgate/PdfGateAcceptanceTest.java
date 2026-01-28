@@ -42,4 +42,22 @@ public class PdfGateAcceptanceTest {
         String header = new String(result, 0, Math.min(result.length, 4), java.nio.charset.StandardCharsets.US_ASCII);
         Assertions.assertEquals("%PDF", header, "pdf bytes should start with %PDF");
     }
+
+    @Test
+    public void flattenPdfByFile() throws Exception {
+        GeneratePdfBytesParams generateParams = GeneratePdfParams.builder()
+                .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                .buildBytes();
+        byte[] pdfBytes = client.generatePdf(generateParams);
+
+        FileParam fileParam = new FileParam("input.pdf", pdfBytes, "application/pdf");
+        FlattenPdfJsonParams flattenParams = FlattenPdfJsonParams.builder()
+                .file(fileParam)
+                .buildJson();
+
+        PdfGateDocument flattenedDocument = client.flattenPdf(flattenParams);
+        Assertions.assertNotNull(flattenedDocument.getId(), "document id should be present");
+        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, flattenedDocument.getStatus(), "document status should be completed");
+        Assertions.assertNotNull(flattenedDocument.getCreatedAt(), "document createdAt should be present");
+    }
 }

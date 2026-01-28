@@ -8,22 +8,26 @@ public final class PdfGateConfig {
     private static final String DEFAULT_SANDBOX_API_DOMAIN = "https://api-sandbox.pdfgate.com";
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(60);
     private static final Duration DEFAULT_GENERATE_PDF_TIMEOUT = Duration.ofMinutes(15);
+    private static final Duration DEFAULT_FLATTEN_PDF_TIMEOUT = Duration.ofMinutes(3);
 
     private final String productionApiDomain;
     private final String sandboxApiDomain;
     private final Duration defaultTimeout;
     private final Duration generatePdfTimeout;
+    private final Duration flattenPdfTimeout;
 
     private PdfGateConfig(
             String productionApiDomain,
             String sandboxApiDomain,
             Duration defaultTimeout,
-            Duration generatePdfTimeout
+            Duration generatePdfTimeout,
+            Duration flattenPdfTimeout
     ) {
         this.productionApiDomain = requireNonBlank(productionApiDomain, "productionApiDomain");
         this.sandboxApiDomain = requireNonBlank(sandboxApiDomain, "sandboxApiDomain");
         this.defaultTimeout = Objects.requireNonNull(defaultTimeout, "defaultTimeout");
         this.generatePdfTimeout = Objects.requireNonNull(generatePdfTimeout, "generatePdfTimeout");
+        this.flattenPdfTimeout = Objects.requireNonNull(flattenPdfTimeout, "flattenPdfTimeout");
     }
 
     public static PdfGateConfig defaultConfig() {
@@ -31,7 +35,8 @@ public final class PdfGateConfig {
                 DEFAULT_PRODUCTION_API_DOMAIN,
                 DEFAULT_SANDBOX_API_DOMAIN,
                 DEFAULT_TIMEOUT,
-                DEFAULT_GENERATE_PDF_TIMEOUT
+                DEFAULT_GENERATE_PDF_TIMEOUT,
+                DEFAULT_FLATTEN_PDF_TIMEOUT
         );
     }
 
@@ -45,7 +50,24 @@ public final class PdfGateConfig {
                 productionApiDomain,
                 sandboxApiDomain,
                 defaultTimeout,
-                generatePdfTimeout
+                generatePdfTimeout,
+                DEFAULT_FLATTEN_PDF_TIMEOUT
+        );
+    }
+
+    public static PdfGateConfig of(
+            String productionApiDomain,
+            String sandboxApiDomain,
+            Duration defaultTimeout,
+            Duration generatePdfTimeout,
+            Duration flattenPdfTimeout
+    ) {
+        return new PdfGateConfig(
+                productionApiDomain,
+                sandboxApiDomain,
+                defaultTimeout,
+                generatePdfTimeout,
+                flattenPdfTimeout
         );
     }
 
@@ -63,6 +85,10 @@ public final class PdfGateConfig {
 
     public Duration getGeneratePdfTimeout() {
         return generatePdfTimeout;
+    }
+
+    public Duration getFlattenPdfTimeout() {
+        return flattenPdfTimeout;
     }
 
     private static String requireNonBlank(String value, String label) {

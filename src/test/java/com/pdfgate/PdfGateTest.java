@@ -1,5 +1,6 @@
 package com.pdfgate;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -11,9 +12,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okio.Buffer;
+import okio.BufferedSource;
+import okio.Okio;
+import okio.Source;
+import okio.Timeout;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -177,6 +189,84 @@ public class PdfGateTest {
             Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
             Assertions.assertNull(failure.get(), "failure callback should not be invoked");
             Assertions.assertArrayEquals(pdfBytes, success.get(), "bytes should match response");
+        }
+    }
+
+    @Test
+    public void generatePdfCallWithIoFailureWrapsException() throws Exception {
+        try (MockWebServer server = new MockWebServer()) {
+            server.start();
+            String baseUrl = server.url("/").toString();
+            server.shutdown();
+
+            GeneratePdfJsonParams params = GeneratePdfParams.builder()
+                    .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                    .buildJson();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<PdfGateDocument> success = new AtomicReference<>();
+            AtomicReference<Throwable> failure = new AtomicReference<>();
+
+            PdfGate pdfGateClient = buildClient(baseUrl);
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+                @Override
+                public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
+                    success.set(value);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onFailure(okhttp3.Call call, Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            });
+
+            Assertions.assertTrue(latch.await(3, TimeUnit.SECONDS), "callback should be invoked");
+            Assertions.assertNull(success.get(), "success callback should not be invoked");
+            Assertions.assertNotNull(failure.get(), "failure callback should be invoked");
+            Assertions.assertInstanceOf(PdfGateException.class, failure.get(), "failure should be PdfGateException");
+            Assertions.assertNotNull(failure.get().getCause(), "failure should preserve the original cause");
+            Assertions.assertInstanceOf(IOException.class, failure.get().getCause(), "failure cause should be IOException");
+        }
+    }
+
+    @Test
+    public void generatePdfCallWithBytesIoFailureWrapsException() throws Exception {
+        try (MockWebServer server = new MockWebServer()) {
+            server.start();
+            String baseUrl = server.url("/").toString();
+            server.shutdown();
+
+            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+                    .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                    .buildBytes();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<byte[]> success = new AtomicReference<>();
+            AtomicReference<Throwable> failure = new AtomicReference<>();
+
+            PdfGate pdfGateClient = buildClient(baseUrl);
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+                @Override
+                public void onSuccess(okhttp3.Call call, byte[] value) {
+                    success.set(value);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onFailure(okhttp3.Call call, Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            });
+
+            Assertions.assertTrue(latch.await(3, TimeUnit.SECONDS), "callback should be invoked");
+            Assertions.assertNull(success.get(), "success callback should not be invoked");
+            Assertions.assertNotNull(failure.get(), "failure callback should be invoked");
+            Assertions.assertInstanceOf(PdfGateException.class, failure.get(), "failure should be PdfGateException");
+            Assertions.assertNotNull(failure.get().getCause(), "failure should preserve the original cause");
+            Assertions.assertInstanceOf(IOException.class, failure.get().getCause(), "failure cause should be IOException");
         }
     }
 

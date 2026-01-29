@@ -82,7 +82,7 @@ public final class PdfGate {
     public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {
         call.enqueue(new Callback() {
             @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                callback.onFailure(call, e);
+                callback.onFailure(call, PdfGateException.fromException(e));
             }
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
@@ -95,6 +95,8 @@ public final class PdfGate {
                     String responseJson = responseBody == null ? "" : responseBody.string();
                     PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
                     callback.onSuccess(call, document);
+                } catch (IOException e) {
+                    callback.onFailure(call, PdfGateException.fromException(e));
                 } catch (Exception e) {
                     callback.onFailure(call, e);
                 }
@@ -108,7 +110,7 @@ public final class PdfGate {
     public void enqueue(CallBytes call, PDFGateCallback<byte[]> callback) {
         call.enqueue(new Callback() {
             @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                callback.onFailure(call, e);
+                callback.onFailure(call, PdfGateException.fromException(e));
             }
 
             @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
@@ -120,6 +122,8 @@ public final class PdfGate {
                     ResponseBody responseBody = response.body();
                     byte[] bytes = responseBody == null ? new byte[0] : responseBody.bytes();
                     callback.onSuccess(call, bytes);
+                } catch (IOException e) {
+                    callback.onFailure(call, PdfGateException.fromException(e));
                 } catch (Exception e) {
                     callback.onFailure(call, e);
                 }

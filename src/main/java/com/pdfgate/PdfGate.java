@@ -41,11 +41,7 @@ public final class PdfGate {
             throws IOException {
         try {
             try (Response response = generatePdfCall(params).execute()) {
-                if (!response.isSuccessful()) {
-                    throw PdfGateException.fromResponse(response);
-                }
-                ResponseBody responseBody = response.body();
-                return responseBody == null ? new byte[0] : responseBody.bytes();
+                return tryParseBytesResponse(response);
             }
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
@@ -59,12 +55,7 @@ public final class PdfGate {
             throws IOException {
         try {
             try (Response response = generatePdfCall(params).execute()) {
-                if (!response.isSuccessful()) {
-                    throw PdfGateException.fromResponse(response);
-                }
-                ResponseBody responseBody = response.body();
-                String responseJson = responseBody == null ? "" : responseBody.string();
-                return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+                return tryParseJsonResponse(response);
             }
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
@@ -87,13 +78,7 @@ public final class PdfGate {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 try (Response r = response) {
-                    if (!r.isSuccessful()) {
-                        future.completeExceptionally(PdfGateException.fromResponse(r));
-                        return;
-                    }
-
-                    ResponseBody responseBody = r.body();
-                    byte[] bytes = responseBody == null ? new byte[0] : responseBody.bytes();
+                    byte[] bytes = tryParseBytesResponse(r);
                     future.complete(bytes);
                 } catch (IOException e) {
                     future.completeExceptionally(e);
@@ -126,14 +111,7 @@ public final class PdfGate {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 try (Response r = response) {
-                    if (!r.isSuccessful()) {
-                        future.completeExceptionally(PdfGateException.fromResponse(r));
-                        return;
-                    }
-
-                    ResponseBody responseBody = r.body();
-                    String responseJson = responseBody == null ? "" : responseBody.string();
-                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+                    PdfGateDocument document = tryParseJsonResponse(r);
                     future.complete(document);
                 } catch (IOException e) {
                     future.completeExceptionally(e);
@@ -254,11 +232,7 @@ public final class PdfGate {
             throws IOException {
         try {
             try (Response response = flattenPdfCall(params).execute()) {
-                if (!response.isSuccessful()) {
-                    throw PdfGateException.fromResponse(response);
-                }
-                ResponseBody responseBody = response.body();
-                return responseBody == null ? new byte[0] : responseBody.bytes();
+                return tryParseBytesResponse(response);
             }
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
@@ -272,12 +246,7 @@ public final class PdfGate {
             throws IOException {
         try {
             try (Response response = flattenPdfCall(params).execute()) {
-                if (!response.isSuccessful()) {
-                    throw PdfGateException.fromResponse(response);
-                }
-                ResponseBody responseBody = response.body();
-                String responseJson = responseBody == null ? "" : responseBody.string();
-                return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+                return tryParseJsonResponse(response);
             }
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
@@ -303,13 +272,7 @@ public final class PdfGate {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 try (Response r = response) {
-                    if (!r.isSuccessful()) {
-                        future.completeExceptionally(PdfGateException.fromResponse(r));
-                        return;
-                    }
-
-                    ResponseBody responseBody = r.body();
-                    byte[] bytes = responseBody == null ? new byte[0] : responseBody.bytes();
+                    byte[] bytes = tryParseBytesResponse(r);
                     future.complete(bytes);
                 } catch (IOException e) {
                     future.completeExceptionally(e);
@@ -342,14 +305,7 @@ public final class PdfGate {
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 try (Response r = response) {
-                    if (!r.isSuccessful()) {
-                        future.completeExceptionally(PdfGateException.fromResponse(r));
-                        return;
-                    }
-
-                    ResponseBody responseBody = r.body();
-                    String responseJson = responseBody == null ? "" : responseBody.string();
-                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+                    PdfGateDocument document = tryParseJsonResponse(r);
                     future.complete(document);
                 } catch (IOException e) {
                     future.completeExceptionally(e);
@@ -378,6 +334,24 @@ public final class PdfGate {
      */
     public CallBytes flattenPdfCall(FlattenPdfBytesParams params) {
         return new PdfGateBytesCall(buildFlattenPdfCall(params));
+    }
+
+    private PdfGateDocument tryParseJsonResponse(Response response)
+            throws IOException {
+        if (!response.isSuccessful()) {
+            throw PdfGateException.fromResponse(response);
+        }
+        ResponseBody responseBody = response.body();
+        String responseJson = responseBody == null ? "" : responseBody.string();
+        return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
+    }
+
+    private byte[] tryParseBytesResponse(Response response) throws IOException {
+        if (!response.isSuccessful()) {
+            throw PdfGateException.fromResponse(response);
+        }
+        ResponseBody responseBody = response.body();
+        return responseBody == null ? new byte[0] : responseBody.bytes();
     }
 
     private Call buildFlattenPdfCall(FlattenPdfParams params) {

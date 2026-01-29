@@ -66,66 +66,14 @@ public final class PdfGate {
      * Generates a PDF asynchronously and returns raw bytes.
      */
     public CompletableFuture<byte[]> generatePdfAsync(GeneratePdfBytesParams params) {
-        Call call = generatePdfCall(params);
-        CompletableFuture<byte[]> future = new CompletableFuture<>();
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                future.completeExceptionally(PdfGateException.fromException(e));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
-                try (Response r = response) {
-                    byte[] bytes = tryParseBytesResponse(r);
-                    future.complete(bytes);
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-            }
-        });
-
-        future.whenComplete((r, t) -> {
-            if (future.isCancelled()) {
-                call.cancel();
-            }
-        });
-
-        return future;
+        return enqueueAsFuture(generatePdfCall(params));
     }
 
     /**
      * Generates a PDF asynchronously and returns the document metadata from a JSON response.
      */
     public CompletableFuture<PdfGateDocument> generatePdfAsync(GeneratePdfJsonParams params) {
-        Call call = generatePdfCall(params);
-        CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                future.completeExceptionally(PdfGateException.fromException(e));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
-                try (Response r = response) {
-                    PdfGateDocument document = tryParseJsonResponse(r);
-                    future.complete(document);
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-            }
-        });
-
-        future.whenComplete((r, t) -> {
-            if (future.isCancelled()) {
-                call.cancel();
-            }
-        });
-
-        return future;
+        return enqueueAsFuture(generatePdfCall(params));
     }
 
     /**
@@ -177,6 +125,58 @@ public final class PdfGate {
                 }
             }
         });
+    }
+
+    private CompletableFuture<PdfGateDocument> enqueueAsFuture(CallJson call) {
+        CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
+        enqueue(call, new PDFGateCallback<PdfGateDocument>() {
+            @Override
+            public void onSuccess(Call call, PdfGateDocument value) {
+                future.complete(value);
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+                future.completeExceptionally(wrapAsyncThrowable(t));
+            }
+        });
+        future.whenComplete((r, t) -> {
+            if (future.isCancelled()) {
+                call.cancel();
+            }
+        });
+        return future;
+    }
+
+    private CompletableFuture<byte[]> enqueueAsFuture(CallBytes call) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+        enqueue(call, new PDFGateCallback<byte[]>() {
+            @Override
+            public void onSuccess(Call call, byte[] value) {
+                future.complete(value);
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+                future.completeExceptionally(wrapAsyncThrowable(t));
+            }
+        });
+        future.whenComplete((r, t) -> {
+            if (future.isCancelled()) {
+                call.cancel();
+            }
+        });
+        return future;
+    }
+
+    private Throwable wrapAsyncThrowable(Throwable t) {
+        if (t instanceof PdfGateException) {
+            return t;
+        }
+        if (t instanceof IOException) {
+            return PdfGateException.fromException((IOException) t);
+        }
+        return t;
     }
 
     /**
@@ -260,66 +260,14 @@ public final class PdfGate {
      * Flattens a PDF asynchronously and returns raw bytes.
      */
     public CompletableFuture<byte[]> flattenPdfAsync(FlattenPdfBytesParams params) {
-        Call call = flattenPdfCall(params);
-        CompletableFuture<byte[]> future = new CompletableFuture<>();
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                future.completeExceptionally(PdfGateException.fromException(e));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
-                try (Response r = response) {
-                    byte[] bytes = tryParseBytesResponse(r);
-                    future.complete(bytes);
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-            }
-        });
-
-        future.whenComplete((r, t) -> {
-            if (future.isCancelled()) {
-                call.cancel();
-            }
-        });
-
-        return future;
+        return enqueueAsFuture(flattenPdfCall(params));
     }
 
     /**
      * Flattens a PDF provided as a file asynchronously and returns the document metadata from a JSON response.
      */
     public CompletableFuture<PdfGateDocument> flattenPdfAsync(FlattenPdfJsonParams params) {
-        Call call = flattenPdfCall(params);
-        CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                future.completeExceptionally(PdfGateException.fromException(e));
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) {
-                try (Response r = response) {
-                    PdfGateDocument document = tryParseJsonResponse(r);
-                    future.complete(document);
-                } catch (IOException e) {
-                    future.completeExceptionally(e);
-                }
-            }
-        });
-
-        future.whenComplete((r, t) -> {
-            if (future.isCancelled()) {
-                call.cancel();
-            }
-        });
-
-        return future;
+        return enqueueAsFuture(flattenPdfCall(params));
     }
 
     /**

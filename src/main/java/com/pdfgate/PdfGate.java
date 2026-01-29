@@ -77,6 +77,133 @@ public final class PdfGate {
     }
 
     /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson generatePdfCall(GeneratePdfJsonParams params) {
+        return new PdfGateJsonCall(buildGeneratePdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes generatePdfCall(GeneratePdfBytesParams params) {
+        return new PdfGateBytesCall(buildGeneratePdfCall(params));
+    }
+
+    /**
+     * Flattens a PDF provided as a file and returns raw bytes.
+     */
+    public byte[] flattenPdf(FlattenPdfBytesParams params)
+            throws IOException {
+        try (Response response = flattenPdfCall(params).execute()) {
+            return tryParseBytesResponse(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Flattens a PDF provided as a file and returns the document metadata from a JSON response.
+     */
+    public PdfGateDocument flattenPdf(FlattenPdfJsonParams params)
+            throws IOException {
+        try (Response response = flattenPdfCall(params).execute()) {
+            return tryParseJsonResponse(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Flattens a PDF provided as a document ID and returns raw bytes.
+     */
+    /**
+     * Flattens a PDF asynchronously and returns raw bytes.
+     */
+    public CompletableFuture<byte[]> flattenPdfAsync(FlattenPdfBytesParams params) {
+        return enqueueAsFuture(flattenPdfCall(params));
+    }
+
+    /**
+     * Flattens a PDF provided as a file asynchronously and returns the document metadata from a JSON response.
+     */
+    public CompletableFuture<PdfGateDocument> flattenPdfAsync(FlattenPdfJsonParams params) {
+        return enqueueAsFuture(flattenPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson flattenPdfCall(FlattenPdfJsonParams params) {
+        return new PdfGateJsonCall(buildFlattenPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes flattenPdfCall(FlattenPdfBytesParams params) {
+        return new PdfGateBytesCall(buildFlattenPdfCall(params));
+    }
+
+    private Call buildGeneratePdfCall(GeneratePdfParams params) {
+        validateGeneratePdfParams(params);
+        String jsonBody = PdfGateJson.gson().toJson(params);
+        RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+        String requestUrl = urlBuilder.generatePdf();
+        Request request = new Request.Builder()
+                .url(requestUrl)
+                .header("Authorization", "Bearer " + apiKey)
+                .post(body)
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getGeneratePdfTimeout())
+                .readTimeout(config.getGeneratePdfTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    private Call buildFlattenPdfCall(FlattenPdfParams params) {
+        validateFlattenPdfParams(params);
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+        addFlattenPdfCommonFields(bodyBuilder, params.getJsonResponse(), params.getPreSignedUrlExpiresIn(), params.getMetadata());
+
+        FileParam file = params.getFile();
+        if (file != null) {
+            MediaType mediaType = resolveFileMediaType(file);
+            bodyBuilder.addFormDataPart(
+                    "file",
+                    file.getName(),
+                    RequestBody.create(file.getData(), mediaType)
+            );
+        } else {
+            String documentId = params.getDocumentId();
+            if (documentId != null && !documentId.isBlank()) {
+                bodyBuilder.addFormDataPart("documentId", documentId);
+            }
+        }
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.flattenPdf())
+                .header("Authorization", "Bearer " + apiKey)
+                .post(bodyBuilder.build())
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getFlattenPdfTimeout())
+                .readTimeout(config.getFlattenPdfTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    /**
      * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
      */
     public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {
@@ -183,39 +310,6 @@ public final class PdfGate {
         return t;
     }
 
-    /**
-     * Builds a call that expects a JSON response.
-     */
-    public CallJson generatePdfCall(GeneratePdfJsonParams params) {
-        return new PdfGateJsonCall(buildGeneratePdfCall(params));
-    }
-
-    /**
-     * Builds a call that expects a bytes' response.
-     */
-    public CallBytes generatePdfCall(GeneratePdfBytesParams params) {
-        return new PdfGateBytesCall(buildGeneratePdfCall(params));
-    }
-
-    private Call buildGeneratePdfCall(GeneratePdfParams params) {
-        validateGeneratePdfParams(params);
-        String jsonBody = PdfGateJson.gson().toJson(params);
-        RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
-        String requestUrl = urlBuilder.generatePdf();
-        Request request = new Request.Builder()
-                .url(requestUrl)
-                .header("Authorization", "Bearer " + apiKey)
-                .post(body)
-                .build();
-
-        OkHttpClient client = httpClient.newBuilder()
-                .callTimeout(config.getGeneratePdfTimeout())
-                .readTimeout(config.getGeneratePdfTimeout())
-                .build();
-
-        return client.newCall(request);
-    }
-
     private void validateGeneratePdfParams(GeneratePdfParams params) {
         if (params == null) {
             throw new IllegalArgumentException("params must be provided.");
@@ -227,65 +321,6 @@ public final class PdfGate {
                     "Either the 'html' or 'url' parameters must be provided to generate a PDF."
             );
         }
-    }
-
-    /**
-     * Flattens a PDF provided as a file and returns raw bytes.
-     */
-    public byte[] flattenPdf(FlattenPdfBytesParams params)
-            throws IOException {
-        try (Response response = flattenPdfCall(params).execute()) {
-            return tryParseBytesResponse(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
-    }
-
-    /**
-     * Flattens a PDF provided as a file and returns the document metadata from a JSON response.
-     */
-    public PdfGateDocument flattenPdf(FlattenPdfJsonParams params)
-            throws IOException {
-        try (Response response = flattenPdfCall(params).execute()) {
-            return tryParseJsonResponse(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
-    }
-
-    /**
-     * Flattens a PDF provided as a document ID and returns raw bytes.
-     */
-    /**
-     * Flattens a PDF asynchronously and returns raw bytes.
-     */
-    public CompletableFuture<byte[]> flattenPdfAsync(FlattenPdfBytesParams params) {
-        return enqueueAsFuture(flattenPdfCall(params));
-    }
-
-    /**
-     * Flattens a PDF provided as a file asynchronously and returns the document metadata from a JSON response.
-     */
-    public CompletableFuture<PdfGateDocument> flattenPdfAsync(FlattenPdfJsonParams params) {
-        return enqueueAsFuture(flattenPdfCall(params));
-    }
-
-    /**
-     * Builds a call that expects a JSON response.
-     */
-    public CallJson flattenPdfCall(FlattenPdfJsonParams params) {
-        return new PdfGateJsonCall(buildFlattenPdfCall(params));
-    }
-
-    /**
-     * Builds a call that expects a bytes' response.
-     */
-    public CallBytes flattenPdfCall(FlattenPdfBytesParams params) {
-        return new PdfGateBytesCall(buildFlattenPdfCall(params));
     }
 
     private PdfGateDocument tryParseJsonResponse(Response response)
@@ -304,41 +339,6 @@ public final class PdfGate {
         }
         ResponseBody responseBody = response.body();
         return responseBody == null ? new byte[0] : responseBody.bytes();
-    }
-
-    private Call buildFlattenPdfCall(FlattenPdfParams params) {
-        validateFlattenPdfParams(params);
-        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM);
-        addFlattenPdfCommonFields(bodyBuilder, params.getJsonResponse(), params.getPreSignedUrlExpiresIn(), params.getMetadata());
-
-        FileParam file = params.getFile();
-        if (file != null) {
-            MediaType mediaType = resolveFileMediaType(file);
-            bodyBuilder.addFormDataPart(
-                    "file",
-                    file.getName(),
-                    RequestBody.create(file.getData(), mediaType)
-            );
-        } else {
-            String documentId = params.getDocumentId();
-            if (documentId != null && !documentId.isBlank()) {
-                bodyBuilder.addFormDataPart("documentId", documentId);
-            }
-        }
-
-        Request request = new Request.Builder()
-                .url(urlBuilder.flattenPdf())
-                .header("Authorization", "Bearer " + apiKey)
-                .post(bodyBuilder.build())
-                .build();
-
-        OkHttpClient client = httpClient.newBuilder()
-                .callTimeout(config.getFlattenPdfTimeout())
-                .readTimeout(config.getFlattenPdfTimeout())
-                .build();
-
-        return client.newCall(request);
     }
 
     private void addFlattenPdfCommonFields(

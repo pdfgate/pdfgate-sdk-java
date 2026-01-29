@@ -207,55 +207,14 @@ public final class PdfGate {
      * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
      */
     public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {
-        call.enqueue(new Callback() {
-            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                callback.onFailure(call, PdfGateException.fromException(e));
-            }
-
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
-                try (Response r = response) {
-                    if (!r.isSuccessful()) {
-                        callback.onFailure(call, PdfGateException.fromResponse(r));
-                        return;
-                    }
-                    ResponseBody responseBody = r.body();
-                    String responseJson = responseBody == null ? "" : responseBody.string();
-                    PdfGateDocument document = PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
-                    callback.onSuccess(call, document);
-                } catch (IOException e) {
-                    callback.onFailure(call, PdfGateException.fromException(e));
-                } catch (Exception e) {
-                    callback.onFailure(call, e);
-                }
-            }
-        });
+        call.enqueue(new PdfGateJsonResponseParser(callback));
     }
 
     /**
      * Enqueues a bytes response call and returns the raw response bytes.
      */
     public void enqueue(CallBytes call, PDFGateCallback<byte[]> callback) {
-        call.enqueue(new Callback() {
-            @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                callback.onFailure(call, PdfGateException.fromException(e));
-            }
-
-            @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
-                try (Response r = response) {
-                    if (!r.isSuccessful()) {
-                        callback.onFailure(call, PdfGateException.fromResponse(r));
-                        return;
-                    }
-                    ResponseBody responseBody = response.body();
-                    byte[] bytes = responseBody == null ? new byte[0] : responseBody.bytes();
-                    callback.onSuccess(call, bytes);
-                } catch (IOException e) {
-                    callback.onFailure(call, PdfGateException.fromException(e));
-                } catch (Exception e) {
-                    callback.onFailure(call, e);
-                }
-            }
-        });
+        call.enqueue(new PdfGateBytesResponseParser(callback));
     }
 
     private CompletableFuture<PdfGateDocument> enqueueAsFuture(CallJson call) {

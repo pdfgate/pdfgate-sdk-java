@@ -39,10 +39,10 @@ public final class PdfGate {
      */
     public byte[] generatePdf(GeneratePdfBytesParams params)
             throws IOException {
-        try {
-            try (Response response = generatePdfCall(params).execute()) {
-                return tryParseBytesResponse(response);
-            }
+        try (Response response = generatePdfCall(params).execute()) {
+            return tryParseBytesResponse(response);
+        } catch (PdfGateException e) {
+            throw e;
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
         }
@@ -53,10 +53,10 @@ public final class PdfGate {
      */
     public PdfGateDocument generatePdf(GeneratePdfJsonParams params)
             throws IOException {
-        try {
-            try (Response response = generatePdfCall(params).execute()) {
-                return tryParseJsonResponse(response);
-            }
+        try (Response response = generatePdfCall(params).execute()) {
+            return tryParseJsonResponse(response);
+        } catch (PdfGateException e) {
+            throw e;
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
         }
@@ -230,10 +230,10 @@ public final class PdfGate {
      */
     public byte[] flattenPdf(FlattenPdfBytesParams params)
             throws IOException {
-        try {
-            try (Response response = flattenPdfCall(params).execute()) {
-                return tryParseBytesResponse(response);
-            }
+        try (Response response = flattenPdfCall(params).execute()) {
+            return tryParseBytesResponse(response);
+        } catch (PdfGateException e) {
+            throw e;
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
         }
@@ -244,10 +244,10 @@ public final class PdfGate {
      */
     public PdfGateDocument flattenPdf(FlattenPdfJsonParams params)
             throws IOException {
-        try {
-            try (Response response = flattenPdfCall(params).execute()) {
-                return tryParseJsonResponse(response);
-            }
+        try (Response response = flattenPdfCall(params).execute()) {
+            return tryParseJsonResponse(response);
+        } catch (PdfGateException e) {
+            throw e;
         } catch (IOException e) {
             throw PdfGateException.fromException(e);
         }

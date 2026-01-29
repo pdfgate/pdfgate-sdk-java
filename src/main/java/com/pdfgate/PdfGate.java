@@ -5,7 +5,6 @@ import java.net.URLConnection;
 import java.util.concurrent.CompletableFuture;
 
 import okhttp3.*;
-import org.jetbrains.annotations.NotNull;
 
 public final class PdfGate {
     private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
@@ -118,9 +117,6 @@ public final class PdfGate {
         }
     }
 
-    /**
-     * Flattens a PDF provided as a document ID and returns raw bytes.
-     */
     /**
      * Flattens a PDF asynchronously and returns raw bytes.
      */

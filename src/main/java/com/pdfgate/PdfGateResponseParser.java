@@ -1,36 +1,29 @@
 package com.pdfgate;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 
-public abstract class PdfGateResponseParser<T> implements Callback {
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
-    protected PDFGateCallback<T> callback;
+final class PdfGateResponseParser {
+    private PdfGateResponseParser() {}
 
-    @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
-        callback.onFailure(call, PdfGateException.fromException(e));
+    static PdfGateDocument parseJson(Response response) throws IOException {
+        ensureSuccess(response);
+        ResponseBody body = response.body();
+        String json = body == null ? "" : body.string();
+        return PdfGateJson.gson().fromJson(json, PdfGateDocument.class);
     }
 
-    @Override public void onResponse(@NotNull Call call, @NotNull Response response) {
-        try (Response r = response) {
-            if (!r.isSuccessful()) {
-                callback.onFailure(call, PdfGateException.fromResponse(r));
-                return;
-            }
-            ResponseBody responseBody = r.body();
-            T parsedResponse = parseResponse(responseBody);
-            callback.onSuccess(call, parsedResponse);
-        } catch (IOException e) {
-            callback.onFailure(call, PdfGateException.fromException(e));
-        } catch (Exception e) {
-            callback.onFailure(call, e);
+    static byte[] parseBytes(Response response) throws IOException {
+        ensureSuccess(response);
+        ResponseBody body = response.body();
+        return body == null ? new byte[0] : body.bytes();
+    }
+
+    static void ensureSuccess(Response response) throws IOException {
+        if (!response.isSuccessful()) {
+            throw PdfGateException.fromResponse(response);
         }
     }
-
-    public abstract T parseResponse(ResponseBody body) throws IOException;
 }

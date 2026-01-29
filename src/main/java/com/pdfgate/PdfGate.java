@@ -39,7 +39,7 @@ public final class PdfGate {
     public byte[] generatePdf(GeneratePdfBytesParams params)
             throws IOException {
         try (Response response = generatePdfCall(params).execute()) {
-            return tryParseBytesResponse(response);
+            return PdfGateResponseParser.parseBytes(response);
         } catch (PdfGateException e) {
             throw e;
         } catch (IOException e) {
@@ -53,7 +53,7 @@ public final class PdfGate {
     public PdfGateDocument generatePdf(GeneratePdfJsonParams params)
             throws IOException {
         try (Response response = generatePdfCall(params).execute()) {
-            return tryParseJsonResponse(response);
+            return PdfGateResponseParser.parseJson(response);
         } catch (PdfGateException e) {
             throw e;
         } catch (IOException e) {
@@ -95,7 +95,7 @@ public final class PdfGate {
     public byte[] flattenPdf(FlattenPdfBytesParams params)
             throws IOException {
         try (Response response = flattenPdfCall(params).execute()) {
-            return tryParseBytesResponse(response);
+            return PdfGateResponseParser.parseBytes(response);
         } catch (PdfGateException e) {
             throw e;
         } catch (IOException e) {
@@ -109,7 +109,7 @@ public final class PdfGate {
     public PdfGateDocument flattenPdf(FlattenPdfJsonParams params)
             throws IOException {
         try (Response response = flattenPdfCall(params).execute()) {
-            return tryParseJsonResponse(response);
+            return PdfGateResponseParser.parseJson(response);
         } catch (PdfGateException e) {
             throw e;
         } catch (IOException e) {
@@ -203,14 +203,14 @@ public final class PdfGate {
      * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
      */
     public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {
-        call.enqueue(new PdfGateJsonResponseParser(callback));
+        call.enqueue(new PdfGateJsonResponseParserCallback(callback));
     }
 
     /**
      * Enqueues a bytes response call and returns the raw response bytes.
      */
     public void enqueue(CallBytes call, PDFGateCallback<byte[]> callback) {
-        call.enqueue(new PdfGateBytesResponseParser(callback));
+        call.enqueue(new PdfGateBytesResponseParserCallback(callback));
     }
 
     private CompletableFuture<PdfGateDocument> enqueueAsFuture(CallJson call) {
@@ -276,24 +276,6 @@ public final class PdfGate {
                     "Either the 'html' or 'url' parameters must be provided to generate a PDF."
             );
         }
-    }
-
-    private PdfGateDocument tryParseJsonResponse(Response response)
-            throws IOException {
-        if (!response.isSuccessful()) {
-            throw PdfGateException.fromResponse(response);
-        }
-        ResponseBody responseBody = response.body();
-        String responseJson = responseBody == null ? "" : responseBody.string();
-        return PdfGateJson.gson().fromJson(responseJson, PdfGateDocument.class);
-    }
-
-    private byte[] tryParseBytesResponse(Response response) throws IOException {
-        if (!response.isSuccessful()) {
-            throw PdfGateException.fromResponse(response);
-        }
-        ResponseBody responseBody = response.body();
-        return responseBody == null ? new byte[0] : responseBody.bytes();
     }
 
     private void addFlattenPdfCommonFields(

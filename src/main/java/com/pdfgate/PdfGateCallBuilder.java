@@ -322,6 +322,26 @@ final class PdfGateCallBuilder {
     }
 
     /**
+     * Builds the call for retrieving a document's file.
+     */
+    Call buildGetFileCall(GetFileParams params) {
+        validateGetFileParams(params);
+        String requestUrl = urlBuilder.getFile(params.getDocumentId());
+        Request request = new Request.Builder()
+                .url(requestUrl)
+                .header("Authorization", "Bearer " + apiKey)
+                .get()
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getDefaultTimeout())
+                .readTimeout(config.getDefaultTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    /**
      * Validates generate PDF request parameters.
      */
     private void validateGeneratePdfParams(GeneratePdfParams params) {
@@ -639,6 +659,19 @@ final class PdfGateCallBuilder {
      * Validates get document request parameters.
      */
     private void validateGetDocumentParams(GetDocumentParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        String documentId = params.getDocumentId();
+        if (documentId == null || documentId.isBlank()) {
+            throw new IllegalArgumentException("documentId must be provided.");
+        }
+    }
+
+    /**
+     * Validates get file request parameters.
+     */
+    private void validateGetFileParams(GetFileParams params) {
         if (params == null) {
             throw new IllegalArgumentException("params must be provided.");
         }

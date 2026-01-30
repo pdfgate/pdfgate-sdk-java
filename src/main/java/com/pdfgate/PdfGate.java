@@ -366,6 +366,34 @@ public final class PdfGate {
     }
 
     /**
+     * Retrieves a stored document file.
+     */
+    public byte[] getFile(GetFileParams params)
+            throws IOException {
+        try (Response response = getFileCall(params).execute()) {
+            return PdfGateResponseParser.parseBytes(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Retrieves a stored document file asynchronously.
+     */
+    public CompletableFuture<byte[]> getFileAsync(GetFileParams params) {
+        return enqueueAsFuture(getFileCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes getFileCall(GetFileParams params) {
+        return new PdfGateBytesCall(callBuilder.buildGetFileCall(params));
+    }
+
+    /**
      * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
      */
     public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {

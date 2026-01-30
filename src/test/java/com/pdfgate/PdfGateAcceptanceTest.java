@@ -143,6 +143,27 @@ public class PdfGateAcceptanceTest {
     }
 
     @Test
+    public void getFileById() throws Exception {
+        GetFileParams params = GetFileParams.builder()
+                .documentId(documentId)
+                .build();
+
+        byte[] result = client.getFile(params);
+        assertIsValidPdf(result);
+    }
+
+    @Test
+    public void getFileByIdMissing() {
+        String missingDocumentId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        GetFileParams params = GetFileParams.builder()
+                .documentId(missingDocumentId)
+                .build();
+
+        PdfGateException exception = Assertions.assertThrows(PdfGateException.class, () -> client.getFile(params));
+        Assertions.assertEquals(404, exception.getStatusCode(), "status code should be 404");
+    }
+
+    @Test
     public void getDocumentByIdMissing() {
         String missingDocumentId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         GetDocumentParams params = GetDocumentParams.builder()

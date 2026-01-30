@@ -52,6 +52,10 @@ final class UrlBuilder {
         return baseUrl + "/document/" + documentId;
     }
 
+    String getFile(String documentId) {
+        return baseUrl + "/file/" + documentId;
+    }
+
     private static String normalizeBase(String domain) {
         String trimmed = domain.trim();
         if (trimmed.endsWith("/")) {

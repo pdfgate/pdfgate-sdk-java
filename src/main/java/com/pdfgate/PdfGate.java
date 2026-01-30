@@ -198,6 +198,62 @@ public final class PdfGate {
     }
 
     /**
+     * Compresses a PDF and returns raw bytes.
+     */
+    public byte[] compressPdf(CompressPdfBytesParams params)
+            throws IOException {
+        try (Response response = compressPdfCall(params).execute()) {
+            return PdfGateResponseParser.parseBytes(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Compresses a PDF and returns the document metadata from a JSON response.
+     */
+    public PdfGateDocument compressPdf(CompressPdfJsonParams params)
+            throws IOException {
+        try (Response response = compressPdfCall(params).execute()) {
+            return PdfGateResponseParser.parseJson(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Compresses a PDF asynchronously and returns raw bytes.
+     */
+    public CompletableFuture<byte[]> compressPdfAsync(CompressPdfBytesParams params) {
+        return enqueueAsFuture(compressPdfCall(params));
+    }
+
+    /**
+     * Compresses a PDF asynchronously and returns the document metadata from a JSON response.
+     */
+    public CompletableFuture<PdfGateDocument> compressPdfAsync(CompressPdfJsonParams params) {
+        return enqueueAsFuture(compressPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson compressPdfCall(CompressPdfJsonParams params) {
+        return new PdfGateJsonCall(callBuilder.buildCompressPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes compressPdfCall(CompressPdfBytesParams params) {
+        return new PdfGateBytesCall(callBuilder.buildCompressPdfCall(params));
+    }
+
+    /**
      * Applies a watermark to a PDF and returns raw bytes.
      */
     public byte[] watermarkPdf(WatermarkPdfBytesParams params)

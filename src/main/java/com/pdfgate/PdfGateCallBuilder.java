@@ -212,6 +212,50 @@ final class PdfGateCallBuilder {
     }
 
     /**
+     * Builds the call for compressing a PDF.
+     */
+    Call buildCompressPdfCall(CompressPdfParams params) {
+        validateCompressPdfParams(params);
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+        addCompressPdfCommonFields(
+                bodyBuilder,
+                params.getLinearize(),
+                params.getJsonResponse(),
+                params.getPreSignedUrlExpiresIn(),
+                params.getMetadata()
+        );
+
+        FileParam file = params.getFile();
+        if (file != null) {
+            MediaType mediaType = resolveFileMediaType(file);
+            bodyBuilder.addFormDataPart(
+                    "file",
+                    file.getName(),
+                    RequestBody.create(file.getData(), mediaType)
+            );
+        } else {
+            String documentId = params.getDocumentId();
+            if (documentId != null && !documentId.isBlank()) {
+                bodyBuilder.addFormDataPart("documentId", documentId);
+            }
+        }
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.compressPdf())
+                .header("Authorization", "Bearer " + apiKey)
+                .post(bodyBuilder.build())
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getCompressPdfTimeout())
+                .readTimeout(config.getCompressPdfTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    /**
      * Builds the call for extracting form data from a PDF.
      */
     Call buildExtractPdfFormDataCall(ExtractPdfFormDataParams params) {
@@ -406,6 +450,33 @@ final class PdfGateCallBuilder {
     }
 
     /**
+     * Adds shared multipart fields for compress PDF requests.
+     */
+    private void addCompressPdfCommonFields(
+            MultipartBody.Builder bodyBuilder,
+            Boolean linearize,
+            Boolean jsonResponse,
+            Long preSignedUrlExpiresIn,
+            Object metadata
+    ) {
+        if (linearize != null) {
+            bodyBuilder.addFormDataPart("linearize", linearize.toString());
+        }
+        if (jsonResponse != null) {
+            bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
+        }
+        if (preSignedUrlExpiresIn != null) {
+            bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
+        }
+        if (metadata != null) {
+            String metadataValue = metadata instanceof String
+                    ? (String) metadata
+                    : PdfGateJson.gson().toJson(metadata);
+            bodyBuilder.addFormDataPart("metadata", metadataValue);
+        }
+    }
+
+    /**
      * Validates flatten PDF request parameters.
      */
     private void validateFlattenPdfParams(FlattenPdfParams params) {
@@ -473,6 +544,28 @@ final class PdfGateCallBuilder {
      * Validates protect PDF request parameters.
      */
     private void validateProtectPdfParams(ProtectPdfParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        FileParam file = params.getFile();
+        String documentId = params.getDocumentId();
+        if (file == null && (documentId == null || documentId.isBlank())) {
+            throw new IllegalArgumentException("Either file or documentId must be provided.");
+        }
+        if (file != null) {
+            if (file.getName() == null || file.getName().isBlank()) {
+                throw new IllegalArgumentException("file name must be provided.");
+            }
+            if (file.getData() == null || file.getData().length == 0) {
+                throw new IllegalArgumentException("file data must be provided.");
+            }
+        }
+    }
+
+    /**
+     * Validates compress PDF request parameters.
+     */
+    private void validateCompressPdfParams(CompressPdfParams params) {
         if (params == null) {
             throw new IllegalArgumentException("params must be provided.");
         }

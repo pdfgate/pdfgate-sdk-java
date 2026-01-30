@@ -9,6 +9,7 @@ public final class PdfGateConfig {
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(60);
     private static final Duration DEFAULT_GENERATE_PDF_TIMEOUT = Duration.ofMinutes(15);
     private static final Duration DEFAULT_FLATTEN_PDF_TIMEOUT = Duration.ofMinutes(3);
+    private static final Duration DEFAULT_COMPRESS_PDF_TIMEOUT = Duration.ofMinutes(3);
     private static final Duration DEFAULT_PROTECT_PDF_TIMEOUT = Duration.ofMinutes(3);
 
     private final String productionApiDomain;
@@ -16,6 +17,7 @@ public final class PdfGateConfig {
     private final Duration defaultTimeout;
     private final Duration generatePdfTimeout;
     private final Duration flattenPdfTimeout;
+    private final Duration compressPdfTimeout;
     private final Duration protectPdfTimeout;
 
     private PdfGateConfig(
@@ -24,6 +26,7 @@ public final class PdfGateConfig {
             Duration defaultTimeout,
             Duration generatePdfTimeout,
             Duration flattenPdfTimeout,
+            Duration compressPdfTimeout,
             Duration protectPdfTimeout
     ) {
         this.productionApiDomain = requireNonBlank(productionApiDomain, "productionApiDomain");
@@ -31,6 +34,7 @@ public final class PdfGateConfig {
         this.defaultTimeout = Objects.requireNonNull(defaultTimeout, "defaultTimeout");
         this.generatePdfTimeout = Objects.requireNonNull(generatePdfTimeout, "generatePdfTimeout");
         this.flattenPdfTimeout = Objects.requireNonNull(flattenPdfTimeout, "flattenPdfTimeout");
+        this.compressPdfTimeout = Objects.requireNonNull(compressPdfTimeout, "compressPdfTimeout");
         this.protectPdfTimeout = Objects.requireNonNull(protectPdfTimeout, "protectPdfTimeout");
     }
 
@@ -41,6 +45,7 @@ public final class PdfGateConfig {
                 DEFAULT_TIMEOUT,
                 DEFAULT_GENERATE_PDF_TIMEOUT,
                 DEFAULT_FLATTEN_PDF_TIMEOUT,
+                DEFAULT_COMPRESS_PDF_TIMEOUT,
                 DEFAULT_PROTECT_PDF_TIMEOUT
         );
     }
@@ -57,6 +62,7 @@ public final class PdfGateConfig {
                 defaultTimeout,
                 generatePdfTimeout,
                 DEFAULT_FLATTEN_PDF_TIMEOUT,
+                DEFAULT_COMPRESS_PDF_TIMEOUT,
                 DEFAULT_PROTECT_PDF_TIMEOUT
         );
     }
@@ -74,6 +80,7 @@ public final class PdfGateConfig {
                 defaultTimeout,
                 generatePdfTimeout,
                 flattenPdfTimeout,
+                DEFAULT_COMPRESS_PDF_TIMEOUT,
                 DEFAULT_PROTECT_PDF_TIMEOUT
         );
     }
@@ -92,6 +99,27 @@ public final class PdfGateConfig {
                 defaultTimeout,
                 generatePdfTimeout,
                 flattenPdfTimeout,
+                DEFAULT_COMPRESS_PDF_TIMEOUT,
+                protectPdfTimeout
+        );
+    }
+
+    public static PdfGateConfig of(
+            String productionApiDomain,
+            String sandboxApiDomain,
+            Duration defaultTimeout,
+            Duration generatePdfTimeout,
+            Duration flattenPdfTimeout,
+            Duration compressPdfTimeout,
+            Duration protectPdfTimeout
+    ) {
+        return new PdfGateConfig(
+                productionApiDomain,
+                sandboxApiDomain,
+                defaultTimeout,
+                generatePdfTimeout,
+                flattenPdfTimeout,
+                compressPdfTimeout,
                 protectPdfTimeout
         );
     }
@@ -114,6 +142,10 @@ public final class PdfGateConfig {
 
     public Duration getFlattenPdfTimeout() {
         return flattenPdfTimeout;
+    }
+
+    public Duration getCompressPdfTimeout() {
+        return compressPdfTimeout;
     }
 
     public Duration getProtectPdfTimeout() {

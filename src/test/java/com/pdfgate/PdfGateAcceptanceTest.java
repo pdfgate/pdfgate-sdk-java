@@ -15,6 +15,7 @@ import java.util.UUID;
 public class PdfGateAcceptanceTest {
     private static PdfGate client;
     private static String documentId;
+    private static long documentSize;
     private static String documentIdWithForm;
     private static byte[] fileWithForm;
     private static final byte[] WATERMARK_IMAGE = Base64.getDecoder().decode(
@@ -50,6 +51,9 @@ public class PdfGateAcceptanceTest {
     static void setUpFiles() throws IOException {
         PdfGateDocument document = createDocument("<html><body><h1>Hello, PDFGate!</h1></body></html>");
         documentId = document.getId();
+        Long size = document.getSize();
+        Assumptions.assumeTrue(size != null && size > 0, "document size should be present");
+        documentSize = size;
 
         String htmlWithForm = "<form>"
                 + "<input type='text' name='first_name' value='John'/>"
@@ -230,6 +234,33 @@ public class PdfGateAcceptanceTest {
         try (PDDocument document = PDDocument.load(protectedFile, userPassword)) {
             Assertions.assertTrue(document.isEncrypted(), "pdf should be encrypted");
         }
+    }
+
+    @Test
+    public void compressPdfByFileWithJsonResponse() throws Exception {
+        CompressPdfJsonParams params = CompressPdfParams.builder()
+                .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
+                .buildJson();
+
+        PdfGateDocument document = client.compressPdf(params);
+        Assertions.assertNotNull(document.getId(), "document id should be present");
+        Assertions.assertNotEquals(documentId, document.getId(), "document id should not match source");
+        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be completed");
+        Assertions.assertEquals(PdfGateDocument.DocumentType.COMPRESSED, document.getType(), "document type should be compressed");
+    }
+
+    @Test
+    public void compressPdfByDocumentIdWithBytesResponse() throws Exception {
+        CompressPdfBytesParams params = CompressPdfParams.builder()
+                .documentId(documentId)
+                .buildBytes();
+
+        byte[] compressedFile = client.compressPdf(params);
+        assertIsValidPdf(compressedFile);
+        Assertions.assertTrue(
+                compressedFile.length < documentSize,
+                "compressed pdf should be smaller than the original"
+        );
     }
 
 }

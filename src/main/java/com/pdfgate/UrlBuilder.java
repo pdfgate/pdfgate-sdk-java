@@ -44,6 +44,10 @@ final class UrlBuilder {
         return baseUrl + "/protect/pdf";
     }
 
+    String compressPdf() {
+        return baseUrl + "/compress/pdf";
+    }
+
     private static String normalizeBase(String domain) {
         String trimmed = domain.trim();
         if (trimmed.endsWith("/")) {

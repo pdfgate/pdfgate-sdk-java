@@ -147,6 +147,62 @@ public final class PdfGate {
     }
 
     /**
+     * Protects a PDF and returns raw bytes.
+     */
+    public byte[] protectPdf(ProtectPdfBytesParams params)
+            throws IOException {
+        try (Response response = protectPdfCall(params).execute()) {
+            return PdfGateResponseParser.parseBytes(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Protects a PDF and returns the document metadata from a JSON response.
+     */
+    public PdfGateDocument protectPdf(ProtectPdfJsonParams params)
+            throws IOException {
+        try (Response response = protectPdfCall(params).execute()) {
+            return PdfGateResponseParser.parseJson(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Protects a PDF asynchronously and returns raw bytes.
+     */
+    public CompletableFuture<byte[]> protectPdfAsync(ProtectPdfBytesParams params) {
+        return enqueueAsFuture(protectPdfCall(params));
+    }
+
+    /**
+     * Protects a PDF asynchronously and returns the document metadata from a JSON response.
+     */
+    public CompletableFuture<PdfGateDocument> protectPdfAsync(ProtectPdfJsonParams params) {
+        return enqueueAsFuture(protectPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson protectPdfCall(ProtectPdfJsonParams params) {
+        return new PdfGateJsonCall(buildProtectPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes protectPdfCall(ProtectPdfBytesParams params) {
+        return new PdfGateBytesCall(buildProtectPdfCall(params));
+    }
+
+    /**
      * Applies a watermark to a PDF and returns raw bytes.
      */
     public byte[] watermarkPdf(WatermarkPdfBytesParams params)
@@ -342,6 +398,53 @@ public final class PdfGate {
         OkHttpClient client = httpClient.newBuilder()
                 .callTimeout(config.getDefaultTimeout())
                 .readTimeout(config.getDefaultTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    private Call buildProtectPdfCall(ProtectPdfParams params) {
+        validateProtectPdfParams(params);
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+        addProtectPdfCommonFields(
+                bodyBuilder,
+                params.getAlgorithm(),
+                params.getUserPassword(),
+                params.getOwnerPassword(),
+                params.getDisablePrint(),
+                params.getDisableCopy(),
+                params.getDisableEditing(),
+                params.getEncryptMetadata(),
+                params.getJsonResponse(),
+                params.getPreSignedUrlExpiresIn(),
+                params.getMetadata()
+        );
+
+        FileParam file = params.getFile();
+        if (file != null) {
+            MediaType mediaType = resolveFileMediaType(file);
+            bodyBuilder.addFormDataPart(
+                    "file",
+                    file.getName(),
+                    RequestBody.create(file.getData(), mediaType)
+            );
+        } else {
+            String documentId = params.getDocumentId();
+            if (documentId != null && !documentId.isBlank()) {
+                bodyBuilder.addFormDataPart("documentId", documentId);
+            }
+        }
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.protectPdf())
+                .header("Authorization", "Bearer " + apiKey)
+                .post(bodyBuilder.build())
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getProtectPdfTimeout())
+                .readTimeout(config.getProtectPdfTimeout())
                 .build();
 
         return client.newCall(request);
@@ -572,6 +675,54 @@ public final class PdfGate {
         }
     }
 
+    private void addProtectPdfCommonFields(
+            MultipartBody.Builder bodyBuilder,
+            ProtectPdfParams.EncryptionAlgorithm algorithm,
+            String userPassword,
+            String ownerPassword,
+            Boolean disablePrint,
+            Boolean disableCopy,
+            Boolean disableEditing,
+            Boolean encryptMetadata,
+            Boolean jsonResponse,
+            Long preSignedUrlExpiresIn,
+            Object metadata
+    ) {
+        if (algorithm != null) {
+            bodyBuilder.addFormDataPart("algorithm", algorithm.toString());
+        }
+        if (userPassword != null) {
+            bodyBuilder.addFormDataPart("userPassword", userPassword);
+        }
+        if (ownerPassword != null) {
+            bodyBuilder.addFormDataPart("ownerPassword", ownerPassword);
+        }
+        if (disablePrint != null) {
+            bodyBuilder.addFormDataPart("disablePrint", disablePrint.toString());
+        }
+        if (disableCopy != null) {
+            bodyBuilder.addFormDataPart("disableCopy", disableCopy.toString());
+        }
+        if (disableEditing != null) {
+            bodyBuilder.addFormDataPart("disableEditing", disableEditing.toString());
+        }
+        if (encryptMetadata != null) {
+            bodyBuilder.addFormDataPart("encryptMetadata", encryptMetadata.toString());
+        }
+        if (jsonResponse != null) {
+            bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
+        }
+        if (preSignedUrlExpiresIn != null) {
+            bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
+        }
+        if (metadata != null) {
+            String metadataValue = metadata instanceof String
+                    ? (String) metadata
+                    : PdfGateJson.gson().toJson(metadata);
+            bodyBuilder.addFormDataPart("metadata", metadataValue);
+        }
+    }
+
     private void validateFlattenPdfParams(FlattenPdfParams params) {
         if (params == null) {
             throw new IllegalArgumentException("params must be provided.");
@@ -626,6 +777,25 @@ public final class PdfGate {
             }
             if (watermark.getData() == null || watermark.getData().length == 0) {
                 throw new IllegalArgumentException("watermark file data must be provided.");
+            }
+        }
+    }
+
+    private void validateProtectPdfParams(ProtectPdfParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        FileParam file = params.getFile();
+        String documentId = params.getDocumentId();
+        if (file == null && (documentId == null || documentId.isBlank())) {
+            throw new IllegalArgumentException("Either file or documentId must be provided.");
+        }
+        if (file != null) {
+            if (file.getName() == null || file.getName().isBlank()) {
+                throw new IllegalArgumentException("file name must be provided.");
+            }
+            if (file.getData() == null || file.getData().length == 0) {
+                throw new IllegalArgumentException("file data must be provided.");
             }
         }
     }

@@ -40,6 +40,10 @@ final class UrlBuilder {
         return baseUrl + "/watermark/pdf";
     }
 
+    String protectPdf() {
+        return baseUrl + "/protect/pdf";
+    }
+
     private static String normalizeBase(String domain) {
         String trimmed = domain.trim();
         if (trimmed.endsWith("/")) {

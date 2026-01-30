@@ -1,6 +1,8 @@
 package com.pdfgate;
 
 import com.google.gson.JsonObject;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.UUID;
 
 public class PdfGateAcceptanceTest {
     private static PdfGate client;
@@ -191,6 +194,42 @@ public class PdfGateAcceptanceTest {
         Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be completed");
         Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
         Assertions.assertEquals(documentId, document.getDerivedFrom().orElseThrow());
+    }
+
+    @Test
+    public void protectPdfByDocumentIdWithJsonResponse() throws Exception {
+        ProtectPdfJsonParams params = ProtectPdfParams.builder()
+                .documentId(documentId)
+                .userPassword(UUID.randomUUID().toString())
+                .ownerPassword(UUID.randomUUID().toString())
+                .buildJson();
+
+        PdfGateDocument document = client.protectPdf(params);
+        Assertions.assertNotNull(document.getId(), "document id should be present");
+        Assertions.assertNotEquals(documentId, document.getId(), "document id should not match source");
+        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be completed");
+    }
+
+    @Test
+    public void protectPdfByFileWithFileResponse() throws Exception {
+        String userPassword = UUID.randomUUID().toString();
+        String ownerPassword = UUID.randomUUID().toString();
+        ProtectPdfBytesParams params = ProtectPdfParams.builder()
+                .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
+                .userPassword(userPassword)
+                .ownerPassword(ownerPassword)
+                .buildBytes();
+
+        byte[] protectedFile = client.protectPdf(params);
+        assertIsValidPdf(protectedFile);
+        Assertions.assertThrows(InvalidPasswordException.class, () -> {
+            try (PDDocument ignored = PDDocument.load(protectedFile)) {
+                // Should not reach here because the PDF is encrypted.
+            }
+        });
+        try (PDDocument document = PDDocument.load(protectedFile, userPassword)) {
+            Assertions.assertTrue(document.isEncrypted(), "pdf should be encrypted");
+        }
     }
 
 }

@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import okhttp3.*;
 
 public final class PdfGate {
-    private final OkHttpClient httpClient;
     /** Builds OkHttp calls for PdfGate API requests. */
     private final PdfGateCallBuilder callBuilder;
 
@@ -23,7 +22,7 @@ public final class PdfGate {
             throw new IllegalArgumentException("config must be provided.");
         }
         UrlBuilder urlBuilder = new UrlBuilder(apiKey, config);
-        this.httpClient = new OkHttpClient.Builder()
+        OkHttpClient httpClient = new OkHttpClient.Builder()
                 .connectTimeout(config.getDefaultTimeout())
                 .build();
         this.callBuilder = new PdfGateCallBuilder(apiKey, httpClient, config, urlBuilder);

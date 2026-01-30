@@ -147,6 +147,62 @@ public final class PdfGate {
     }
 
     /**
+     * Applies a watermark to a PDF and returns raw bytes.
+     */
+    public byte[] watermarkPdf(WatermarkPdfBytesParams params)
+            throws IOException {
+        try (Response response = watermarkPdfCall(params).execute()) {
+            return PdfGateResponseParser.parseBytes(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Applies a watermark to a PDF and returns the document metadata from a JSON response.
+     */
+    public PdfGateDocument watermarkPdf(WatermarkPdfJsonParams params)
+            throws IOException {
+        try (Response response = watermarkPdfCall(params).execute()) {
+            return PdfGateResponseParser.parseJson(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Applies a watermark to a PDF asynchronously and returns raw bytes.
+     */
+    public CompletableFuture<byte[]> watermarkPdfAsync(WatermarkPdfBytesParams params) {
+        return enqueueAsFuture(watermarkPdfCall(params));
+    }
+
+    /**
+     * Applies a watermark to a PDF asynchronously and returns the document metadata from a JSON response.
+     */
+    public CompletableFuture<PdfGateDocument> watermarkPdfAsync(WatermarkPdfJsonParams params) {
+        return enqueueAsFuture(watermarkPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson watermarkPdfCall(WatermarkPdfJsonParams params) {
+        return new PdfGateJsonCall(buildWatermarkPdfCall(params));
+    }
+
+    /**
+     * Builds a call that expects a bytes' response.
+     */
+    public CallBytes watermarkPdfCall(WatermarkPdfBytesParams params) {
+        return new PdfGateBytesCall(buildWatermarkPdfCall(params));
+    }
+
+    /**
      * Extracts PDF form field data and returns the JSON response.
      */
     public JsonObject extractPdfFormData(ExtractPdfFormDataParams params)
@@ -223,6 +279,69 @@ public final class PdfGate {
         OkHttpClient client = httpClient.newBuilder()
                 .callTimeout(config.getFlattenPdfTimeout())
                 .readTimeout(config.getFlattenPdfTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    private Call buildWatermarkPdfCall(WatermarkPdfParams params) {
+        validateWatermarkPdfParams(params);
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+        addWatermarkPdfCommonFields(
+                bodyBuilder,
+                params.getType(),
+                params.getText(),
+                params.getFont(),
+                params.getFontSize(),
+                params.getFontColor(),
+                params.getOpacity(),
+                params.getXPosition(),
+                params.getYPosition(),
+                params.getImageWidth(),
+                params.getImageHeight(),
+                params.getRotate(),
+                params.getJsonResponse(),
+                params.getPreSignedUrlExpiresIn(),
+                params.getMetadata()
+        );
+
+        FileParam file = params.getFile();
+        if (file != null) {
+            MediaType mediaType = resolveFileMediaType(file);
+            bodyBuilder.addFormDataPart(
+                    "file",
+                    file.getName(),
+                    RequestBody.create(file.getData(), mediaType)
+            );
+        } else {
+            String documentId = params.getDocumentId();
+            if (documentId != null && !documentId.isBlank()) {
+                bodyBuilder.addFormDataPart("documentId", documentId);
+            }
+        }
+
+        if (params.getType() == WatermarkPdfParams.WatermarkType.IMAGE) {
+            FileParam watermark = params.getWatermark();
+            if (watermark != null) {
+                MediaType mediaType = resolveFileMediaType(watermark);
+                bodyBuilder.addFormDataPart(
+                        "watermark",
+                        watermark.getName(),
+                        RequestBody.create(watermark.getData(), mediaType)
+                );
+            }
+        }
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.watermarkPdf())
+                .header("Authorization", "Bearer " + apiKey)
+                .post(bodyBuilder.build())
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getDefaultTimeout())
+                .readTimeout(config.getDefaultTimeout())
                 .build();
 
         return client.newCall(request);
@@ -389,6 +508,70 @@ public final class PdfGate {
         }
     }
 
+    private void addWatermarkPdfCommonFields(
+            MultipartBody.Builder bodyBuilder,
+            WatermarkPdfParams.WatermarkType type,
+            String text,
+            String font,
+            Integer fontSize,
+            String fontColor,
+            Double opacity,
+            Integer xPosition,
+            Integer yPosition,
+            Integer imageWidth,
+            Integer imageHeight,
+            Double rotate,
+            Boolean jsonResponse,
+            Long preSignedUrlExpiresIn,
+            Object metadata
+    ) {
+        if (type != null) {
+            bodyBuilder.addFormDataPart("type", type.toString());
+        }
+        if (text != null) {
+            bodyBuilder.addFormDataPart("text", text);
+        }
+        if (font != null) {
+            bodyBuilder.addFormDataPart("font", font);
+        }
+        if (fontSize != null) {
+            bodyBuilder.addFormDataPart("fontSize", fontSize.toString());
+        }
+        if (fontColor != null) {
+            bodyBuilder.addFormDataPart("fontColor", fontColor);
+        }
+        if (opacity != null) {
+            bodyBuilder.addFormDataPart("opacity", opacity.toString());
+        }
+        if (xPosition != null) {
+            bodyBuilder.addFormDataPart("xPosition", xPosition.toString());
+        }
+        if (yPosition != null) {
+            bodyBuilder.addFormDataPart("yPosition", yPosition.toString());
+        }
+        if (imageWidth != null) {
+            bodyBuilder.addFormDataPart("imageWidth", imageWidth.toString());
+        }
+        if (imageHeight != null) {
+            bodyBuilder.addFormDataPart("imageHeight", imageHeight.toString());
+        }
+        if (rotate != null) {
+            bodyBuilder.addFormDataPart("rotate", rotate.toString());
+        }
+        if (jsonResponse != null) {
+            bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
+        }
+        if (preSignedUrlExpiresIn != null) {
+            bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
+        }
+        if (metadata != null) {
+            String metadataValue = metadata instanceof String
+                    ? (String) metadata
+                    : PdfGateJson.gson().toJson(metadata);
+            bodyBuilder.addFormDataPart("metadata", metadataValue);
+        }
+    }
+
     private void validateFlattenPdfParams(FlattenPdfParams params) {
         if (params == null) {
             throw new IllegalArgumentException("params must be provided.");
@@ -404,6 +587,45 @@ public final class PdfGate {
             }
             if (file.getData() == null || file.getData().length == 0) {
                 throw new IllegalArgumentException("file data must be provided.");
+            }
+        }
+    }
+
+    private void validateWatermarkPdfParams(WatermarkPdfParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        if (params.getType() == null) {
+            throw new IllegalArgumentException("type must be provided.");
+        }
+        FileParam file = params.getFile();
+        String documentId = params.getDocumentId();
+        if (file == null && (documentId == null || documentId.isBlank())) {
+            throw new IllegalArgumentException("Either file or documentId must be provided.");
+        }
+        if (file != null) {
+            if (file.getName() == null || file.getName().isBlank()) {
+                throw new IllegalArgumentException("file name must be provided.");
+            }
+            if (file.getData() == null || file.getData().length == 0) {
+                throw new IllegalArgumentException("file data must be provided.");
+            }
+        }
+        if (params.getType() == WatermarkPdfParams.WatermarkType.TEXT) {
+            if (params.getText() == null || params.getText().isBlank()) {
+                throw new IllegalArgumentException("text must be provided when type is text.");
+            }
+        }
+        if (params.getType() == WatermarkPdfParams.WatermarkType.IMAGE) {
+            FileParam watermark = params.getWatermark();
+            if (watermark == null) {
+                throw new IllegalArgumentException("watermark file must be provided when type is image.");
+            }
+            if (watermark.getName() == null || watermark.getName().isBlank()) {
+                throw new IllegalArgumentException("watermark file name must be provided.");
+            }
+            if (watermark.getData() == null || watermark.getData().length == 0) {
+                throw new IllegalArgumentException("watermark file data must be provided.");
             }
         }
     }

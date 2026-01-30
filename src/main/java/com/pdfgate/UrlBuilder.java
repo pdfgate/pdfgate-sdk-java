@@ -36,6 +36,10 @@ final class UrlBuilder {
         return baseUrl + "/forms/extract-data";
     }
 
+    String watermarkPdf() {
+        return baseUrl + "/watermark/pdf";
+    }
+
     private static String normalizeBase(String domain) {
         String trimmed = domain.trim();
         if (trimmed.endsWith("/")) {

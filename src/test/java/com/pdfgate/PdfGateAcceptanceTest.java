@@ -7,12 +7,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Base64;
 
 public class PdfGateAcceptanceTest {
     private static PdfGate client;
     private static String documentId;
     private static String documentIdWithForm;
     private static byte[] fileWithForm;
+    private static final byte[] WATERMARK_IMAGE = Base64.getDecoder().decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+    );
 
     @BeforeAll
     static void beforeAll() throws IOException {
@@ -59,6 +63,13 @@ public class PdfGateAcceptanceTest {
         fileWithForm = client.generatePdf(params);
     }
 
+    private void assertIsValidPdf(byte[] content) {
+        Assertions.assertNotNull(content, "pdf bytes should be present");
+        Assertions.assertTrue(content.length > 0, "pdf bytes should not be empty");
+        String header = new String(content, 0, Math.min(content.length, 4), java.nio.charset.StandardCharsets.US_ASCII);
+        Assertions.assertEquals("%PDF", header, "pdf bytes should start with %PDF");
+    }
+
     @Test
     public void generatePdfWithJsonResponse() throws Exception {
         GeneratePdfJsonParams params = GeneratePdfParams.builder()
@@ -78,10 +89,7 @@ public class PdfGateAcceptanceTest {
                 .buildBytes();
 
         byte[] result = client.generatePdf(params);
-        Assertions.assertNotNull(result, "pdf bytes should be present");
-        Assertions.assertTrue(result.length > 0, "pdf bytes should not be empty");
-        String header = new String(result, 0, Math.min(result.length, 4), java.nio.charset.StandardCharsets.US_ASCII);
-        Assertions.assertEquals("%PDF", header, "pdf bytes should start with %PDF");
+        assertIsValidPdf(result);
     }
 
     @Test
@@ -142,6 +150,47 @@ public class PdfGateAcceptanceTest {
 
         Assertions.assertEquals("John", response.get("first_name").getAsString());
         Assertions.assertEquals("Doe", response.get("last_name").getAsString());
+    }
+
+    @Test
+    public void watermarkPdfByFileWithJsonResponse() throws Exception {
+        WatermarkPdfJsonParams params = WatermarkPdfParams.builder()
+                .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
+                .type(WatermarkPdfParams.WatermarkType.TEXT)
+                .text("CONFIDENTIAL")
+                .buildJson();
+
+        PdfGateDocument document = client.watermarkPdf(params);
+        Assertions.assertNotNull(document.getId(), "document id should be present");
+        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be completed");
+        Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
+    }
+
+    @Test
+    public void watermarkPdfByDocumentIdWithFileResponse() throws Exception {
+        WatermarkPdfBytesParams params = WatermarkPdfParams.builder()
+                .documentId(documentId)
+                .type(WatermarkPdfParams.WatermarkType.TEXT)
+                .text("CONFIDENTIAL")
+                .buildBytes();
+
+        byte[] watermarkedFile = client.watermarkPdf(params);
+        assertIsValidPdf(watermarkedFile);
+    }
+
+    @Test
+    public void watermarkPdfWithImageWatermark() throws Exception {
+        WatermarkPdfJsonParams params = WatermarkPdfParams.builder()
+                .documentId(documentId)
+                .type(WatermarkPdfParams.WatermarkType.IMAGE)
+                .watermark(new FileParam("watermark.png", WATERMARK_IMAGE, "image/png"))
+                .buildJson();
+
+        PdfGateDocument document = client.watermarkPdf(params);
+        Assertions.assertNotNull(document.getId(), "document id should be present");
+        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be completed");
+        Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
+        Assertions.assertEquals(documentId, document.getDerivedFrom().orElseThrow());
     }
 
 }

@@ -48,6 +48,10 @@ final class UrlBuilder {
         return baseUrl + "/compress/pdf";
     }
 
+    String getDocument(String documentId) {
+        return baseUrl + "/document/" + documentId;
+    }
+
     private static String normalizeBase(String domain) {
         String trimmed = domain.trim();
         if (trimmed.endsWith("/")) {

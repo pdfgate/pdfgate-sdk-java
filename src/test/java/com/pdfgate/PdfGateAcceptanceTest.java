@@ -130,6 +130,29 @@ public class PdfGateAcceptanceTest {
         Assertions.assertEquals(documentId, flattenedDocument.getDerivedFrom().orElseThrow());
     }
 
+    @Test
+    public void getDocumentById() throws Exception {
+        GetDocumentParams params = GetDocumentParams.builder()
+                .documentId(documentId)
+                .build();
+
+        PdfGateDocument document = client.getDocument(params);
+        Assertions.assertEquals(documentId, document.getId(), "document id should match");
+        Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(), "document status should be completed");
+        Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
+    }
+
+    @Test
+    public void getDocumentByIdMissing() {
+        String missingDocumentId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        GetDocumentParams params = GetDocumentParams.builder()
+                .documentId(missingDocumentId)
+                .build();
+
+        PdfGateException exception = Assertions.assertThrows(PdfGateException.class, () -> client.getDocument(params));
+        Assertions.assertEquals(404, exception.getStatusCode(), "status code should be 404");
+    }
+
     /**
      * Extracts form data using a stored document id.
      */

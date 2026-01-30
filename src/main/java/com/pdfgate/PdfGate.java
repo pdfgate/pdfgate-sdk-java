@@ -338,6 +338,34 @@ public final class PdfGate {
     }
 
     /**
+     * Retrieves document metadata.
+     */
+    public PdfGateDocument getDocument(GetDocumentParams params)
+            throws IOException {
+        try (Response response = getDocumentCall(params).execute()) {
+            return PdfGateResponseParser.parseJson(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Retrieves document metadata asynchronously.
+     */
+    public CompletableFuture<PdfGateDocument> getDocumentAsync(GetDocumentParams params) {
+        return enqueueAsFuture(getDocumentCall(params));
+    }
+
+    /**
+     * Builds a call that expects a JSON response.
+     */
+    public CallJson getDocumentCall(GetDocumentParams params) {
+        return new PdfGateJsonCall(callBuilder.buildGetDocumentCall(params));
+    }
+
+    /**
      * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
      */
     public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {

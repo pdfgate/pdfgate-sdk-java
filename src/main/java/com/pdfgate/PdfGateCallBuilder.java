@@ -3,6 +3,7 @@ package com.pdfgate;
 import java.net.URLConnection;
 
 import okhttp3.Call;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -282,6 +283,34 @@ final class PdfGateCallBuilder {
                 .url(urlBuilder.extractPdfFormData())
                 .header("Authorization", "Bearer " + apiKey)
                 .post(bodyBuilder.build())
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getDefaultTimeout())
+                .readTimeout(config.getDefaultTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
+    /**
+     * Builds the call for retrieving a document's metadata.
+     */
+    Call buildGetDocumentCall(GetDocumentParams params) {
+        validateGetDocumentParams(params);
+        String requestUrl = urlBuilder.getDocument(params.getDocumentId());
+        HttpUrl url = HttpUrl.parse(requestUrl);
+        if (url == null) {
+            throw new IllegalArgumentException("Failed to build document URL.");
+        }
+        HttpUrl.Builder urlBuilder = url.newBuilder();
+        if (params.getPreSignedUrlExpiresIn() != null) {
+            urlBuilder.addQueryParameter("preSignedUrlExpiresIn", params.getPreSignedUrlExpiresIn().toString());
+        }
+        Request request = new Request.Builder()
+                .url(urlBuilder.build())
+                .header("Authorization", "Bearer " + apiKey)
+                .get()
                 .build();
 
         OkHttpClient client = httpClient.newBuilder()
@@ -603,6 +632,19 @@ final class PdfGateCallBuilder {
             if (file.getData() == null || file.getData().length == 0) {
                 throw new IllegalArgumentException("file data must be provided.");
             }
+        }
+    }
+
+    /**
+     * Validates get document request parameters.
+     */
+    private void validateGetDocumentParams(GetDocumentParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        String documentId = params.getDocumentId();
+        if (documentId == null || documentId.isBlank()) {
+            throw new IllegalArgumentException("documentId must be provided.");
         }
     }
 

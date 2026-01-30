@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.util.concurrent.CompletableFuture;
 
+import com.google.gson.JsonObject;
 import okhttp3.*;
 
 public final class PdfGate {
@@ -145,6 +146,34 @@ public final class PdfGate {
         return new PdfGateBytesCall(buildFlattenPdfCall(params));
     }
 
+    /**
+     * Extracts PDF form field data and returns the JSON response.
+     */
+    public JsonObject extractPdfFormData(ExtractPdfFormDataParams params)
+            throws IOException {
+        try (Response response = extractPdfFormDataCall(params).execute()) {
+            return PdfGateResponseParser.parseJsonObject(response);
+        } catch (PdfGateException e) {
+            throw e;
+        } catch (IOException e) {
+            throw PdfGateException.fromException(e);
+        }
+    }
+
+    /**
+     * Extracts PDF form field data asynchronously and returns the JSON response.
+     */
+    public CompletableFuture<JsonObject> extractPdfFormDataAsync(ExtractPdfFormDataParams params) {
+        return enqueueAsFuture(extractPdfFormDataCall(params));
+    }
+
+    /**
+     * Builds a call that expects a JSON response containing form field data.
+     */
+    public CallJsonObject extractPdfFormDataCall(ExtractPdfFormDataParams params) {
+        return new PdfGateJsonObjectCall(buildExtractPdfFormDataCall(params));
+    }
+
     private Call buildGeneratePdfCall(GeneratePdfParams params) {
         validateGeneratePdfParams(params);
         String jsonBody = PdfGateJson.gson().toJson(params);
@@ -199,6 +228,40 @@ public final class PdfGate {
         return client.newCall(request);
     }
 
+    private Call buildExtractPdfFormDataCall(ExtractPdfFormDataParams params) {
+        validateExtractPdfFormDataParams(params);
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+
+        FileParam file = params.getFile();
+        if (file != null) {
+            MediaType mediaType = resolveFileMediaType(file);
+            bodyBuilder.addFormDataPart(
+                    "file",
+                    file.getName(),
+                    RequestBody.create(file.getData(), mediaType)
+            );
+        } else {
+            String documentId = params.getDocumentId();
+            if (documentId != null && !documentId.isBlank()) {
+                bodyBuilder.addFormDataPart("documentId", documentId);
+            }
+        }
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.extractPdfFormData())
+                .header("Authorization", "Bearer " + apiKey)
+                .post(bodyBuilder.build())
+                .build();
+
+        OkHttpClient client = httpClient.newBuilder()
+                .callTimeout(config.getDefaultTimeout())
+                .readTimeout(config.getDefaultTimeout())
+                .build();
+
+        return client.newCall(request);
+    }
+
     /**
      * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
      */
@@ -213,11 +276,39 @@ public final class PdfGate {
         call.enqueue(new PdfGateBytesResponseParserCallback(callback));
     }
 
+    /**
+     * Enqueues a JSON response call and maps the response to {@link JsonObject}.
+     */
+    public void enqueue(CallJsonObject call, PDFGateCallback<JsonObject> callback) {
+        call.enqueue(new PdfGateJsonObjectResponseParserCallback(callback));
+    }
+
     private CompletableFuture<PdfGateDocument> enqueueAsFuture(CallJson call) {
         CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
         enqueue(call, new PDFGateCallback<PdfGateDocument>() {
             @Override
             public void onSuccess(Call call, PdfGateDocument value) {
+                future.complete(value);
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+                future.completeExceptionally(wrapAsyncThrowable(t));
+            }
+        });
+        future.whenComplete((r, t) -> {
+            if (future.isCancelled()) {
+                call.cancel();
+            }
+        });
+        return future;
+    }
+
+    private CompletableFuture<JsonObject> enqueueAsFuture(CallJsonObject call) {
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        enqueue(call, new PDFGateCallback<JsonObject>() {
+            @Override
+            public void onSuccess(Call call, JsonObject value) {
                 future.complete(value);
             }
 
@@ -299,6 +390,25 @@ public final class PdfGate {
     }
 
     private void validateFlattenPdfParams(FlattenPdfParams params) {
+        if (params == null) {
+            throw new IllegalArgumentException("params must be provided.");
+        }
+        FileParam file = params.getFile();
+        String documentId = params.getDocumentId();
+        if (file == null && (documentId == null || documentId.isBlank())) {
+            throw new IllegalArgumentException("Either file or documentId must be provided.");
+        }
+        if (file != null) {
+            if (file.getName() == null || file.getName().isBlank()) {
+                throw new IllegalArgumentException("file name must be provided.");
+            }
+            if (file.getData() == null || file.getData().length == 0) {
+                throw new IllegalArgumentException("file data must be provided.");
+            }
+        }
+    }
+
+    private void validateExtractPdfFormDataParams(ExtractPdfFormDataParams params) {
         if (params == null) {
             throw new IllegalArgumentException("params must be provided.");
         }

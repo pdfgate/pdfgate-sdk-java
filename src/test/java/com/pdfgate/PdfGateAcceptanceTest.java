@@ -1,5 +1,6 @@
 package com.pdfgate;
 
+import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,6 +11,8 @@ import java.io.IOException;
 public class PdfGateAcceptanceTest {
     private static PdfGate client;
     private static String documentId;
+    private static String documentIdWithForm;
+    private static byte[] fileWithForm;
 
     @BeforeAll
     static void beforeAll() throws IOException {
@@ -26,9 +29,10 @@ public class PdfGateAcceptanceTest {
         client = new PdfGate(apiKey);
     }
 
-    static PdfGateDocument createDocument() throws IOException {
+    static PdfGateDocument createDocument(String html) throws IOException {
         GeneratePdfJsonParams params = GeneratePdfParams.builder()
-                .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                .html(html)
+                .enableFormFields(true)
                 .buildJson();
 
         PdfGateDocument document = client.generatePdf(params);
@@ -37,8 +41,22 @@ public class PdfGateAcceptanceTest {
     }
 
     static void setUpFiles() throws IOException {
-        PdfGateDocument document = createDocument();
+        PdfGateDocument document = createDocument("<html><body><h1>Hello, PDFGate!</h1></body></html>");
         documentId = document.getId();
+
+        String htmlWithForm = "<form>"
+                + "<input type='text' name='first_name' value='John'/>"
+                + "<input type='text' name='last_name' value='Doe'/>"
+                + "</form>";
+        PdfGateDocument documentWithForm = createDocument(htmlWithForm);
+        documentIdWithForm = documentWithForm.getId();
+
+        GeneratePdfBytesParams params = GeneratePdfParams.builder()
+                .html(htmlWithForm)
+                .enableFormFields(true)
+                .buildBytes();
+
+        fileWithForm = client.generatePdf(params);
     }
 
     @Test
@@ -96,4 +114,34 @@ public class PdfGateAcceptanceTest {
         Assertions.assertNotNull(flattenedDocument.getCreatedAt(), "document createdAt should be present");
         Assertions.assertEquals(documentId, flattenedDocument.getDerivedFrom().orElseThrow());
     }
+
+    /**
+     * Extracts form data using a stored document id.
+     */
+    @Test
+    public void extractPdfFormDataByDocumentId() throws Exception {
+        ExtractPdfFormDataParams extractParams = ExtractPdfFormDataParams.builder()
+                .documentId(documentIdWithForm)
+                .build();
+
+        JsonObject response = client.extractPdfFormData(extractParams);
+        Assertions.assertEquals("John", response.get("first_name").getAsString());
+        Assertions.assertEquals("Doe", response.get("last_name").getAsString());
+    }
+
+    /**
+     * Extracts form data using a PDF file upload.
+     */
+    @Test
+    public void extractPdfFormDataByFile() throws Exception {
+        ExtractPdfFormDataParams extractParams = ExtractPdfFormDataParams.builder()
+                .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
+                .build();
+
+        JsonObject response = client.extractPdfFormData(extractParams);
+
+        Assertions.assertEquals("John", response.get("first_name").getAsString());
+        Assertions.assertEquals("Doe", response.get("last_name").getAsString());
+    }
+
 }

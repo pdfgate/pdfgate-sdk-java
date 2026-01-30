@@ -2,6 +2,7 @@ package com.pdfgate;
 
 import java.io.IOException;
 
+import com.google.gson.JsonObject;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -13,6 +14,16 @@ final class PdfGateResponseParser {
         ResponseBody body = response.body();
         String json = body == null ? "" : body.string();
         return PdfGateJson.gson().fromJson(json, PdfGateDocument.class);
+    }
+
+    /**
+     * Parses a JSON response into a {@link JsonObject}.
+     */
+    static JsonObject parseJsonObject(Response response) throws IOException {
+        ensureSuccess(response);
+        ResponseBody body = response.body();
+        String json = body == null ? "" : body.string();
+        return PdfGateJson.gson().fromJson(json, JsonObject.class);
     }
 
     static byte[] parseBytes(Response response) throws IOException {

@@ -32,6 +32,10 @@ final class UrlBuilder {
         return baseUrl + "/forms/flatten";
     }
 
+    String extractPdfFormData() {
+        return baseUrl + "/forms/extract-data";
+    }
+
     private static String normalizeBase(String domain) {
         String trimmed = domain.trim();
         if (trimmed.endsWith("/")) {

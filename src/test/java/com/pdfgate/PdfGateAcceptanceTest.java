@@ -62,7 +62,7 @@ public class PdfGateAcceptanceTest {
         PdfGateDocument documentWithForm = createDocument(htmlWithForm);
         documentIdWithForm = documentWithForm.getId();
 
-        GeneratePdfBytesParams params = GeneratePdfParams.builder()
+        GeneratePdfFileParams params = GeneratePdfParams.builder()
                 .html(htmlWithForm)
                 .enableFormFields(true)
                 .buildBytes();
@@ -91,7 +91,7 @@ public class PdfGateAcceptanceTest {
 
     @Test
     public void generatePdfWithBytesResponse() throws Exception {
-        GeneratePdfBytesParams params = GeneratePdfParams.builder()
+        GeneratePdfFileParams params = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                 .buildBytes();
 
@@ -101,7 +101,7 @@ public class PdfGateAcceptanceTest {
 
     @Test
     public void flattenPdfByFile() throws Exception {
-        GeneratePdfBytesParams generateParams = GeneratePdfParams.builder()
+        GeneratePdfFileParams generateParams = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                 .buildBytes();
         byte[] pdfBytes = client.generatePdf(generateParams);
@@ -219,7 +219,7 @@ public class PdfGateAcceptanceTest {
 
     @Test
     public void watermarkPdfByDocumentIdWithFileResponse() throws Exception {
-        WatermarkPdfBytesParams params = WatermarkPdfParams.builder()
+        WatermarkPdfFileParams params = WatermarkPdfParams.builder()
                 .documentId(documentId)
                 .type(WatermarkPdfParams.WatermarkType.TEXT)
                 .text("CONFIDENTIAL")
@@ -262,7 +262,7 @@ public class PdfGateAcceptanceTest {
     public void protectPdfByFileWithFileResponse() throws Exception {
         String userPassword = UUID.randomUUID().toString();
         String ownerPassword = UUID.randomUUID().toString();
-        ProtectPdfBytesParams params = ProtectPdfParams.builder()
+        ProtectPdfFileParams params = ProtectPdfParams.builder()
                 .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
                 .userPassword(userPassword)
                 .ownerPassword(ownerPassword)
@@ -295,7 +295,7 @@ public class PdfGateAcceptanceTest {
 
     @Test
     public void compressPdfByDocumentIdWithBytesResponse() throws Exception {
-        CompressPdfBytesParams params = CompressPdfParams.builder()
+        CompressPdfFileParams params = CompressPdfParams.builder()
                 .documentId(documentId)
                 .buildBytes();
 

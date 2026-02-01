@@ -3,8 +3,8 @@ package com.pdfgate;
 /**
  * Parameters for requesting raw bytes from compressPdf.
  */
-public final class CompressPdfBytesParams extends CompressPdfParams {
-    CompressPdfBytesParams(Builder builder) {
+public final class CompressPdfFileParams extends CompressPdfParams {
+    CompressPdfFileParams(Builder builder) {
         super(builder);
     }
 

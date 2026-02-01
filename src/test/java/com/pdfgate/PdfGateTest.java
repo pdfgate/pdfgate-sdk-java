@@ -152,7 +152,7 @@ public class PdfGateTest {
                     .setBody(buffer));
             server.start();
 
-            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+            GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .buildBytes();
 
@@ -227,7 +227,7 @@ public class PdfGateTest {
             String baseUrl = server.url("/").toString();
             server.shutdown();
 
-            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+            GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .buildBytes();
 
@@ -308,7 +308,7 @@ public class PdfGateTest {
                     .setBody(buffer));
             server.start();
 
-            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+            GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .buildBytes();
 
@@ -404,7 +404,7 @@ public class PdfGateTest {
                     .setBody(buffer));
             server.start();
 
-            GeneratePdfBytesParams params = GeneratePdfParams.builder()
+            GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                     .buildBytes();
 

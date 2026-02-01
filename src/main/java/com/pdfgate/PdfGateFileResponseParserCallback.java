@@ -4,9 +4,9 @@ import okhttp3.Response;
 
 import java.io.IOException;
 
-public class PdfGateBytesResponseParserCallback extends PdfGateResponseParserCallback<byte[]> {
+public class PdfGateFileResponseParserCallback extends PdfGateResponseParserCallback<byte[]> {
 
-    public PdfGateBytesResponseParserCallback(PdfGateCallback<byte[]> callback) {
+    public PdfGateFileResponseParserCallback(PdfGateCallback<byte[]> callback) {
         this.callback = callback;
     }
 

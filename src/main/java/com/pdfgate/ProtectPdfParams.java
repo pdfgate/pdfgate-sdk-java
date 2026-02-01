@@ -264,9 +264,9 @@ public abstract class ProtectPdfParams {
         /**
          * Builds protect PDF parameters for bytes responses.
          */
-        public ProtectPdfBytesParams buildBytes() {
+        public ProtectPdfFileParams buildBytes() {
             this.jsonResponse = false;
-            return new ProtectPdfBytesParams(this);
+            return new ProtectPdfFileParams(this);
         }
 
         /**

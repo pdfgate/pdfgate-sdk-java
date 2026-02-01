@@ -3,8 +3,8 @@ package com.pdfgate;
 /**
  * Parameters for requesting raw bytes from generatePdf.
  */
-public final class GeneratePdfBytesParams extends GeneratePdfParams {
-    GeneratePdfBytesParams(Builder builder) {
+public final class GeneratePdfFileParams extends GeneratePdfParams {
+    GeneratePdfFileParams(Builder builder) {
         super(builder);
     }
 

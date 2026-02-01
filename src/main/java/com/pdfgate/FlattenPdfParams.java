@@ -76,9 +76,9 @@ public abstract class FlattenPdfParams {
             return this;
         }
 
-        public FlattenPdfBytesParams buildBytes() {
+        public FlattenPdfFileParams buildBytes() {
             this.jsonResponse = false;
-            return new FlattenPdfBytesParams(this);
+            return new FlattenPdfFileParams(this);
         }
 
         public FlattenPdfJsonParams buildJson() {

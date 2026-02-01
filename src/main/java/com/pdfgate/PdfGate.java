@@ -31,7 +31,7 @@ public final class PdfGate {
     /**
      * Generates a PDF and returns raw bytes.
      */
-    public byte[] generatePdf(GeneratePdfBytesParams params)
+    public byte[] generatePdf(GeneratePdfFileParams params)
             throws IOException {
         try (Response response = generatePdfCall(params).execute()) {
             return PdfGateResponseParser.parseBytes(response);
@@ -59,7 +59,7 @@ public final class PdfGate {
     /**
      * Generates a PDF asynchronously and returns raw bytes.
      */
-    public CompletableFuture<byte[]> generatePdfAsync(GeneratePdfBytesParams params) {
+    public CompletableFuture<byte[]> generatePdfAsync(GeneratePdfFileParams params) {
         return enqueueAsFuture(generatePdfCall(params));
     }
 
@@ -80,14 +80,14 @@ public final class PdfGate {
     /**
      * Builds a call that expects a bytes' response.
      */
-    public CallBytes generatePdfCall(GeneratePdfBytesParams params) {
-        return new PdfGateBytesCall(callBuilder.buildGeneratePdfCall(params));
+    public CallFile generatePdfCall(GeneratePdfFileParams params) {
+        return new PdfGateFileCall(callBuilder.buildGeneratePdfCall(params));
     }
 
     /**
      * Flattens a PDF provided as a file and returns raw bytes.
      */
-    public byte[] flattenPdf(FlattenPdfBytesParams params)
+    public byte[] flattenPdf(FlattenPdfFileParams params)
             throws IOException {
         try (Response response = flattenPdfCall(params).execute()) {
             return PdfGateResponseParser.parseBytes(response);
@@ -115,7 +115,7 @@ public final class PdfGate {
     /**
      * Flattens a PDF asynchronously and returns raw bytes.
      */
-    public CompletableFuture<byte[]> flattenPdfAsync(FlattenPdfBytesParams params) {
+    public CompletableFuture<byte[]> flattenPdfAsync(FlattenPdfFileParams params) {
         return enqueueAsFuture(flattenPdfCall(params));
     }
 
@@ -136,14 +136,14 @@ public final class PdfGate {
     /**
      * Builds a call that expects a bytes' response.
      */
-    public CallBytes flattenPdfCall(FlattenPdfBytesParams params) {
-        return new PdfGateBytesCall(callBuilder.buildFlattenPdfCall(params));
+    public CallFile flattenPdfCall(FlattenPdfFileParams params) {
+        return new PdfGateFileCall(callBuilder.buildFlattenPdfCall(params));
     }
 
     /**
      * Protects a PDF and returns raw bytes.
      */
-    public byte[] protectPdf(ProtectPdfBytesParams params)
+    public byte[] protectPdf(ProtectPdfFileParams params)
             throws IOException {
         try (Response response = protectPdfCall(params).execute()) {
             return PdfGateResponseParser.parseBytes(response);
@@ -171,7 +171,7 @@ public final class PdfGate {
     /**
      * Protects a PDF asynchronously and returns raw bytes.
      */
-    public CompletableFuture<byte[]> protectPdfAsync(ProtectPdfBytesParams params) {
+    public CompletableFuture<byte[]> protectPdfAsync(ProtectPdfFileParams params) {
         return enqueueAsFuture(protectPdfCall(params));
     }
 
@@ -192,14 +192,14 @@ public final class PdfGate {
     /**
      * Builds a call that expects a bytes' response.
      */
-    public CallBytes protectPdfCall(ProtectPdfBytesParams params) {
-        return new PdfGateBytesCall(callBuilder.buildProtectPdfCall(params));
+    public CallFile protectPdfCall(ProtectPdfFileParams params) {
+        return new PdfGateFileCall(callBuilder.buildProtectPdfCall(params));
     }
 
     /**
      * Compresses a PDF and returns raw bytes.
      */
-    public byte[] compressPdf(CompressPdfBytesParams params)
+    public byte[] compressPdf(CompressPdfFileParams params)
             throws IOException {
         try (Response response = compressPdfCall(params).execute()) {
             return PdfGateResponseParser.parseBytes(response);
@@ -227,7 +227,7 @@ public final class PdfGate {
     /**
      * Compresses a PDF asynchronously and returns raw bytes.
      */
-    public CompletableFuture<byte[]> compressPdfAsync(CompressPdfBytesParams params) {
+    public CompletableFuture<byte[]> compressPdfAsync(CompressPdfFileParams params) {
         return enqueueAsFuture(compressPdfCall(params));
     }
 
@@ -248,14 +248,14 @@ public final class PdfGate {
     /**
      * Builds a call that expects a bytes' response.
      */
-    public CallBytes compressPdfCall(CompressPdfBytesParams params) {
-        return new PdfGateBytesCall(callBuilder.buildCompressPdfCall(params));
+    public CallFile compressPdfCall(CompressPdfFileParams params) {
+        return new PdfGateFileCall(callBuilder.buildCompressPdfCall(params));
     }
 
     /**
      * Applies a watermark to a PDF and returns raw bytes.
      */
-    public byte[] watermarkPdf(WatermarkPdfBytesParams params)
+    public byte[] watermarkPdf(WatermarkPdfFileParams params)
             throws IOException {
         try (Response response = watermarkPdfCall(params).execute()) {
             return PdfGateResponseParser.parseBytes(response);
@@ -283,7 +283,7 @@ public final class PdfGate {
     /**
      * Applies a watermark to a PDF asynchronously and returns raw bytes.
      */
-    public CompletableFuture<byte[]> watermarkPdfAsync(WatermarkPdfBytesParams params) {
+    public CompletableFuture<byte[]> watermarkPdfAsync(WatermarkPdfFileParams params) {
         return enqueueAsFuture(watermarkPdfCall(params));
     }
 
@@ -304,8 +304,8 @@ public final class PdfGate {
     /**
      * Builds a call that expects a bytes' response.
      */
-    public CallBytes watermarkPdfCall(WatermarkPdfBytesParams params) {
-        return new PdfGateBytesCall(callBuilder.buildWatermarkPdfCall(params));
+    public CallFile watermarkPdfCall(WatermarkPdfFileParams params) {
+        return new PdfGateFileCall(callBuilder.buildWatermarkPdfCall(params));
     }
 
     /**
@@ -388,8 +388,8 @@ public final class PdfGate {
     /**
      * Builds a call that expects a bytes' response.
      */
-    public CallBytes getFileCall(GetFileParams params) {
-        return new PdfGateBytesCall(callBuilder.buildGetFileCall(params));
+    public CallFile getFileCall(GetFileParams params) {
+        return new PdfGateFileCall(callBuilder.buildGetFileCall(params));
     }
 
     /**
@@ -402,8 +402,8 @@ public final class PdfGate {
     /**
      * Enqueues a bytes response call and returns the raw response bytes.
      */
-    public void enqueue(CallBytes call, PdfGateCallback<byte[]> callback) {
-        call.enqueue(new PdfGateBytesResponseParserCallback(callback));
+    public void enqueue(CallFile call, PdfGateCallback<byte[]> callback) {
+        call.enqueue(new PdfGateFileResponseParserCallback(callback));
     }
 
     /**
@@ -455,7 +455,7 @@ public final class PdfGate {
         return future;
     }
 
-    private CompletableFuture<byte[]> enqueueAsFuture(CallBytes call) {
+    private CompletableFuture<byte[]> enqueueAsFuture(CallFile call) {
         CompletableFuture<byte[]> future = new CompletableFuture<>();
         enqueue(call, new PdfGateCallback<byte[]>() {
             @Override

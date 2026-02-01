@@ -3,6 +3,7 @@ package com.pdfgate;
 import okhttp3.Call;
 
 public interface PdfGateCallback<T> {
-    void onSuccess(Call call, T value);
-    void onFailure(Call call, Throwable t);
+  void onSuccess(Call call, T value);
+
+  void onFailure(Call call, Throwable t);
 }

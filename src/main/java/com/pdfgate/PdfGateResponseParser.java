@@ -1,40 +1,40 @@
 package com.pdfgate;
 
-import java.io.IOException;
-
 import com.google.gson.JsonObject;
+import java.io.IOException;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 final class PdfGateResponseParser {
-    private PdfGateResponseParser() {}
+  private PdfGateResponseParser() {
+  }
 
-    static PdfGateDocument parseJson(Response response) throws IOException {
-        ensureSuccess(response);
-        ResponseBody body = response.body();
-        String json = body == null ? "" : body.string();
-        return PdfGateJson.gson().fromJson(json, PdfGateDocument.class);
-    }
+  static PdfGateDocument parseJson(Response response) throws IOException {
+    ensureSuccess(response);
+    ResponseBody body = response.body();
+    String json = body == null ? "" : body.string();
+    return PdfGateJson.gson().fromJson(json, PdfGateDocument.class);
+  }
 
-    /**
-     * Parses a JSON response into a {@link JsonObject}.
-     */
-    static JsonObject parseJsonObject(Response response) throws IOException {
-        ensureSuccess(response);
-        ResponseBody body = response.body();
-        String json = body == null ? "" : body.string();
-        return PdfGateJson.gson().fromJson(json, JsonObject.class);
-    }
+  /**
+   * Parses a JSON response into a {@link JsonObject}.
+   */
+  static JsonObject parseJsonObject(Response response) throws IOException {
+    ensureSuccess(response);
+    ResponseBody body = response.body();
+    String json = body == null ? "" : body.string();
+    return PdfGateJson.gson().fromJson(json, JsonObject.class);
+  }
 
-    static byte[] parseBytes(Response response) throws IOException {
-        ensureSuccess(response);
-        ResponseBody body = response.body();
-        return body == null ? new byte[0] : body.bytes();
-    }
+  static byte[] parseBytes(Response response) throws IOException {
+    ensureSuccess(response);
+    ResponseBody body = response.body();
+    return body == null ? new byte[0] : body.bytes();
+  }
 
-    static void ensureSuccess(Response response) throws IOException {
-        if (!response.isSuccessful()) {
-            throw PdfGateException.fromResponse(response);
-        }
+  static void ensureSuccess(Response response) throws IOException {
+    if (!response.isSuccessful()) {
+      throw PdfGateException.fromResponse(response);
     }
+  }
 }

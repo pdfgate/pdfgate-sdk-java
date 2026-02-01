@@ -90,7 +90,7 @@ public class PdfGateAcceptanceTest {
     }
 
     @Test
-    public void generatePdfWithBytesResponse() throws Exception {
+    public void generatePdfWithFileResponse() throws Exception {
         GeneratePdfFileParams params = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
                 .buildWithFileResponse();
@@ -294,7 +294,7 @@ public class PdfGateAcceptanceTest {
     }
 
     @Test
-    public void compressPdfByDocumentIdWithBytesResponse() throws Exception {
+    public void compressPdfByDocumentIdWithFileResponse() throws Exception {
         CompressPdfFileParams params = CompressPdfParams.builder()
                 .documentId(documentId)
                 .buildWithFileResponse();

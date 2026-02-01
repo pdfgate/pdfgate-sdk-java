@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -411,6 +412,33 @@ public class PdfGateTest {
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             byte[] result = pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS);
             Assertions.assertArrayEquals(pdfBytes, result, "bytes should match response");
+        }
+    }
+
+    @Test
+    public void generatePdfAsyncWithFileIoFailureWrapsException() throws Exception {
+        byte[] pdfBytes = "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(StandardCharsets.UTF_8);
+        Buffer buffer = new Buffer().write(pdfBytes);
+        try (MockWebServer server = new MockWebServer()) {
+            server.start();
+            String baseUrl = server.url("/").toString();
+            server.shutdown();
+
+            GeneratePdfFileParams params = GeneratePdfParams.builder()
+                    .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+                    .buildWithFileResponse();
+
+            PdfGate pdfGateClient = buildClient(baseUrl);
+            ExecutionException exception = Assertions.assertThrows(
+                    ExecutionException.class,
+                    () -> pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS),
+                    "future should complete exceptionally"
+            );
+            Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(), "failure should be PdfGateException");
+            Assertions.assertTrue(
+                    exception.getCause().getMessage().startsWith("PdfGate API request failed: Failed to connect"),
+                    "error message should include JSON message"
+            );
         }
     }
 }

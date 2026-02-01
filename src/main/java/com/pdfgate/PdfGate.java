@@ -1,10 +1,10 @@
 package com.pdfgate;
 
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-
-import com.google.gson.JsonObject;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
 
 public final class PdfGate {
     /** Builds OkHttp calls for PdfGate API requests. */
@@ -33,13 +33,7 @@ public final class PdfGate {
      */
     public byte[] generatePdf(GeneratePdfFileParams params)
             throws IOException {
-        try (Response response = generatePdfCall(params).execute()) {
-            return PdfGateResponseParser.parseBytes(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(generatePdfCall(params));
     }
 
     /**
@@ -47,13 +41,7 @@ public final class PdfGate {
      */
     public PdfGateDocument generatePdf(GeneratePdfJsonParams params)
             throws IOException {
-        try (Response response = generatePdfCall(params).execute()) {
-            return PdfGateResponseParser.parseJson(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(generatePdfCall(params));
     }
 
     /**
@@ -89,13 +77,7 @@ public final class PdfGate {
      */
     public byte[] flattenPdf(FlattenPdfFileParams params)
             throws IOException {
-        try (Response response = flattenPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseBytes(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(flattenPdfCall(params));
     }
 
     /**
@@ -103,13 +85,7 @@ public final class PdfGate {
      */
     public PdfGateDocument flattenPdf(FlattenPdfJsonParams params)
             throws IOException {
-        try (Response response = flattenPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseJson(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(flattenPdfCall(params));
     }
 
     /**
@@ -145,13 +121,7 @@ public final class PdfGate {
      */
     public byte[] protectPdf(ProtectPdfFileParams params)
             throws IOException {
-        try (Response response = protectPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseBytes(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(protectPdfCall(params));
     }
 
     /**
@@ -159,13 +129,7 @@ public final class PdfGate {
      */
     public PdfGateDocument protectPdf(ProtectPdfJsonParams params)
             throws IOException {
-        try (Response response = protectPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseJson(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(protectPdfCall(params));
     }
 
     /**
@@ -201,13 +165,7 @@ public final class PdfGate {
      */
     public byte[] compressPdf(CompressPdfFileParams params)
             throws IOException {
-        try (Response response = compressPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseBytes(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(compressPdfCall(params));
     }
 
     /**
@@ -215,13 +173,7 @@ public final class PdfGate {
      */
     public PdfGateDocument compressPdf(CompressPdfJsonParams params)
             throws IOException {
-        try (Response response = compressPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseJson(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(compressPdfCall(params));
     }
 
     /**
@@ -257,13 +209,7 @@ public final class PdfGate {
      */
     public byte[] watermarkPdf(WatermarkPdfFileParams params)
             throws IOException {
-        try (Response response = watermarkPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseBytes(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(watermarkPdfCall(params));
     }
 
     /**
@@ -271,13 +217,7 @@ public final class PdfGate {
      */
     public PdfGateDocument watermarkPdf(WatermarkPdfJsonParams params)
             throws IOException {
-        try (Response response = watermarkPdfCall(params).execute()) {
-            return PdfGateResponseParser.parseJson(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(watermarkPdfCall(params));
     }
 
     /**
@@ -313,13 +253,7 @@ public final class PdfGate {
      */
     public JsonObject extractPdfFormData(ExtractPdfFormDataParams params)
             throws IOException {
-        try (Response response = extractPdfFormDataCall(params).execute()) {
-            return PdfGateResponseParser.parseJsonObject(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(extractPdfFormDataCall(params));
     }
 
     /**
@@ -341,13 +275,7 @@ public final class PdfGate {
      */
     public PdfGateDocument getDocument(GetDocumentParams params)
             throws IOException {
-        try (Response response = getDocumentCall(params).execute()) {
-            return PdfGateResponseParser.parseJson(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(getDocumentCall(params));
     }
 
     /**
@@ -369,13 +297,7 @@ public final class PdfGate {
      */
     public byte[] getFile(GetFileParams params)
             throws IOException {
-        try (Response response = getFileCall(params).execute()) {
-            return PdfGateResponseParser.parseBytes(response);
-        } catch (PdfGateException e) {
-            throw e;
-        } catch (IOException e) {
-            throw PdfGateException.fromException(e);
-        }
+        return PdfGateCallExecutor.execute(getFileCall(params));
     }
 
     /**

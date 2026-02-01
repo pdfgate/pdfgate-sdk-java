@@ -141,7 +141,7 @@ public class PdfGateTest {
     }
 
     @Test
-    public void generatePdfCallWithBytesResponse() throws Exception {
+    public void generatePdfCallWithFileResponse() throws Exception {
         byte[] pdfBytes = "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(StandardCharsets.UTF_8);
         Buffer buffer = new Buffer().write(pdfBytes);
 
@@ -221,7 +221,7 @@ public class PdfGateTest {
     }
 
     @Test
-    public void generatePdfCallWithBytesIoFailureWrapsException() throws Exception {
+    public void generatePdfCallWithFileIoFailureWrapsException() throws Exception {
         try (MockWebServer server = new MockWebServer()) {
             server.start();
             String baseUrl = server.url("/").toString();
@@ -297,7 +297,7 @@ public class PdfGateTest {
     }
 
     @Test
-    public void generatePdfWithBytesResponse() throws Exception {
+    public void generatePdfWithFileResponse() throws Exception {
         byte[] pdfBytes = "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(StandardCharsets.UTF_8);
         Buffer buffer = new Buffer().write(pdfBytes);
 
@@ -393,7 +393,7 @@ public class PdfGateTest {
     }
 
     @Test
-    public void generatePdfAsyncWithBytesResponse() throws Exception {
+    public void generatePdfAsyncWithFileResponse() throws Exception {
         byte[] pdfBytes = "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(StandardCharsets.UTF_8);
         Buffer buffer = new Buffer().write(pdfBytes);
 

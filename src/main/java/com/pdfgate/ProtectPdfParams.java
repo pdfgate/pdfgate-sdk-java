@@ -272,7 +272,7 @@ public abstract class ProtectPdfParams {
         /**
          * Builds protect PDF parameters for JSON responses.
          */
-        public ProtectPdfJsonParams buildJson() {
+        public ProtectPdfJsonParams buildWithJsonResponse() {
             this.jsonResponse = true;
             return new ProtectPdfJsonParams(this);
         }

@@ -517,7 +517,7 @@ public abstract class GeneratePdfParams {
             return new GeneratePdfFileParams(this);
         }
 
-        public GeneratePdfJsonParams buildJson() {
+        public GeneratePdfJsonParams buildWithJsonResponse() {
             this.jsonResponse = true;
             return new GeneratePdfJsonParams(this);
         }

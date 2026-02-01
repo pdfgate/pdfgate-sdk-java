@@ -362,7 +362,7 @@ public abstract class WatermarkPdfParams {
         /**
          * Builds watermark PDF parameters for JSON responses.
          */
-        public WatermarkPdfJsonParams buildJson() {
+        public WatermarkPdfJsonParams buildWithJsonResponse() {
             this.jsonResponse = true;
             return new WatermarkPdfJsonParams(this);
         }

@@ -49,7 +49,7 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildJson();
+                    .buildWithJsonResponse();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -105,7 +105,7 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildJson();
+                    .buildWithJsonResponse();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -190,7 +190,7 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildJson();
+                    .buildWithJsonResponse();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -282,7 +282,7 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildJson();
+                    .buildWithJsonResponse();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             PdfGateDocument result = pdfGateClient.generatePdf(params);
@@ -337,7 +337,7 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildJson();
+                    .buildWithJsonResponse();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             ExecutionException exception = Assertions.assertThrows(
@@ -377,7 +377,7 @@ public class PdfGateTest {
 
             GeneratePdfJsonParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildJson();
+                    .buildWithJsonResponse();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             PdfGateDocument result = pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS);

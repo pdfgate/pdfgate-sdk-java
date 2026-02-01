@@ -41,7 +41,7 @@ public class PdfGateAcceptanceTest {
         GeneratePdfJsonParams params = GeneratePdfParams.builder()
                 .html(html)
                 .enableFormFields(true)
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument document = client.generatePdf(params);
 
@@ -81,7 +81,7 @@ public class PdfGateAcceptanceTest {
     public void generatePdfWithJsonResponse() throws Exception {
         GeneratePdfJsonParams params = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument document = client.generatePdf(params);
         Assertions.assertNotNull(document.getId(), "document id should be present");
@@ -109,7 +109,7 @@ public class PdfGateAcceptanceTest {
         FileParam fileParam = new FileParam("input.pdf", pdfBytes, "application/pdf");
         FlattenPdfJsonParams flattenParams = FlattenPdfJsonParams.builder()
                 .file(fileParam)
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument flattenedDocument = client.flattenPdf(flattenParams);
         Assertions.assertNotNull(flattenedDocument.getId(), "document id should be present");
@@ -121,7 +121,7 @@ public class PdfGateAcceptanceTest {
     public void flattenPdfByDocumentId() throws Exception {
         FlattenPdfJsonParams flattenParams = FlattenPdfJsonParams.builder()
                 .documentId(documentId)
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument flattenedDocument = client.flattenPdf(flattenParams);
         Assertions.assertNotNull(flattenedDocument.getId(), "document id should be present");
@@ -209,7 +209,7 @@ public class PdfGateAcceptanceTest {
                 .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
                 .type(WatermarkPdfParams.WatermarkType.TEXT)
                 .text("CONFIDENTIAL")
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument document = client.watermarkPdf(params);
         Assertions.assertNotNull(document.getId(), "document id should be present");
@@ -235,7 +235,7 @@ public class PdfGateAcceptanceTest {
                 .documentId(documentId)
                 .type(WatermarkPdfParams.WatermarkType.IMAGE)
                 .watermark(new FileParam("watermark.png", WATERMARK_IMAGE, "image/png"))
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument document = client.watermarkPdf(params);
         Assertions.assertNotNull(document.getId(), "document id should be present");
@@ -250,7 +250,7 @@ public class PdfGateAcceptanceTest {
                 .documentId(documentId)
                 .userPassword(UUID.randomUUID().toString())
                 .ownerPassword(UUID.randomUUID().toString())
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument document = client.protectPdf(params);
         Assertions.assertNotNull(document.getId(), "document id should be present");
@@ -284,7 +284,7 @@ public class PdfGateAcceptanceTest {
     public void compressPdfByFileWithJsonResponse() throws Exception {
         CompressPdfJsonParams params = CompressPdfParams.builder()
                 .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
-                .buildJson();
+                .buildWithJsonResponse();
 
         PdfGateDocument document = client.compressPdf(params);
         Assertions.assertNotNull(document.getId(), "document id should be present");

@@ -81,7 +81,7 @@ public abstract class FlattenPdfParams {
             return new FlattenPdfFileParams(this);
         }
 
-        public FlattenPdfJsonParams buildJson() {
+        public FlattenPdfJsonParams buildWithJsonResponse() {
             this.jsonResponse = true;
             return new FlattenPdfJsonParams(this);
         }

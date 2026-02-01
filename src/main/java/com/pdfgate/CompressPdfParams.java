@@ -141,7 +141,7 @@ public abstract class CompressPdfParams {
         /**
          * Builds compress PDF parameters for JSON responses.
          */
-        public CompressPdfJsonParams buildJson() {
+        public CompressPdfJsonParams buildWithJsonResponse() {
             this.jsonResponse = true;
             return new CompressPdfJsonParams(this);
         }

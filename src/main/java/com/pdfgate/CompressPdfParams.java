@@ -133,7 +133,7 @@ public abstract class CompressPdfParams {
         /**
          * Builds compress PDF parameters for bytes responses.
          */
-        public CompressPdfFileParams buildBytes() {
+        public CompressPdfFileParams buildWithFileResponse() {
             this.jsonResponse = false;
             return new CompressPdfFileParams(this);
         }

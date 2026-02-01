@@ -65,7 +65,7 @@ public class PdfGateAcceptanceTest {
         GeneratePdfFileParams params = GeneratePdfParams.builder()
                 .html(htmlWithForm)
                 .enableFormFields(true)
-                .buildBytes();
+                .buildWithFileResponse();
 
         fileWithForm = client.generatePdf(params);
     }
@@ -93,7 +93,7 @@ public class PdfGateAcceptanceTest {
     public void generatePdfWithBytesResponse() throws Exception {
         GeneratePdfFileParams params = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                .buildBytes();
+                .buildWithFileResponse();
 
         byte[] result = client.generatePdf(params);
         assertIsValidPdf(result);
@@ -103,7 +103,7 @@ public class PdfGateAcceptanceTest {
     public void flattenPdfByFile() throws Exception {
         GeneratePdfFileParams generateParams = GeneratePdfParams.builder()
                 .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                .buildBytes();
+                .buildWithFileResponse();
         byte[] pdfBytes = client.generatePdf(generateParams);
 
         FileParam fileParam = new FileParam("input.pdf", pdfBytes, "application/pdf");
@@ -223,7 +223,7 @@ public class PdfGateAcceptanceTest {
                 .documentId(documentId)
                 .type(WatermarkPdfParams.WatermarkType.TEXT)
                 .text("CONFIDENTIAL")
-                .buildBytes();
+                .buildWithFileResponse();
 
         byte[] watermarkedFile = client.watermarkPdf(params);
         assertIsValidPdf(watermarkedFile);
@@ -266,7 +266,7 @@ public class PdfGateAcceptanceTest {
                 .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
                 .userPassword(userPassword)
                 .ownerPassword(ownerPassword)
-                .buildBytes();
+                .buildWithFileResponse();
 
         byte[] protectedFile = client.protectPdf(params);
         assertIsValidPdf(protectedFile);
@@ -297,7 +297,7 @@ public class PdfGateAcceptanceTest {
     public void compressPdfByDocumentIdWithBytesResponse() throws Exception {
         CompressPdfFileParams params = CompressPdfParams.builder()
                 .documentId(documentId)
-                .buildBytes();
+                .buildWithFileResponse();
 
         byte[] compressedFile = client.compressPdf(params);
         assertIsValidPdf(compressedFile);

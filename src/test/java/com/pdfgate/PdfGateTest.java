@@ -154,7 +154,7 @@ public class PdfGateTest {
 
             GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildBytes();
+                    .buildWithFileResponse();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<byte[]> success = new AtomicReference<>();
@@ -229,7 +229,7 @@ public class PdfGateTest {
 
             GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildBytes();
+                    .buildWithFileResponse();
 
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<byte[]> success = new AtomicReference<>();
@@ -310,7 +310,7 @@ public class PdfGateTest {
 
             GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildBytes();
+                    .buildWithFileResponse();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             byte[] result = pdfGateClient.generatePdf(params);
@@ -406,7 +406,7 @@ public class PdfGateTest {
 
             GeneratePdfFileParams params = GeneratePdfParams.builder()
                     .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-                    .buildBytes();
+                    .buildWithFileResponse();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
             byte[] result = pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS);

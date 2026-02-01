@@ -512,7 +512,7 @@ public abstract class GeneratePdfParams {
             return this;
         }
 
-        public GeneratePdfFileParams buildBytes() {
+        public GeneratePdfFileParams buildWithFileResponse() {
             this.jsonResponse = false;
             return new GeneratePdfFileParams(this);
         }

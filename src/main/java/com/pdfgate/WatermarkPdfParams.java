@@ -354,7 +354,7 @@ public abstract class WatermarkPdfParams {
         /**
          * Builds watermark PDF parameters for bytes responses.
          */
-        public WatermarkPdfFileParams buildBytes() {
+        public WatermarkPdfFileParams buildWithFileResponse() {
             this.jsonResponse = false;
             return new WatermarkPdfFileParams(this);
         }

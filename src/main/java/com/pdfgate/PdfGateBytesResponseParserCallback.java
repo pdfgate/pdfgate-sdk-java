@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class PdfGateBytesResponseParserCallback extends PdfGateResponseParserCallback<byte[]> {
 
-    public PdfGateBytesResponseParserCallback(PDFGateCallback<byte[]> callback) {
+    public PdfGateBytesResponseParserCallback(PdfGateCallback<byte[]> callback) {
         this.callback = callback;
     }
 

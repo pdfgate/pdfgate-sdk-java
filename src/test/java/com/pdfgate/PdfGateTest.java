@@ -56,7 +56,7 @@ public class PdfGateTest {
             AtomicReference<Throwable> failure = new AtomicReference<>();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
-            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
                 @Override
                 public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
                     success.set(value);
@@ -112,7 +112,7 @@ public class PdfGateTest {
             AtomicReference<Throwable> failure = new AtomicReference<>();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
-            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
                 @Override
                 public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
                     success.set(value);
@@ -161,7 +161,7 @@ public class PdfGateTest {
             AtomicReference<Throwable> failure = new AtomicReference<>();
 
             PdfGate pdfGateClient = buildClient(server.url("/").toString());
-            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
                 @Override
                 public void onSuccess(okhttp3.Call call, byte[] value) {
                     success.set(value);
@@ -197,7 +197,7 @@ public class PdfGateTest {
             AtomicReference<Throwable> failure = new AtomicReference<>();
 
             PdfGate pdfGateClient = buildClient(baseUrl);
-            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
                 @Override
                 public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
                     success.set(value);
@@ -236,7 +236,7 @@ public class PdfGateTest {
             AtomicReference<Throwable> failure = new AtomicReference<>();
 
             PdfGate pdfGateClient = buildClient(baseUrl);
-            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PDFGateCallback<>() {
+            pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
                 @Override
                 public void onSuccess(okhttp3.Call call, byte[] value) {
                     success.set(value);

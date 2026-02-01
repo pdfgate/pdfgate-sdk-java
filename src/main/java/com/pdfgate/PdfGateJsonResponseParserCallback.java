@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class PdfGateJsonResponseParserCallback extends PdfGateResponseParserCallback<PdfGateDocument> {
 
-    public PdfGateJsonResponseParserCallback(PDFGateCallback<PdfGateDocument> callback) {
+    public PdfGateJsonResponseParserCallback(PdfGateCallback<PdfGateDocument> callback) {
         this.callback = callback;
     }
 

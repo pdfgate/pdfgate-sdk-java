@@ -13,7 +13,7 @@ public class PdfGateJsonObjectResponseParserCallback extends PdfGateResponsePars
     /**
      * Creates a response parser callback for JSON object payloads.
      */
-    public PdfGateJsonObjectResponseParserCallback(PDFGateCallback<JsonObject> callback) {
+    public PdfGateJsonObjectResponseParserCallback(PdfGateCallback<JsonObject> callback) {
         this.callback = callback;
     }
 

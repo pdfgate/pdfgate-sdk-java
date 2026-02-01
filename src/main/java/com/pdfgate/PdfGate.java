@@ -395,27 +395,27 @@ public final class PdfGate {
     /**
      * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
      */
-    public void enqueue(CallJson call, PDFGateCallback<PdfGateDocument> callback) {
+    public void enqueue(CallJson call, PdfGateCallback<PdfGateDocument> callback) {
         call.enqueue(new PdfGateJsonResponseParserCallback(callback));
     }
 
     /**
      * Enqueues a bytes response call and returns the raw response bytes.
      */
-    public void enqueue(CallBytes call, PDFGateCallback<byte[]> callback) {
+    public void enqueue(CallBytes call, PdfGateCallback<byte[]> callback) {
         call.enqueue(new PdfGateBytesResponseParserCallback(callback));
     }
 
     /**
      * Enqueues a JSON response call and maps the response to {@link JsonObject}.
      */
-    public void enqueue(CallJsonObject call, PDFGateCallback<JsonObject> callback) {
+    public void enqueue(CallJsonObject call, PdfGateCallback<JsonObject> callback) {
         call.enqueue(new PdfGateJsonObjectResponseParserCallback(callback));
     }
 
     private CompletableFuture<PdfGateDocument> enqueueAsFuture(CallJson call) {
         CompletableFuture<PdfGateDocument> future = new CompletableFuture<>();
-        enqueue(call, new PDFGateCallback<PdfGateDocument>() {
+        enqueue(call, new PdfGateCallback<PdfGateDocument>() {
             @Override
             public void onSuccess(Call call, PdfGateDocument value) {
                 future.complete(value);
@@ -436,7 +436,7 @@ public final class PdfGate {
 
     private CompletableFuture<JsonObject> enqueueAsFuture(CallJsonObject call) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
-        enqueue(call, new PDFGateCallback<JsonObject>() {
+        enqueue(call, new PdfGateCallback<JsonObject>() {
             @Override
             public void onSuccess(Call call, JsonObject value) {
                 future.complete(value);
@@ -457,7 +457,7 @@ public final class PdfGate {
 
     private CompletableFuture<byte[]> enqueueAsFuture(CallBytes call) {
         CompletableFuture<byte[]> future = new CompletableFuture<>();
-        enqueue(call, new PDFGateCallback<byte[]>() {
+        enqueue(call, new PdfGateCallback<byte[]>() {
             @Override
             public void onSuccess(Call call, byte[] value) {
                 future.complete(value);

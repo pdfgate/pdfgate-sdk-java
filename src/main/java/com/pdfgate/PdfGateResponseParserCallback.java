@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public abstract class PdfGateResponseParserCallback<T> implements Callback {
 
-    protected PDFGateCallback<T> callback;
+    protected PdfGateCallback<T> callback;
 
     @Override public void onFailure(@NotNull Call call, @NotNull IOException e) {
         callback.onFailure(call, PdfGateException.fromException(e));

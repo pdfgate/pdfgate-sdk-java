@@ -2,6 +2,9 @@ package com.pdfgate;
 
 /**
  * Parameters for retrieving a document file.
+ *
+ * <p>Accessing stored generated files requires enabling "Save files" in the
+ * PDFGate Dashboard settings.
  */
 public final class GetFileParams {
   /**

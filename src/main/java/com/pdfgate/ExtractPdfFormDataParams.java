@@ -1,7 +1,9 @@
 package com.pdfgate;
 
 /**
- * Parameters for extracting PDF form data from a file or document id.
+ * Parameters for extracting PDF form data from a file or an already uploaded document by ID.
+ *
+ * <p>Provide either {@link FileParam} or {@code documentId}. The response is always JSON.
  */
 public final class ExtractPdfFormDataParams {
   /**
@@ -33,7 +35,7 @@ public final class ExtractPdfFormDataParams {
   }
 
   /**
-   * Returns the document id if extracting by document id.
+   * Returns the document ID if extracting by document ID.
    */
   public String getDocumentId() {
     return documentId;
@@ -61,7 +63,7 @@ public final class ExtractPdfFormDataParams {
     }
 
     /**
-     * Sets the document id for extraction.
+     * Sets the document ID for extraction.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;

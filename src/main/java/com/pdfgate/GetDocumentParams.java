@@ -2,6 +2,8 @@ package com.pdfgate;
 
 /**
  * Parameters for retrieving a document's metadata.
+ *
+ * <p>Use {@code preSignedUrlExpiresIn} to request a fresh temporary download URL.
  */
 public final class GetDocumentParams {
   /**

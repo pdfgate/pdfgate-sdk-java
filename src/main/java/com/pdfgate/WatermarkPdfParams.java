@@ -3,7 +3,11 @@ package com.pdfgate;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Parameters for watermarking a PDF by file or document id.
+ * Parameters for watermarking a PDF by file or document ID.
+ *
+ * <p>{@code type} is required. For text watermarks, set {@code text}. For image
+ * watermarks, provide a {@code watermark} image file. Optional settings include
+ * font, size, color, opacity, position, and rotation.
  */
 public abstract class WatermarkPdfParams {
   private final FileParam file;

@@ -2,6 +2,10 @@ package com.pdfgate;
 
 /**
  * Parameters for compressing a PDF by file or document ID.
+ *
+ * <p>Set {@code linearize} to enable Fast Web View output. Use
+ * {@link Builder#buildWithFileResponse()} for raw bytes or
+ * {@link Builder#buildWithJsonResponse()} for {@link PdfGateDocument} metadata.
  */
 public abstract class CompressPdfParams {
   private final FileParam file;

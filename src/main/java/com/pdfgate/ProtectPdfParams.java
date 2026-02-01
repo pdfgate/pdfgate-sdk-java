@@ -3,7 +3,11 @@ package com.pdfgate;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Parameters for protecting a PDF by file or document id.
+ * Parameters for protecting a PDF by file or document ID.
+ *
+ * <p>Use {@link EncryptionAlgorithm} to select AES256 (default) or AES128. Set
+ * {@code userPassword} and {@code ownerPassword} to control access and permissions,
+ * and use the disable flags to restrict printing, copying, or editing.
  */
 public abstract class ProtectPdfParams {
   private final FileParam file;

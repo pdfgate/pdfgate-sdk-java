@@ -1,5 +1,6 @@
 package com.pdfgate;
 
+import com.google.gson.JsonObject;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okio.Buffer;
@@ -13,7 +14,6 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -432,6 +432,236 @@ public class PdfGateTest {
             ExecutionException exception = Assertions.assertThrows(
                     ExecutionException.class,
                     () -> pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS),
+                    "future should complete exceptionally"
+            );
+            Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(), "failure should be PdfGateException");
+            Assertions.assertTrue(
+                    exception.getCause().getMessage().startsWith("PdfGate API request failed: Failed to connect"),
+                    "error message should include JSON message"
+            );
+        }
+    }
+
+    @Test
+    public void extractPdfFormDataCallWithFileResponseWithError() throws Exception {
+        String body = "PDFGATE_BINARY_ERROR";
+        Buffer buffer = new Buffer().write(body.getBytes(StandardCharsets.UTF_8));
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(500)
+                    .setHeader("Content-Type", "application/octet-stream")
+                    .setBody(buffer));
+            server.start();
+
+            ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
+                    .documentId("doc_123")
+                    .build();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<JsonObject> success = new AtomicReference<>();
+            AtomicReference<Throwable> failure = new AtomicReference<>();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params), new PdfGateCallback<>() {
+                @Override
+                public void onSuccess(okhttp3.Call call, JsonObject value) {
+                    success.set(value);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onFailure(okhttp3.Call call, Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            });
+
+            Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
+            Assertions.assertNull(success.get(), "success callback should not be invoked");
+            Assertions.assertNotNull(failure.get(), "failure callback should be invoked");
+            Assertions.assertInstanceOf(PdfGateException.class, failure.get(), "failure should be PdfGateException");
+            Assertions.assertEquals(
+                    "PdfGate API request failed with status 500: " + body,
+                    failure.get().getMessage(),
+                    "error message should include raw response body"
+            );
+        }
+    }
+
+    @Test
+    public void extractPdfFormDataCallWithJsonResponseWithError() throws Exception {
+        String errorMessage = "Invalid document id";
+        Map<String, Object> payload = Map.of(
+                "statusCode", 404,
+                "error", "Not Found",
+                "message", errorMessage
+        );
+        String body = PdfGateJson.gson().toJson(payload);
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(404)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody(body));
+            server.start();
+
+            ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
+                    .documentId("doc_123")
+                    .build();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<JsonObject> success = new AtomicReference<>();
+            AtomicReference<Throwable> failure = new AtomicReference<>();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params), new PdfGateCallback<>() {
+                @Override
+                public void onSuccess(okhttp3.Call call, JsonObject value) {
+                    success.set(value);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onFailure(okhttp3.Call call, Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            });
+
+            Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
+            Assertions.assertNull(success.get(), "success callback should not be invoked");
+            Assertions.assertNotNull(failure.get(), "failure callback should be invoked");
+            Assertions.assertInstanceOf(PdfGateException.class, failure.get(), "failure should be PdfGateException");
+            Assertions.assertEquals(
+                    String.format("PdfGate API request failed with status 404: %s", errorMessage),
+                    failure.get().getMessage(),
+                    "error message should include JSON message"
+            );
+        }
+    }
+
+    @Test
+    public void extractPdfFormDataCallWithIoFailureWrapsException() throws Exception {
+        try (MockWebServer server = new MockWebServer()) {
+            server.start();
+            String baseUrl = server.url("/").toString();
+            server.shutdown();
+
+            ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
+                    .documentId("doc_123")
+                    .build();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<JsonObject> success = new AtomicReference<>();
+            AtomicReference<Throwable> failure = new AtomicReference<>();
+
+            PdfGate pdfGateClient = buildClient(baseUrl);
+            pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params), new PdfGateCallback<>() {
+                @Override
+                public void onSuccess(okhttp3.Call call, JsonObject value) {
+                    success.set(value);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onFailure(okhttp3.Call call, Throwable t) {
+                    failure.set(t);
+                    latch.countDown();
+                }
+            });
+
+            Assertions.assertTrue(latch.await(3, TimeUnit.SECONDS), "callback should be invoked");
+            Assertions.assertNull(success.get(), "success callback should not be invoked");
+            Assertions.assertNotNull(failure.get(), "failure callback should be invoked");
+            Assertions.assertInstanceOf(PdfGateException.class, failure.get(), "failure should be PdfGateException");
+            Assertions.assertNotNull(failure.get().getCause(), "failure should preserve the original cause");
+            Assertions.assertInstanceOf(IOException.class, failure.get().getCause(), "failure cause should be IOException");
+        }
+    }
+
+    @Test
+    public void extractPdfFormDataAsyncWithFileResponseWithError() throws Exception {
+        String body = "PDFGATE_BINARY_ERROR";
+        Buffer buffer = new Buffer().write(body.getBytes(StandardCharsets.UTF_8));
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(500)
+                    .setHeader("Content-Type", "application/octet-stream")
+                    .setBody(buffer));
+            server.start();
+
+            ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
+                    .documentId("doc_123")
+                    .build();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            ExecutionException exception = Assertions.assertThrows(
+                    ExecutionException.class,
+                    () -> pdfGateClient.extractPdfFormDataAsync(params).get(2, TimeUnit.SECONDS),
+                    "future should complete exceptionally"
+            );
+            Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(), "failure should be PdfGateException");
+            Assertions.assertEquals(
+                    "PdfGate API request failed with status 500: " + body,
+                    exception.getCause().getMessage(),
+                    "error message should include raw response body"
+            );
+        }
+    }
+
+    @Test
+    public void extractPdfFormDataAsyncWithJsonResponseWithError() throws Exception {
+        String errorMessage = "Invalid document id";
+        Map<String, Object> payload = Map.of(
+                "statusCode", 404,
+                "error", "Not Found",
+                "message", errorMessage
+        );
+        String body = PdfGateJson.gson().toJson(payload);
+
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setResponseCode(404)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody(body));
+            server.start();
+
+            ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
+                    .documentId("doc_123")
+                    .build();
+
+            PdfGate pdfGateClient = buildClient(server.url("/").toString());
+            ExecutionException exception = Assertions.assertThrows(
+                    ExecutionException.class,
+                    () -> pdfGateClient.extractPdfFormDataAsync(params).get(2, TimeUnit.SECONDS),
+                    "future should complete exceptionally"
+            );
+            Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(), "failure should be PdfGateException");
+            Assertions.assertEquals(
+                    String.format("PdfGate API request failed with status 404: %s", errorMessage),
+                    exception.getCause().getMessage(),
+                    "error message should include JSON message"
+            );
+        }
+    }
+
+    @Test
+    public void extractPdfFormDataAsyncWithIoFailureWrapsException() throws Exception {
+        try (MockWebServer server = new MockWebServer()) {
+            server.start();
+            String baseUrl = server.url("/").toString();
+            server.shutdown();
+
+            ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
+                    .documentId("doc_123")
+                    .build();
+
+            PdfGate pdfGateClient = buildClient(baseUrl);
+            ExecutionException exception = Assertions.assertThrows(
+                    ExecutionException.class,
+                    () -> pdfGateClient.extractPdfFormDataAsync(params).get(2, TimeUnit.SECONDS),
                     "future should complete exceptionally"
             );
             Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(), "failure should be PdfGateException");

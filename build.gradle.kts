@@ -21,6 +21,7 @@ java {
     }
 
     withJavadocJar()
+    withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {

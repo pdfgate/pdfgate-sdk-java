@@ -23,6 +23,11 @@ public abstract class ProtectPdfParams {
   private final Long preSignedUrlExpiresIn;
   private final Object metadata;
 
+  /**
+   * Initializes protect PDF parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   protected ProtectPdfParams(Builder builder) {
     this.file = builder.file;
     this.documentId = builder.documentId;
@@ -40,6 +45,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Creates a new builder for protect PDF parameters.
+   *
+   * @return the builder for protect PDF parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -47,6 +54,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns the PDF file payload when protecting by file.
+   *
+   * @return the PDF file payload when protecting by file.
    */
   public FileParam getFile() {
     return file;
@@ -54,6 +63,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns the document id when protecting by document id.
+   *
+   * @return the document id when protecting by document id.
    */
   public String getDocumentId() {
     return documentId;
@@ -61,6 +72,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns the encryption algorithm.
+   *
+   * @return the encryption algorithm.
    */
   public EncryptionAlgorithm getAlgorithm() {
     return algorithm;
@@ -68,6 +81,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns the user password, if provided.
+   *
+   * @return the user password, if provided.
    */
   public String getUserPassword() {
     return userPassword;
@@ -75,6 +90,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns the owner password, if provided.
+   *
+   * @return the owner password, if provided.
    */
   public String getOwnerPassword() {
     return ownerPassword;
@@ -82,6 +99,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns whether printing is disabled.
+   *
+   * @return whether printing is disabled.
    */
   public Boolean getDisablePrint() {
     return disablePrint;
@@ -89,6 +108,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns whether copying is disabled.
+   *
+   * @return whether copying is disabled.
    */
   public Boolean getDisableCopy() {
     return disableCopy;
@@ -96,6 +117,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns whether editing is disabled.
+   *
+   * @return whether editing is disabled.
    */
   public Boolean getDisableEditing() {
     return disableEditing;
@@ -103,6 +126,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns whether metadata is encrypted.
+   *
+   * @return whether metadata is encrypted.
    */
   public Boolean getEncryptMetadata() {
     return encryptMetadata;
@@ -110,6 +135,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public Boolean getJsonResponse() {
     return jsonResponse;
@@ -117,6 +144,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public boolean isJsonResponse() {
     return Boolean.TRUE.equals(jsonResponse);
@@ -124,6 +153,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns the pre-signed URL expiration time in seconds.
+   *
+   * @return the pre-signed URL expiration time in seconds.
    */
   public Long getPreSignedUrlExpiresIn() {
     return preSignedUrlExpiresIn;
@@ -131,6 +162,8 @@ public abstract class ProtectPdfParams {
 
   /**
    * Returns metadata to attach to the document.
+   *
+   * @return metadata to attach to the document.
    */
   public Object getMetadata() {
     return metadata;
@@ -140,8 +173,10 @@ public abstract class ProtectPdfParams {
    * Supported encryption algorithms.
    */
   public enum EncryptionAlgorithm {
+    /** AES-256 encryption. */
     @SerializedName("AES256")
     AES256("AES256"),
+    /** AES-128 encryption. */
     @SerializedName("AES128")
     AES128("AES128");
 
@@ -179,6 +214,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Sets the PDF file payload.
+     *
+     * @param file the PDF file payload.
+     * @return this builder.
      */
     public Builder file(FileParam file) {
       this.file = file;
@@ -187,6 +225,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Sets the document id for the source PDF.
+     *
+     * @param documentId the document id for the source PDF.
+     * @return this builder.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;
@@ -195,6 +236,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Sets the encryption algorithm.
+     *
+     * @param algorithm encryption algorithm.
+     * @return this builder.
      */
     public Builder algorithm(EncryptionAlgorithm algorithm) {
       this.algorithm = algorithm;
@@ -203,6 +247,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Sets the user password required to open the PDF.
+     *
+     * @param userPassword user password required to open the PDF.
+     * @return this builder.
      */
     public Builder userPassword(String userPassword) {
       this.userPassword = userPassword;
@@ -211,6 +258,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Sets the owner password with full control.
+     *
+     * @param ownerPassword owner password with full control.
+     * @return this builder.
      */
     public Builder ownerPassword(String ownerPassword) {
       this.ownerPassword = ownerPassword;
@@ -219,6 +269,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Disables printing when set to true.
+     *
+     * @param disablePrint whether printing is disabled.
+     * @return this builder.
      */
     public Builder disablePrint(Boolean disablePrint) {
       this.disablePrint = disablePrint;
@@ -227,6 +280,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Disables copying when set to true.
+     *
+     * @param disableCopy whether copying is disabled.
+     * @return this builder.
      */
     public Builder disableCopy(Boolean disableCopy) {
       this.disableCopy = disableCopy;
@@ -235,6 +291,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Disables editing when set to true.
+     *
+     * @param disableEditing whether editing is disabled.
+     * @return this builder.
      */
     public Builder disableEditing(Boolean disableEditing) {
       this.disableEditing = disableEditing;
@@ -243,6 +302,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Encrypts metadata when set to true.
+     *
+     * @param encryptMetadata whether to encrypt metadata.
+     * @return this builder.
      */
     public Builder encryptMetadata(Boolean encryptMetadata) {
       this.encryptMetadata = encryptMetadata;
@@ -251,6 +313,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Sets the pre-signed URL expiration time in seconds.
+     *
+     * @param preSignedUrlExpiresIn expiration time in seconds.
+     * @return this builder.
      */
     public Builder preSignedUrlExpiresIn(Long preSignedUrlExpiresIn) {
       this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
@@ -259,6 +324,9 @@ public abstract class ProtectPdfParams {
 
     /**
      * Sets metadata to attach to the document.
+     *
+     * @param metadata metadata to attach to the document.
+     * @return this builder.
      */
     public Builder metadata(Object metadata) {
       this.metadata = metadata;
@@ -267,6 +335,8 @@ public abstract class ProtectPdfParams {
 
     /**
      * Builds protect PDF parameters for bytes responses.
+     *
+     * @return parameters configured for file responses.
      */
     public ProtectPdfFileParams buildWithFileResponse() {
       this.jsonResponse = false;
@@ -275,6 +345,8 @@ public abstract class ProtectPdfParams {
 
     /**
      * Builds protect PDF parameters for JSON responses.
+     *
+     * @return parameters configured for JSON responses.
      */
     public ProtectPdfJsonParams buildWithJsonResponse() {
       this.jsonResponse = true;

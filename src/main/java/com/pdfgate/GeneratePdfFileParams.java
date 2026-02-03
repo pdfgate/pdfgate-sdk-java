@@ -7,12 +7,19 @@ package com.pdfgate;
  * API returns a file stream instead of JSON metadata.
  */
 public final class GeneratePdfFileParams extends GeneratePdfParams {
+  /**
+   * Initializes file response parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   GeneratePdfFileParams(Builder builder) {
     super(builder);
   }
 
   /**
    * Creates a new builder for generate PDF file parameters.
+   *
+   * @return the builder for generate PDF file parameters.
    */
   public static Builder builder() {
     return GeneratePdfParams.builder();

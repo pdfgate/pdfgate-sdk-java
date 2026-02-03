@@ -22,6 +22,8 @@ public final class GetDocumentParams {
 
   /**
    * Creates a new builder for get document parameters.
+   *
+   * @return the builder for get document parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -29,6 +31,8 @@ public final class GetDocumentParams {
 
   /**
    * Returns the document id to retrieve.
+   *
+   * @return the document id to retrieve.
    */
   public String getDocumentId() {
     return documentId;
@@ -36,6 +40,8 @@ public final class GetDocumentParams {
 
   /**
    * Returns the pre-signed URL expiry in seconds, if provided.
+   *
+   * @return the pre-signed URL expiry in seconds, if provided.
    */
   public Long getPreSignedUrlExpiresIn() {
     return preSignedUrlExpiresIn;
@@ -55,7 +61,16 @@ public final class GetDocumentParams {
     private Long preSignedUrlExpiresIn;
 
     /**
+     * Creates a builder for get document parameters.
+     */
+    public Builder() {
+    }
+
+    /**
      * Sets the document id to retrieve.
+     *
+     * @param documentId the document id to retrieve.
+     * @return this builder.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;
@@ -64,6 +79,9 @@ public final class GetDocumentParams {
 
     /**
      * Sets the pre-signed URL expiry in seconds.
+     *
+     * @param preSignedUrlExpiresIn pre-signed URL expiry in seconds.
+     * @return this builder.
      */
     public Builder preSignedUrlExpiresIn(Long preSignedUrlExpiresIn) {
       this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
@@ -72,6 +90,8 @@ public final class GetDocumentParams {
 
     /**
      * Builds the get document parameters.
+     *
+     * @return the get document parameters.
      */
     public GetDocumentParams build() {
       return new GetDocumentParams(this);

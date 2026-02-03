@@ -36,6 +36,8 @@ public final class FileParam {
 
   /**
    * Returns the filename.
+   *
+   * @return the filename.
    */
   public String getName() {
     return name;
@@ -43,6 +45,8 @@ public final class FileParam {
 
   /**
    * Returns the file bytes.
+   *
+   * @return the file bytes.
    */
   public byte[] getData() {
     return data;
@@ -50,6 +54,8 @@ public final class FileParam {
 
   /**
    * Returns the content type override, if provided.
+   *
+   * @return the content type override, if provided.
    */
   public String getType() {
     return type;

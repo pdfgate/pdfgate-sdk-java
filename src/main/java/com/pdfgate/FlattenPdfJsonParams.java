@@ -8,12 +8,19 @@ package com.pdfgate;
  * {@link PdfGateDocument} metadata instead of raw bytes.
  */
 public final class FlattenPdfJsonParams extends FlattenPdfParams {
+  /**
+   * Initializes JSON response parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   FlattenPdfJsonParams(Builder builder) {
     super(builder);
   }
 
   /**
    * Creates a new builder for flatten PDF JSON parameters.
+   *
+   * @return the builder for flatten PDF JSON parameters.
    */
   public static Builder builder() {
     return FlattenPdfParams.builder();

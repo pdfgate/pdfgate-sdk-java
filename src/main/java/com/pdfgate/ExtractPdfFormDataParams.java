@@ -22,6 +22,8 @@ public final class ExtractPdfFormDataParams {
 
   /**
    * Creates a new builder for extract PDF form data parameters.
+   *
+   * @return the builder for extract PDF form data parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -29,6 +31,8 @@ public final class ExtractPdfFormDataParams {
 
   /**
    * Returns the file payload if extracting by file.
+   *
+   * @return the file payload if extracting by file.
    */
   public FileParam getFile() {
     return file;
@@ -36,6 +40,8 @@ public final class ExtractPdfFormDataParams {
 
   /**
    * Returns the document ID if extracting by document ID.
+   *
+   * @return the document ID if extracting by document ID.
    */
   public String getDocumentId() {
     return documentId;
@@ -55,7 +61,16 @@ public final class ExtractPdfFormDataParams {
     private String documentId;
 
     /**
+     * Creates a builder for extract PDF form data parameters.
+     */
+    public Builder() {
+    }
+
+    /**
      * Sets the file payload for extraction.
+     *
+     * @param file the PDF file payload.
+     * @return this builder.
      */
     public Builder file(FileParam file) {
       this.file = file;
@@ -64,6 +79,9 @@ public final class ExtractPdfFormDataParams {
 
     /**
      * Sets the document ID for extraction.
+     *
+     * @param documentId the document ID.
+     * @return this builder.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;
@@ -72,6 +90,8 @@ public final class ExtractPdfFormDataParams {
 
     /**
      * Builds the extract PDF form data parameters.
+     *
+     * @return the extract PDF form data parameters.
      */
     public ExtractPdfFormDataParams build() {
       return new ExtractPdfFormDataParams(this);

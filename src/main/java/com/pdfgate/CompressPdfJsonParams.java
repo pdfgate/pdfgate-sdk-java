@@ -8,12 +8,19 @@ package com.pdfgate;
  * {@link PdfGateDocument} metadata instead of raw bytes.
  */
 public final class CompressPdfJsonParams extends CompressPdfParams {
+  /**
+   * Initializes JSON response parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   CompressPdfJsonParams(Builder builder) {
     super(builder);
   }
 
   /**
    * Creates a new builder for compress PDF JSON parameters.
+   *
+   * @return the builder for compress PDF JSON parameters.
    */
   public static Builder builder() {
     return CompressPdfParams.builder();

@@ -13,8 +13,17 @@ import okhttp3.ResponseBody;
  * Exception raised for PDFGate API errors and transport failures.
  */
 public final class PdfGateException extends IOException {
+  /**
+   * HTTP status code returned by the API.
+   */
   private final int statusCode;
+  /**
+   * Raw response body returned by the API.
+   */
   private final String responseBody;
+  /**
+   * HTTP headers returned by the API.
+   */
   private final Headers headers;
 
   /**
@@ -108,6 +117,8 @@ public final class PdfGateException extends IOException {
 
   /**
    * Returns the HTTP status code or {@code -1} when unavailable.
+   *
+   * @return the HTTP status code or {@code -1} when unavailable.
    */
   public int getStatusCode() {
     return statusCode;
@@ -115,6 +126,8 @@ public final class PdfGateException extends IOException {
 
   /**
    * Returns the raw response body.
+   *
+   * @return the raw response body.
    */
   public String getResponseBody() {
     return responseBody;
@@ -122,6 +135,8 @@ public final class PdfGateException extends IOException {
 
   /**
    * Returns the HTTP response headers.
+   *
+   * @return the HTTP response headers.
    */
   public Headers getHeaders() {
     return headers;

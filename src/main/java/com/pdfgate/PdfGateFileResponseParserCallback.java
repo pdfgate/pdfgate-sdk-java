@@ -10,6 +10,8 @@ public class PdfGateFileResponseParserCallback extends PdfGateResponseParserCall
 
   /**
    * Creates a response parser callback for file payloads.
+   *
+   * @param callback callback invoked with parsed responses.
    */
   public PdfGateFileResponseParserCallback(PdfGateCallback<byte[]> callback) {
     this.callback = callback;

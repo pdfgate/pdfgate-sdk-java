@@ -18,6 +18,8 @@ public final class GetFileParams {
 
   /**
    * Creates a new builder for get file parameters.
+   *
+   * @return the builder for get file parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -25,6 +27,8 @@ public final class GetFileParams {
 
   /**
    * Returns the document id to retrieve.
+   *
+   * @return the document id to retrieve.
    */
   public String getDocumentId() {
     return documentId;
@@ -40,7 +44,16 @@ public final class GetFileParams {
     private String documentId;
 
     /**
+     * Creates a builder for get file parameters.
+     */
+    public Builder() {
+    }
+
+    /**
      * Sets the document id to retrieve.
+     *
+     * @param documentId the document id to retrieve.
+     * @return this builder.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;
@@ -49,6 +62,8 @@ public final class GetFileParams {
 
     /**
      * Builds the get file parameters.
+     *
+     * @return the get file parameters.
      */
     public GetFileParams build() {
       return new GetFileParams(this);

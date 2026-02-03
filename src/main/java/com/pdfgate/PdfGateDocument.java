@@ -21,7 +21,15 @@ public final class PdfGateDocument {
   private String derivedFrom;
 
   /**
+   * Creates an empty document instance for JSON deserialization.
+   */
+  public PdfGateDocument() {
+  }
+
+  /**
    * Returns the document identifier.
+   *
+   * @return the document identifier.
    */
   public String getId() {
     return id;
@@ -29,6 +37,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns the document processing status.
+   *
+   * @return the document processing status.
    */
   public DocumentStatus getStatus() {
     return status;
@@ -36,6 +46,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns when the document was created.
+   *
+   * @return when the document was created.
    */
   public Instant getCreatedAt() {
     return createdAt;
@@ -43,6 +55,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns when the document expires, if present.
+   *
+   * @return when the document expires, if present.
    */
   public Instant getExpiresAt() {
     return expiresAt;
@@ -50,6 +64,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns the document type.
+   *
+   * @return the document type.
    */
   public DocumentType getType() {
     return type;
@@ -57,6 +73,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns a temporary file URL if provided by the API.
+   *
+   * @return a temporary file URL if provided by the API.
    */
   public Optional<String> getFileUrl() {
     return Optional.ofNullable(fileUrl);
@@ -64,6 +82,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns the file size in bytes, if provided.
+   *
+   * @return the file size in bytes, if provided.
    */
   public Long getSize() {
     return size;
@@ -71,6 +91,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns metadata attached to the document, if present.
+   *
+   * @return metadata attached to the document, if present.
    */
   public Optional<Map<String, Object>> getMetadata() {
     return Optional.ofNullable(metadata);
@@ -78,6 +100,8 @@ public final class PdfGateDocument {
 
   /**
    * Returns the source document ID when derived from another document.
+   *
+   * @return the source document ID when derived from another document.
    */
   public Optional<String> getDerivedFrom() {
     return Optional.ofNullable(derivedFrom);
@@ -109,6 +133,9 @@ public final class PdfGateDocument {
         derivedFrom);
   }
 
+  /**
+   * Status values returned by the API for document processing.
+   */
   public enum DocumentStatus {
     /**
      * The document is finished and available.
@@ -132,6 +159,9 @@ public final class PdfGateDocument {
     FAILED
   }
 
+  /**
+   * Document type values returned by the API.
+   */
   public enum DocumentType {
     /**
      * Document generated from HTML or URL.

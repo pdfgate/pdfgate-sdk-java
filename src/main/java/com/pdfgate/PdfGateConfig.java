@@ -46,6 +46,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the default configuration for production and sandbox domains.
+   *
+   * @return the default configuration for production and sandbox domains.
    */
   public static PdfGateConfig defaultConfig() {
     return new PdfGateConfig(
@@ -61,6 +63,12 @@ public final class PdfGateConfig {
 
   /**
    * Creates a configuration with custom domains and default timeout.
+   *
+   * @param productionApiDomain production API base URL.
+   * @param sandboxApiDomain sandbox API base URL.
+   * @param defaultTimeout default timeout for requests.
+   * @param generatePdfTimeout timeout for generate PDF requests.
+   * @return the configured {@link PdfGateConfig}.
    */
   public static PdfGateConfig of(
       String productionApiDomain,
@@ -81,6 +89,13 @@ public final class PdfGateConfig {
 
   /**
    * Creates a configuration with custom domains and flatten timeout.
+   *
+   * @param productionApiDomain production API base URL.
+   * @param sandboxApiDomain sandbox API base URL.
+   * @param defaultTimeout default timeout for requests.
+   * @param generatePdfTimeout timeout for generate PDF requests.
+   * @param flattenPdfTimeout timeout for flatten PDF requests.
+   * @return the configured {@link PdfGateConfig}.
    */
   public static PdfGateConfig of(
       String productionApiDomain,
@@ -102,6 +117,14 @@ public final class PdfGateConfig {
 
   /**
    * Creates a configuration with custom domains and protect timeout.
+   *
+   * @param productionApiDomain production API base URL.
+   * @param sandboxApiDomain sandbox API base URL.
+   * @param defaultTimeout default timeout for requests.
+   * @param generatePdfTimeout timeout for generate PDF requests.
+   * @param flattenPdfTimeout timeout for flatten PDF requests.
+   * @param protectPdfTimeout timeout for protect PDF requests.
+   * @return the configured {@link PdfGateConfig}.
    */
   public static PdfGateConfig of(
       String productionApiDomain,
@@ -124,6 +147,15 @@ public final class PdfGateConfig {
 
   /**
    * Creates a configuration with custom domains and per-endpoint timeouts.
+   *
+   * @param productionApiDomain production API base URL.
+   * @param sandboxApiDomain sandbox API base URL.
+   * @param defaultTimeout default timeout for requests.
+   * @param generatePdfTimeout timeout for generate PDF requests.
+   * @param flattenPdfTimeout timeout for flatten PDF requests.
+   * @param compressPdfTimeout timeout for compress PDF requests.
+   * @param protectPdfTimeout timeout for protect PDF requests.
+   * @return the configured {@link PdfGateConfig}.
    */
   public static PdfGateConfig of(
       String productionApiDomain,
@@ -154,6 +186,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the production API base URL.
+   *
+   * @return the production API base URL.
    */
   public String getProductionApiDomain() {
     return productionApiDomain;
@@ -161,6 +195,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the sandbox API base URL.
+   *
+   * @return the sandbox API base URL.
    */
   public String getSandboxApiDomain() {
     return sandboxApiDomain;
@@ -168,6 +204,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the default timeout applied when no endpoint-specific timeout exists.
+   *
+   * @return the default timeout applied when no endpoint-specific timeout exists.
    */
   public Duration getDefaultTimeout() {
     return defaultTimeout;
@@ -175,6 +213,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the timeout used for generate PDF requests.
+   *
+   * @return the timeout used for generate PDF requests.
    */
   public Duration getGeneratePdfTimeout() {
     return generatePdfTimeout;
@@ -182,6 +222,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the timeout used for flatten PDF requests.
+   *
+   * @return the timeout used for flatten PDF requests.
    */
   public Duration getFlattenPdfTimeout() {
     return flattenPdfTimeout;
@@ -189,6 +231,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the timeout used for compress PDF requests.
+   *
+   * @return the timeout used for compress PDF requests.
    */
   public Duration getCompressPdfTimeout() {
     return compressPdfTimeout;
@@ -196,6 +240,8 @@ public final class PdfGateConfig {
 
   /**
    * Returns the timeout used for protect PDF requests.
+   *
+   * @return the timeout used for protect PDF requests.
    */
   public Duration getProtectPdfTimeout() {
     return protectPdfTimeout;

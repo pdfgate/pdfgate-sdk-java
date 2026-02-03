@@ -44,6 +44,11 @@ public abstract class GeneratePdfParams {
   private final GeneratePdfAuthentication authentication;
   private final Viewport viewport;
 
+  /**
+   * Initializes generate PDF parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   protected GeneratePdfParams(Builder builder) {
     this.html = builder.html;
     this.url = builder.url;
@@ -79,6 +84,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Creates a new builder for generate PDF parameters.
+   *
+   * @return the builder for generate PDF parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -86,6 +93,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the raw HTML content to render.
+   *
+   * @return the raw HTML content to render.
    */
   public String getHtml() {
     return html;
@@ -93,6 +102,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the public URL to render.
+   *
+   * @return the public URL to render.
    */
   public String getUrl() {
     return url;
@@ -100,6 +111,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns whether the API should return JSON instead of raw bytes.
+   *
+   * @return whether the API should return JSON instead of raw bytes.
    */
   public Boolean getJsonResponse() {
     return jsonResponse;
@@ -107,6 +120,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns whether the API should return JSON instead of raw bytes.
+   *
+   * @return whether the API should return JSON instead of raw bytes.
    */
   public boolean isJsonResponse() {
     return Boolean.TRUE.equals(jsonResponse);
@@ -114,6 +129,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the pre-signed URL expiration time in seconds, if provided.
+   *
+   * @return the pre-signed URL expiration time in seconds, if provided.
    */
   public Long getPreSignedUrlExpiresIn() {
     return preSignedUrlExpiresIn;
@@ -121,6 +138,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the requested page size preset.
+   *
+   * @return the requested page size preset.
    */
   public PageSizeType getPageSizeType() {
     return pageSizeType;
@@ -128,6 +147,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the custom page width in pixels, if provided.
+   *
+   * @return the custom page width in pixels, if provided.
    */
   public Integer getWidth() {
     return width;
@@ -135,6 +156,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the custom page height in pixels, if provided.
+   *
+   * @return the custom page height in pixels, if provided.
    */
   public Integer getHeight() {
     return height;
@@ -142,6 +165,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the page orientation, if provided.
+   *
+   * @return the page orientation, if provided.
    */
   public FileOrientation getOrientation() {
     return orientation;
@@ -149,6 +174,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the HTML header applied to each page, if provided.
+   *
+   * @return the HTML header applied to each page, if provided.
    */
   public String getHeader() {
     return header;
@@ -156,6 +183,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the HTML footer applied to each page, if provided.
+   *
+   * @return the HTML footer applied to each page, if provided.
    */
   public String getFooter() {
     return footer;
@@ -163,6 +192,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the page margins, if provided.
+   *
+   * @return the page margins, if provided.
    */
   public PdfPageMargin getMargin() {
     return margin;
@@ -170,6 +201,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the timeout in milliseconds for the render, if provided.
+   *
+   * @return the timeout in milliseconds for the render, if provided.
    */
   public Integer getTimeout() {
     return timeout;
@@ -177,6 +210,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns JavaScript to run before rendering, if provided.
+   *
+   * @return JavaScript to run before rendering, if provided.
    */
   public String getJavascript() {
     return javascript;
@@ -184,6 +219,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns additional CSS to apply during rendering, if provided.
+   *
+   * @return additional CSS to apply during rendering, if provided.
    */
   public String getCss() {
     return css;
@@ -191,6 +228,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the CSS media type to emulate during rendering, if provided.
+   *
+   * @return the CSS media type to emulate during rendering, if provided.
    */
   public EmulateMediaType getEmulateMediaType() {
     return emulateMediaType;
@@ -198,6 +237,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns custom HTTP headers applied when loading the target URL, if provided.
+   *
+   * @return custom HTTP headers applied when loading the target URL, if provided.
    */
   public Map<String, String> getHttpHeaders() {
     return httpHeaders;
@@ -205,6 +246,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns metadata to attach to the generated document, if provided.
+   *
+   * @return metadata to attach to the generated document, if provided.
    */
   public Object getMetadata() {
     return metadata;
@@ -212,6 +255,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the selector to wait for before rendering, if provided.
+   *
+   * @return the selector to wait for before rendering, if provided.
    */
   public String getWaitForSelector() {
     return waitForSelector;
@@ -219,6 +264,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the selector to click before rendering, if provided.
+   *
+   * @return the selector to click before rendering, if provided.
    */
   public String getClickSelector() {
     return clickSelector;
@@ -226,6 +273,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns click chain setup used before rendering, if provided.
+   *
+   * @return click chain setup used before rendering, if provided.
    */
   public ClickSelectorChainSetup getClickSelectorChainSetup() {
     return clickSelectorChainSetup;
@@ -233,6 +282,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns whether to wait for network idle before rendering, if provided.
+   *
+   * @return whether to wait for network idle before rendering, if provided.
    */
   public Boolean getWaitForNetworkIdle() {
     return waitForNetworkIdle;
@@ -240,6 +291,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns whether interactive form fields should be enabled, if provided.
+   *
+   * @return whether interactive form fields should be enabled, if provided.
    */
   public Boolean getEnableFormFields() {
     return enableFormFields;
@@ -247,6 +300,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the delay in milliseconds before rendering, if provided.
+   *
+   * @return the delay in milliseconds before rendering, if provided.
    */
   public Integer getDelay() {
     return delay;
@@ -254,6 +309,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns whether images must load before rendering, if provided.
+   *
+   * @return whether images must load before rendering, if provided.
    */
   public Boolean getLoadImages() {
     return loadImages;
@@ -261,6 +318,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the scale factor applied during rendering, if provided.
+   *
+   * @return the scale factor applied during rendering, if provided.
    */
   public Double getScale() {
     return scale;
@@ -268,6 +327,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the page ranges to include, if provided.
+   *
+   * @return the page ranges to include, if provided.
    */
   public String getPageRanges() {
     return pageRanges;
@@ -275,6 +336,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns whether to print background graphics, if provided.
+   *
+   * @return whether to print background graphics, if provided.
    */
   public Boolean getPrintBackground() {
     return printBackground;
@@ -282,6 +345,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the custom user agent string, if provided.
+   *
+   * @return the custom user agent string, if provided.
    */
   public String getUserAgent() {
     return userAgent;
@@ -289,6 +354,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns authentication credentials for protected content, if provided.
+   *
+   * @return authentication credentials for protected content, if provided.
    */
   public GeneratePdfAuthentication getAuthentication() {
     return authentication;
@@ -296,6 +363,8 @@ public abstract class GeneratePdfParams {
 
   /**
    * Returns the viewport size for rendering, if provided.
+   *
+   * @return the viewport size for rendering, if provided.
    */
   public Viewport getViewport() {
     return viewport;
@@ -305,26 +374,37 @@ public abstract class GeneratePdfParams {
    * Supported page sizes for generated PDFs.
    */
   public enum PageSizeType {
+    /** A0 page size. */
     @SerializedName("a0")
     A0,
+    /** A1 page size. */
     @SerializedName("a1")
     A1,
+    /** A2 page size. */
     @SerializedName("a2")
     A2,
+    /** A3 page size. */
     @SerializedName("a3")
     A3,
+    /** A4 page size. */
     @SerializedName("a4")
     A4,
+    /** A5 page size. */
     @SerializedName("a5")
     A5,
+    /** A6 page size. */
     @SerializedName("a6")
     A6,
+    /** Ledger page size. */
     @SerializedName("ledger")
     LEDGER,
+    /** Tabloid page size. */
     @SerializedName("tabloid")
     TABLOID,
+    /** Legal page size. */
     @SerializedName("legal")
     LEGAL,
+    /** Letter page size. */
     @SerializedName("letter")
     LETTER
   }
@@ -333,8 +413,10 @@ public abstract class GeneratePdfParams {
    * Orientation options for generated PDFs.
    */
   public enum FileOrientation {
+    /** Portrait orientation. */
     @SerializedName("portrait")
     PORTRAIT,
+    /** Landscape orientation. */
     @SerializedName("landscape")
     LANDSCAPE
   }
@@ -343,8 +425,10 @@ public abstract class GeneratePdfParams {
    * Media types for CSS emulation during rendering.
    */
   public enum EmulateMediaType {
+    /** Screen media type. */
     @SerializedName("screen")
     SCREEN,
+    /** Print media type. */
     @SerializedName("print")
     PRINT
   }
@@ -360,6 +444,11 @@ public abstract class GeneratePdfParams {
 
     /**
      * Creates a margin set for a rendered PDF.
+     *
+     * @param top top margin value.
+     * @param bottom bottom margin value.
+     * @param left left margin value.
+     * @param right right margin value.
      */
     public PdfPageMargin(String top, String bottom, String left, String right) {
       this.top = top;
@@ -370,6 +459,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the top margin value.
+     *
+     * @return the top margin value.
      */
     public String getTop() {
       return top;
@@ -377,6 +468,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the bottom margin value.
+     *
+     * @return the bottom margin value.
      */
     public String getBottom() {
       return bottom;
@@ -384,6 +477,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the left margin value.
+     *
+     * @return the left margin value.
      */
     public String getLeft() {
       return left;
@@ -391,6 +486,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the right margin value.
+     *
+     * @return the right margin value.
      */
     public String getRight() {
       return right;
@@ -405,6 +502,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Creates a selector chain.
+     *
+     * @param selectors selectors to click in order.
      */
     public ClickSelectorChain(List<String> selectors) {
       this.selectors = selectors;
@@ -412,6 +511,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the selectors to click in order.
+     *
+     * @return the selectors to click in order.
      */
     public List<String> getSelectors() {
       return selectors;
@@ -427,6 +528,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Creates a click selector chain setup.
+     *
+     * @param ignoreFailingChains whether to ignore failing chains.
+     * @param chains the click selector chains.
      */
     public ClickSelectorChainSetup(Boolean ignoreFailingChains, List<ClickSelectorChain> chains) {
       this.ignoreFailingChains = ignoreFailingChains;
@@ -435,6 +539,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns whether failing chains are ignored.
+     *
+     * @return whether failing chains are ignored.
      */
     public Boolean getIgnoreFailingChains() {
       return ignoreFailingChains;
@@ -442,6 +548,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the chains to execute, if provided.
+     *
+     * @return the chains to execute, if provided.
      */
     public List<ClickSelectorChain> getChains() {
       return chains;
@@ -457,6 +565,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Creates authentication credentials for the render request.
+     *
+     * @param username username for protected content.
+     * @param password password for protected content.
      */
     public GeneratePdfAuthentication(String username, String password) {
       this.username = username;
@@ -465,6 +576,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the username.
+     *
+     * @return the username.
      */
     public String getUsername() {
       return username;
@@ -472,6 +585,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the password.
+     *
+     * @return the password.
      */
     public String getPassword() {
       return password;
@@ -487,6 +602,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Creates a viewport definition for rendering.
+     *
+     * @param width viewport width in pixels.
+     * @param height viewport height in pixels.
      */
     public Viewport(Integer width, Integer height) {
       this.width = width;
@@ -495,6 +613,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the viewport width in pixels.
+     *
+     * @return the viewport width in pixels.
      */
     public Integer getWidth() {
       return width;
@@ -502,6 +622,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Returns the viewport height in pixels.
+     *
+     * @return the viewport height in pixels.
      */
     public Integer getHeight() {
       return height;
@@ -548,6 +670,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets raw HTML content to render.
+     *
+     * @param html raw HTML content to render.
+     * @return this builder.
      */
     public Builder html(String html) {
       this.html = html;
@@ -556,6 +681,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the public URL to render.
+     *
+     * @param url the public URL to render.
+     * @return this builder.
      */
     public Builder url(String url) {
       this.url = url;
@@ -564,6 +692,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the pre-signed URL expiration time in seconds.
+     *
+     * @param preSignedUrlExpiresIn expiration time in seconds.
+     * @return this builder.
      */
     public Builder preSignedUrlExpiresIn(Long preSignedUrlExpiresIn) {
       this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
@@ -572,6 +703,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the page size preset.
+     *
+     * @param pageSizeType page size preset.
+     * @return this builder.
      */
     public Builder pageSizeType(PageSizeType pageSizeType) {
       this.pageSizeType = pageSizeType;
@@ -580,6 +714,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the custom page width in pixels.
+     *
+     * @param width custom page width in pixels.
+     * @return this builder.
      */
     public Builder width(Integer width) {
       this.width = width;
@@ -588,6 +725,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the custom page height in pixels.
+     *
+     * @param height custom page height in pixels.
+     * @return this builder.
      */
     public Builder height(Integer height) {
       this.height = height;
@@ -596,6 +736,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the page orientation.
+     *
+     * @param orientation page orientation.
+     * @return this builder.
      */
     public Builder orientation(FileOrientation orientation) {
       this.orientation = orientation;
@@ -604,6 +747,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the header HTML to apply on each page.
+     *
+     * @param header header HTML to apply on each page.
+     * @return this builder.
      */
     public Builder header(String header) {
       this.header = header;
@@ -612,6 +758,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the footer HTML to apply on each page.
+     *
+     * @param footer footer HTML to apply on each page.
+     * @return this builder.
      */
     public Builder footer(String footer) {
       this.footer = footer;
@@ -620,6 +769,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the page margins.
+     *
+     * @param margin page margins.
+     * @return this builder.
      */
     public Builder margin(PdfPageMargin margin) {
       this.margin = margin;
@@ -628,6 +780,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the render timeout in milliseconds.
+     *
+     * @param timeout render timeout in milliseconds.
+     * @return this builder.
      */
     public Builder timeout(Integer timeout) {
       this.timeout = timeout;
@@ -636,6 +791,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets JavaScript to run before rendering.
+     *
+     * @param javascript JavaScript to run before rendering.
+     * @return this builder.
      */
     public Builder javascript(String javascript) {
       this.javascript = javascript;
@@ -644,6 +802,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets additional CSS to apply during rendering.
+     *
+     * @param css additional CSS to apply during rendering.
+     * @return this builder.
      */
     public Builder css(String css) {
       this.css = css;
@@ -652,6 +813,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the CSS media type to emulate.
+     *
+     * @param emulateMediaType CSS media type to emulate.
+     * @return this builder.
      */
     public Builder emulateMediaType(EmulateMediaType emulateMediaType) {
       this.emulateMediaType = emulateMediaType;
@@ -660,6 +824,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets custom HTTP headers used when loading the target URL.
+     *
+     * @param httpHeaders custom HTTP headers.
+     * @return this builder.
      */
     public Builder httpHeaders(Map<String, String> httpHeaders) {
       this.httpHeaders = httpHeaders;
@@ -668,6 +835,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets metadata to attach to the generated document.
+     *
+     * @param metadata metadata to attach to the generated document.
+     * @return this builder.
      */
     public Builder metadata(Object metadata) {
       this.metadata = metadata;
@@ -676,6 +846,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets a selector to wait for before rendering.
+     *
+     * @param waitForSelector selector to wait for before rendering.
+     * @return this builder.
      */
     public Builder waitForSelector(String waitForSelector) {
       this.waitForSelector = waitForSelector;
@@ -684,6 +857,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets a selector to click before rendering.
+     *
+     * @param clickSelector selector to click before rendering.
+     * @return this builder.
      */
     public Builder clickSelector(String clickSelector) {
       this.clickSelector = clickSelector;
@@ -692,6 +868,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the click selector chain setup.
+     *
+     * @param clickSelectorChainSetup click selector chain setup.
+     * @return this builder.
      */
     public Builder clickSelectorChainSetup(ClickSelectorChainSetup clickSelectorChainSetup) {
       this.clickSelectorChainSetup = clickSelectorChainSetup;
@@ -700,6 +879,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets whether to wait for network idle before rendering.
+     *
+     * @param waitForNetworkIdle whether to wait for network idle.
+     * @return this builder.
      */
     public Builder waitForNetworkIdle(Boolean waitForNetworkIdle) {
       this.waitForNetworkIdle = waitForNetworkIdle;
@@ -708,6 +890,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets whether to include interactive form fields in the output.
+     *
+     * @param enableFormFields whether to include interactive form fields.
+     * @return this builder.
      */
     public Builder enableFormFields(Boolean enableFormFields) {
       this.enableFormFields = enableFormFields;
@@ -716,6 +901,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the delay in milliseconds before rendering.
+     *
+     * @param delay delay in milliseconds before rendering.
+     * @return this builder.
      */
     public Builder delay(Integer delay) {
       this.delay = delay;
@@ -724,6 +912,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets whether to wait for all images to load before rendering.
+     *
+     * @param loadImages whether to wait for all images to load.
+     * @return this builder.
      */
     public Builder loadImages(Boolean loadImages) {
       this.loadImages = loadImages;
@@ -732,6 +923,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the scale factor applied during rendering.
+     *
+     * @param scale scale factor applied during rendering.
+     * @return this builder.
      */
     public Builder scale(Double scale) {
       this.scale = scale;
@@ -740,6 +934,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the page ranges to include (for example, "1-5" or "1,3,5").
+     *
+     * @param pageRanges page ranges to include.
+     * @return this builder.
      */
     public Builder pageRanges(String pageRanges) {
       this.pageRanges = pageRanges;
@@ -748,6 +945,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets whether to print background graphics.
+     *
+     * @param printBackground whether to print background graphics.
+     * @return this builder.
      */
     public Builder printBackground(Boolean printBackground) {
       this.printBackground = printBackground;
@@ -756,6 +956,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets a custom user agent string.
+     *
+     * @param userAgent custom user agent string.
+     * @return this builder.
      */
     public Builder userAgent(String userAgent) {
       this.userAgent = userAgent;
@@ -764,6 +967,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets authentication credentials for protected web content.
+     *
+     * @param authentication authentication credentials for protected web content.
+     * @return this builder.
      */
     public Builder authentication(GeneratePdfAuthentication authentication) {
       this.authentication = authentication;
@@ -772,6 +978,9 @@ public abstract class GeneratePdfParams {
 
     /**
      * Sets the viewport dimensions for rendering.
+     *
+     * @param viewport viewport dimensions for rendering.
+     * @return this builder.
      */
     public Builder viewport(Viewport viewport) {
       this.viewport = viewport;
@@ -780,6 +989,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Builds parameters that request raw PDF bytes.
+     *
+     * @return parameters configured for file responses.
      */
     public GeneratePdfFileParams buildWithFileResponse() {
       this.jsonResponse = false;
@@ -788,6 +999,8 @@ public abstract class GeneratePdfParams {
 
     /**
      * Builds parameters that request a JSON document response.
+     *
+     * @return parameters configured for JSON responses.
      */
     public GeneratePdfJsonParams buildWithJsonResponse() {
       this.jsonResponse = true;

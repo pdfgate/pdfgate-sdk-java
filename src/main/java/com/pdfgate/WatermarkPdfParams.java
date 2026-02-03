@@ -28,6 +28,11 @@ public abstract class WatermarkPdfParams {
   private final Long preSignedUrlExpiresIn;
   private final Object metadata;
 
+  /**
+   * Initializes watermark PDF parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   protected WatermarkPdfParams(Builder builder) {
     this.file = builder.file;
     this.documentId = builder.documentId;
@@ -50,6 +55,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Creates a new builder for watermark PDF parameters.
+   *
+   * @return the builder for watermark PDF parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -57,6 +64,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the PDF file payload when watermarking by file.
+   *
+   * @return the PDF file payload when watermarking by file.
    */
   public FileParam getFile() {
     return file;
@@ -64,6 +73,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the document id when watermarking by document id.
+   *
+   * @return the document id when watermarking by document id.
    */
   public String getDocumentId() {
     return documentId;
@@ -71,6 +82,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark image payload when watermarking with an image.
+   *
+   * @return the watermark image payload when watermarking with an image.
    */
   public FileParam getWatermark() {
     return watermark;
@@ -78,6 +91,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark type.
+   *
+   * @return the watermark type.
    */
   public WatermarkType getType() {
     return type;
@@ -85,6 +100,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark text.
+   *
+   * @return the watermark text.
    */
   public String getText() {
     return text;
@@ -92,6 +109,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the text font name.
+   *
+   * @return the text font name.
    */
   public String getFont() {
     return font;
@@ -99,6 +118,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the text font size.
+   *
+   * @return the text font size.
    */
   public Integer getFontSize() {
     return fontSize;
@@ -106,6 +127,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the text font color.
+   *
+   * @return the text font color.
    */
   public String getFontColor() {
     return fontColor;
@@ -113,6 +136,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark opacity.
+   *
+   * @return the watermark opacity.
    */
   public Double getOpacity() {
     return opacity;
@@ -120,6 +145,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark horizontal position.
+   *
+   * @return the watermark horizontal position.
    */
   public Integer getXPosition() {
     return xPosition;
@@ -127,6 +154,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark vertical position.
+   *
+   * @return the watermark vertical position.
    */
   public Integer getYPosition() {
     return yPosition;
@@ -134,6 +163,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark image width.
+   *
+   * @return the watermark image width.
    */
   public Integer getImageWidth() {
     return imageWidth;
@@ -141,6 +172,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark image height.
+   *
+   * @return the watermark image height.
    */
   public Integer getImageHeight() {
     return imageHeight;
@@ -148,6 +181,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the watermark rotation in degrees.
+   *
+   * @return the watermark rotation in degrees.
    */
   public Double getRotate() {
     return rotate;
@@ -155,6 +190,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public Boolean getJsonResponse() {
     return jsonResponse;
@@ -162,6 +199,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public boolean isJsonResponse() {
     return Boolean.TRUE.equals(jsonResponse);
@@ -169,6 +208,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns the pre-signed URL expiration time in seconds.
+   *
+   * @return the pre-signed URL expiration time in seconds.
    */
   public Long getPreSignedUrlExpiresIn() {
     return preSignedUrlExpiresIn;
@@ -176,6 +217,8 @@ public abstract class WatermarkPdfParams {
 
   /**
    * Returns metadata to attach to the document.
+   *
+   * @return metadata to attach to the document.
    */
   public Object getMetadata() {
     return metadata;
@@ -185,8 +228,10 @@ public abstract class WatermarkPdfParams {
    * Watermark type supported by the API.
    */
   public enum WatermarkType {
+    /** Text watermark. */
     @SerializedName("text")
     TEXT("text"),
+    /** Image watermark. */
     @SerializedName("image")
     IMAGE("image");
 
@@ -229,6 +274,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the PDF file payload.
+     *
+     * @param file the PDF file payload.
+     * @return this builder.
      */
     public Builder file(FileParam file) {
       this.file = file;
@@ -237,6 +285,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the document id for the source PDF.
+     *
+     * @param documentId the document id for the source PDF.
+     * @return this builder.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;
@@ -245,6 +296,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark image file.
+     *
+     * @param watermark watermark image file.
+     * @return this builder.
      */
     public Builder watermark(FileParam watermark) {
       this.watermark = watermark;
@@ -253,6 +307,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark type.
+     *
+     * @param type watermark type.
+     * @return this builder.
      */
     public Builder type(WatermarkType type) {
       this.type = type;
@@ -261,6 +318,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark text.
+     *
+     * @param text watermark text.
+     * @return this builder.
      */
     public Builder text(String text) {
       this.text = text;
@@ -269,6 +329,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the text watermark font.
+     *
+     * @param font text watermark font.
+     * @return this builder.
      */
     public Builder font(String font) {
       this.font = font;
@@ -277,6 +340,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the text watermark font size.
+     *
+     * @param fontSize text watermark font size.
+     * @return this builder.
      */
     public Builder fontSize(Integer fontSize) {
       this.fontSize = fontSize;
@@ -285,6 +351,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the text watermark font color.
+     *
+     * @param fontColor text watermark font color.
+     * @return this builder.
      */
     public Builder fontColor(String fontColor) {
       this.fontColor = fontColor;
@@ -293,6 +362,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark opacity.
+     *
+     * @param opacity watermark opacity.
+     * @return this builder.
      */
     public Builder opacity(Double opacity) {
       this.opacity = opacity;
@@ -301,6 +373,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark horizontal position.
+     *
+     * @param xPosition watermark horizontal position.
+     * @return this builder.
      */
     public Builder xPosition(Integer xPosition) {
       this.xPosition = xPosition;
@@ -309,6 +384,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark vertical position.
+     *
+     * @param yPosition watermark vertical position.
+     * @return this builder.
      */
     public Builder yPosition(Integer yPosition) {
       this.yPosition = yPosition;
@@ -317,6 +395,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark image width.
+     *
+     * @param imageWidth watermark image width.
+     * @return this builder.
      */
     public Builder imageWidth(Integer imageWidth) {
       this.imageWidth = imageWidth;
@@ -325,6 +406,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark image height.
+     *
+     * @param imageHeight watermark image height.
+     * @return this builder.
      */
     public Builder imageHeight(Integer imageHeight) {
       this.imageHeight = imageHeight;
@@ -333,6 +417,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the watermark rotation in degrees.
+     *
+     * @param rotate watermark rotation in degrees.
+     * @return this builder.
      */
     public Builder rotate(Double rotate) {
       this.rotate = rotate;
@@ -341,6 +428,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets the pre-signed URL expiration time in seconds.
+     *
+     * @param preSignedUrlExpiresIn expiration time in seconds.
+     * @return this builder.
      */
     public Builder preSignedUrlExpiresIn(Long preSignedUrlExpiresIn) {
       this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
@@ -349,6 +439,9 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Sets metadata to attach to the document.
+     *
+     * @param metadata metadata to attach to the document.
+     * @return this builder.
      */
     public Builder metadata(Object metadata) {
       this.metadata = metadata;
@@ -357,6 +450,8 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Builds watermark PDF parameters for bytes responses.
+     *
+     * @return parameters configured for file responses.
      */
     public WatermarkPdfFileParams buildWithFileResponse() {
       this.jsonResponse = false;
@@ -365,6 +460,8 @@ public abstract class WatermarkPdfParams {
 
     /**
      * Builds watermark PDF parameters for JSON responses.
+     *
+     * @return parameters configured for JSON responses.
      */
     public WatermarkPdfJsonParams buildWithJsonResponse() {
       this.jsonResponse = true;

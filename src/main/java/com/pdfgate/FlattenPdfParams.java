@@ -14,6 +14,11 @@ public abstract class FlattenPdfParams {
   private final Long preSignedUrlExpiresIn;
   private final Object metadata;
 
+  /**
+   * Initializes flatten PDF parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   protected FlattenPdfParams(Builder builder) {
     this.file = builder.file;
     this.documentId = builder.documentId;
@@ -24,6 +29,8 @@ public abstract class FlattenPdfParams {
 
   /**
    * Creates a new builder for flatten PDF parameters.
+   *
+   * @return the builder for flatten PDF parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -31,6 +38,8 @@ public abstract class FlattenPdfParams {
 
   /**
    * Returns the PDF file payload when flattening by file.
+   *
+   * @return the PDF file payload when flattening by file.
    */
   public FileParam getFile() {
     return file;
@@ -38,6 +47,8 @@ public abstract class FlattenPdfParams {
 
   /**
    * Returns the document ID when flattening by document ID.
+   *
+   * @return the document ID when flattening by document ID.
    */
   public String getDocumentId() {
     return documentId;
@@ -45,6 +56,8 @@ public abstract class FlattenPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public Boolean getJsonResponse() {
     return jsonResponse;
@@ -52,6 +65,8 @@ public abstract class FlattenPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public boolean isJsonResponse() {
     return Boolean.TRUE.equals(jsonResponse);
@@ -59,6 +74,8 @@ public abstract class FlattenPdfParams {
 
   /**
    * Returns the pre-signed URL expiration time in seconds.
+   *
+   * @return the pre-signed URL expiration time in seconds.
    */
   public Long getPreSignedUrlExpiresIn() {
     return preSignedUrlExpiresIn;
@@ -66,6 +83,8 @@ public abstract class FlattenPdfParams {
 
   /**
    * Returns metadata to attach to the document.
+   *
+   * @return metadata to attach to the document.
    */
   public Object getMetadata() {
     return metadata;
@@ -86,6 +105,9 @@ public abstract class FlattenPdfParams {
 
     /**
      * Sets the PDF file payload.
+     *
+     * @param file the PDF file payload.
+     * @return this builder.
      */
     public Builder file(FileParam file) {
       this.file = file;
@@ -94,6 +116,9 @@ public abstract class FlattenPdfParams {
 
     /**
      * Sets the document ID for the source PDF.
+     *
+     * @param documentId the document ID.
+     * @return this builder.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;
@@ -102,6 +127,9 @@ public abstract class FlattenPdfParams {
 
     /**
      * Sets the pre-signed URL expiration time in seconds.
+     *
+     * @param preSignedUrlExpiresIn expiration time in seconds.
+     * @return this builder.
      */
     public Builder preSignedUrlExpiresIn(Long preSignedUrlExpiresIn) {
       this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
@@ -110,6 +138,9 @@ public abstract class FlattenPdfParams {
 
     /**
      * Sets metadata to attach to the document.
+     *
+     * @param metadata metadata to attach to the document.
+     * @return this builder.
      */
     public Builder metadata(Object metadata) {
       this.metadata = metadata;
@@ -118,6 +149,8 @@ public abstract class FlattenPdfParams {
 
     /**
      * Builds flatten PDF parameters for bytes responses.
+     *
+     * @return parameters configured for file responses.
      */
     public FlattenPdfFileParams buildWithFileResponse() {
       this.jsonResponse = false;
@@ -126,6 +159,8 @@ public abstract class FlattenPdfParams {
 
     /**
      * Builds flatten PDF parameters for JSON responses.
+     *
+     * @return parameters configured for JSON responses.
      */
     public FlattenPdfJsonParams buildWithJsonResponse() {
       this.jsonResponse = true;

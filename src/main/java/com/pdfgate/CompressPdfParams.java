@@ -15,6 +15,11 @@ public abstract class CompressPdfParams {
   private final Long preSignedUrlExpiresIn;
   private final Object metadata;
 
+  /**
+   * Initializes compress PDF parameters from the builder.
+   *
+   * @param builder builder with configured values.
+   */
   protected CompressPdfParams(Builder builder) {
     this.file = builder.file;
     this.documentId = builder.documentId;

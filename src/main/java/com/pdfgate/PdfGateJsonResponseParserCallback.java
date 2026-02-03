@@ -11,6 +11,8 @@ public class PdfGateJsonResponseParserCallback
 
   /**
    * Creates a response parser callback for JSON document payloads.
+   *
+   * @param callback callback invoked with parsed responses.
    */
   public PdfGateJsonResponseParserCallback(PdfGateCallback<PdfGateDocument> callback) {
     this.callback = callback;

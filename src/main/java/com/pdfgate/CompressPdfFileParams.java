@@ -13,6 +13,8 @@ public final class CompressPdfFileParams extends CompressPdfParams {
 
   /**
    * Creates a new builder for compress PDF file response parameters.
+   *
+   * @return the builder for compress PDF file response parameters.
    */
   public static Builder builder() {
     return CompressPdfParams.builder();

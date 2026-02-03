@@ -26,6 +26,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Creates a new builder for compress PDF parameters.
+   *
+   * @return the builder for compress PDF parameters.
    */
   public static Builder builder() {
     return new Builder();
@@ -33,6 +35,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Returns the PDF file payload when compressing by file.
+   *
+   * @return the PDF file payload.
    */
   public FileParam getFile() {
     return file;
@@ -40,6 +44,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Returns the document ID when compressing by document ID.
+   *
+   * @return the document ID.
    */
   public String getDocumentId() {
     return documentId;
@@ -47,6 +53,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Returns whether the PDF should be linearized.
+   *
+   * @return whether to enable linearized output.
    */
   public Boolean getLinearize() {
     return linearize;
@@ -54,6 +62,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public Boolean getJsonResponse() {
     return jsonResponse;
@@ -61,6 +71,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Returns whether the response is JSON.
+   *
+   * @return whether the response is JSON.
    */
   public boolean isJsonResponse() {
     return Boolean.TRUE.equals(jsonResponse);
@@ -68,6 +80,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Returns the pre-signed URL expiration time in seconds.
+   *
+   * @return the pre-signed URL expiration time in seconds.
    */
   public Long getPreSignedUrlExpiresIn() {
     return preSignedUrlExpiresIn;
@@ -75,6 +89,8 @@ public abstract class CompressPdfParams {
 
   /**
    * Returns metadata to attach to the document.
+   *
+   * @return metadata to attach to the document.
    */
   public Object getMetadata() {
     return metadata;
@@ -96,6 +112,9 @@ public abstract class CompressPdfParams {
 
     /**
      * Sets the PDF file payload.
+     *
+     * @param file the PDF file payload.
+     * @return this builder.
      */
     public Builder file(FileParam file) {
       this.file = file;
@@ -104,6 +123,9 @@ public abstract class CompressPdfParams {
 
     /**
      * Sets the document ID for the source PDF.
+     *
+     * @param documentId the document ID.
+     * @return this builder.
      */
     public Builder documentId(String documentId) {
       this.documentId = documentId;
@@ -112,6 +134,9 @@ public abstract class CompressPdfParams {
 
     /**
      * Enables linearized PDF output when set to true.
+     *
+     * @param linearize whether to enable linearized output.
+     * @return this builder.
      */
     public Builder linearize(Boolean linearize) {
       this.linearize = linearize;
@@ -120,6 +145,9 @@ public abstract class CompressPdfParams {
 
     /**
      * Sets the pre-signed URL expiration time in seconds.
+     *
+     * @param preSignedUrlExpiresIn expiration time in seconds.
+     * @return this builder.
      */
     public Builder preSignedUrlExpiresIn(Long preSignedUrlExpiresIn) {
       this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
@@ -128,6 +156,9 @@ public abstract class CompressPdfParams {
 
     /**
      * Sets metadata to attach to the document.
+     *
+     * @param metadata metadata to attach to the document.
+     * @return this builder.
      */
     public Builder metadata(Object metadata) {
       this.metadata = metadata;
@@ -136,6 +167,8 @@ public abstract class CompressPdfParams {
 
     /**
      * Builds compress PDF parameters for bytes responses.
+     *
+     * @return parameters configured for bytes responses.
      */
     public CompressPdfFileParams buildWithFileResponse() {
       this.jsonResponse = false;
@@ -144,6 +177,8 @@ public abstract class CompressPdfParams {
 
     /**
      * Builds compress PDF parameters for JSON responses.
+     *
+     * @return parameters configured for JSON responses.
      */
     public CompressPdfJsonParams buildWithJsonResponse() {
       this.jsonResponse = true;

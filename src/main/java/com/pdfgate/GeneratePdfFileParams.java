@@ -12,7 +12,7 @@ public final class GeneratePdfFileParams extends GeneratePdfParams {
   }
 
   /**
-   * Creates a new builder for generate PDF file response parameters.
+   * Creates a new builder for generate PDF file parameters.
    */
   public static Builder builder() {
     return GeneratePdfParams.builder();

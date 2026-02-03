@@ -166,9 +166,9 @@ public abstract class CompressPdfParams {
     }
 
     /**
-     * Builds compress PDF parameters for bytes responses.
+     * Builds compress PDF parameters for file responses.
      *
-     * @return parameters configured for bytes responses.
+     * @return parameters configured for file responses.
      */
     public CompressPdfFileParams buildWithFileResponse() {
       this.jsonResponse = false;

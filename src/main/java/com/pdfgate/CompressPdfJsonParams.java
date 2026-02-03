@@ -13,7 +13,7 @@ public final class CompressPdfJsonParams extends CompressPdfParams {
   }
 
   /**
-   * Creates a new builder for compress PDF JSON response parameters.
+   * Creates a new builder for compress PDF JSON parameters.
    */
   public static Builder builder() {
     return CompressPdfParams.builder();

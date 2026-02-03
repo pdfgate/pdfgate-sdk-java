@@ -106,7 +106,7 @@ public final class PdfGate {
    * Builds a call that expects a JSON document response.
    *
    * @param params parameters for the generate PDF request.
-   * @return a call that yields a JSON document response.
+   * @return a call that yields a {@link PdfGateDocument} response.
    */
   public CallJson generatePdfCall(GeneratePdfJsonParams params) {
     return new PdfGateJsonCall(callBuilder.buildGeneratePdfCall(params));
@@ -176,7 +176,7 @@ public final class PdfGate {
    * Builds a call that expects a JSON document response.
    *
    * @param params parameters for the flatten PDF request.
-   * @return a call that yields a JSON document response.
+   * @return a call that yields a {@link PdfGateDocument} response.
    */
   public CallJson flattenPdfCall(FlattenPdfJsonParams params) {
     return new PdfGateJsonCall(callBuilder.buildFlattenPdfCall(params));
@@ -246,7 +246,7 @@ public final class PdfGate {
    * Builds a call that expects a JSON document response.
    *
    * @param params parameters for the protect PDF request.
-   * @return a call that yields a JSON document response.
+   * @return a call that yields a {@link PdfGateDocument} response.
    */
   public CallJson protectPdfCall(ProtectPdfJsonParams params) {
     return new PdfGateJsonCall(callBuilder.buildProtectPdfCall(params));
@@ -316,7 +316,7 @@ public final class PdfGate {
    * Builds a call that expects a JSON document response.
    *
    * @param params parameters for the compress PDF request.
-   * @return a call that yields a JSON document response.
+   * @return a call that yields a {@link PdfGateDocument} response.
    */
   public CallJson compressPdfCall(CompressPdfJsonParams params) {
     return new PdfGateJsonCall(callBuilder.buildCompressPdfCall(params));
@@ -388,7 +388,7 @@ public final class PdfGate {
    * Builds a call that expects a JSON document response.
    *
    * @param params parameters for the watermark PDF request.
-   * @return a call that yields a JSON document response.
+   * @return a call that yields a {@link PdfGateDocument} response.
    */
   public CallJson watermarkPdfCall(WatermarkPdfJsonParams params) {
     return new PdfGateJsonCall(callBuilder.buildWatermarkPdfCall(params));
@@ -466,7 +466,7 @@ public final class PdfGate {
    * Builds a call that expects a JSON document response.
    *
    * @param params parameters for the get document request.
-   * @return a call that yields a JSON document response.
+   * @return a call that yields a {@link PdfGateDocument} response.
    */
   public CallJson getDocumentCall(GetDocumentParams params) {
     return new PdfGateJsonCall(callBuilder.buildGetDocumentCall(params));
@@ -511,7 +511,7 @@ public final class PdfGate {
   /**
    * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
    *
-   * @param call the call to enqueue.
+   * @param call     the call to enqueue.
    * @param callback the callback for the response.
    */
   public void enqueue(CallJson call, PdfGateCallback<PdfGateDocument> callback) {
@@ -521,7 +521,7 @@ public final class PdfGate {
   /**
    * Enqueues a bytes response call and returns the raw response bytes.
    *
-   * @param call the call to enqueue.
+   * @param call     the call to enqueue.
    * @param callback the callback for the response.
    */
   public void enqueue(CallFile call, PdfGateCallback<byte[]> callback) {
@@ -531,7 +531,7 @@ public final class PdfGate {
   /**
    * Enqueues a JSON response call and maps the response to {@link JsonObject}.
    *
-   * @param call the call to enqueue.
+   * @param call     the call to enqueue.
    * @param callback the callback for the response.
    */
   public void enqueue(CallJsonObject call, PdfGateCallback<JsonObject> callback) {

@@ -13,7 +13,7 @@ public final class FlattenPdfJsonParams extends FlattenPdfParams {
   }
 
   /**
-   * Creates a new builder for flatten PDF JSON response parameters.
+   * Creates a new builder for flatten PDF JSON parameters.
    */
   public static Builder builder() {
     return FlattenPdfParams.builder();

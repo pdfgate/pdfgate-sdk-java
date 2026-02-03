@@ -32,3 +32,38 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
+
+
+mavenPublishing {
+    publishToMavenCentral()
+
+    signAllPublications()
+
+    coordinates("com.pdfgate", "pdfgate", "0.1.0-SNAPSHOT")
+
+    pom {
+        name.set("PDFGate SDK")
+        description.set("The PDFGate's API Java SDK .")
+        inceptionYear.set("2026")
+        url.set("https://github.com/pdfgate/pdfgate-sdk-java/")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("http://www.opensource.org/licenses/mit-license.php")
+                distribution.set("http://www.opensource.org/licenses/mit-license.php")
+            }
+        }
+        developers {
+            developer {
+                id.set("fgasperij")
+                name.set("Fernando Gasperi")
+                url.set("https://github.com/fgasperij/")
+            }
+        }
+        scm {
+            url.set("https://github.com/pdfgate/pdfgate-sdk-java/")
+            connection.set("scm:git:git://github.com/pdfgate/pdfgate-sdk-java.git")
+            developerConnection.set("scm:git:ssh://git@github.com/pdfgate/pdfgate-sdk-java.git")
+        }
+    }
+}

@@ -33,6 +33,10 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
+tasks.named("generateMetadataFileForMavenPublication") {
+    dependsOn(tasks.named("plainJavadocJar"))
+}
+
 
 mavenPublishing {
     publishToMavenCentral()

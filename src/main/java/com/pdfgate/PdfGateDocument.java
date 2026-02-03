@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Document metadata returned by JSON responses from the PDFGate API.
+ */
 public final class PdfGateDocument {
   private String id;
   private DocumentStatus status;
@@ -17,38 +20,65 @@ public final class PdfGateDocument {
   private Map<String, Object> metadata;
   private String derivedFrom;
 
+  /**
+   * Returns the document identifier.
+   */
   public String getId() {
     return id;
   }
 
+  /**
+   * Returns the document processing status.
+   */
   public DocumentStatus getStatus() {
     return status;
   }
 
+  /**
+   * Returns when the document was created.
+   */
   public Instant getCreatedAt() {
     return createdAt;
   }
 
+  /**
+   * Returns when the document expires, if present.
+   */
   public Instant getExpiresAt() {
     return expiresAt;
   }
 
+  /**
+   * Returns the document type.
+   */
   public DocumentType getType() {
     return type;
   }
 
+  /**
+   * Returns a temporary file URL if provided by the API.
+   */
   public Optional<String> getFileUrl() {
     return Optional.ofNullable(fileUrl);
   }
 
+  /**
+   * Returns the file size in bytes, if provided.
+   */
   public Long getSize() {
     return size;
   }
 
+  /**
+   * Returns metadata attached to the document, if present.
+   */
   public Optional<Map<String, Object>> getMetadata() {
     return Optional.ofNullable(metadata);
   }
 
+  /**
+   * Returns the source document ID when derived from another document.
+   */
   public Optional<String> getDerivedFrom() {
     return Optional.ofNullable(derivedFrom);
   }
@@ -80,27 +110,57 @@ public final class PdfGateDocument {
   }
 
   public enum DocumentStatus {
+    /**
+     * The document is finished and available.
+     */
     @SerializedName("completed")
     COMPLETED,
+    /**
+     * The document is still processing.
+     */
     @SerializedName("processing")
     PROCESSING,
+    /**
+     * The document has expired and is no longer available.
+     */
     @SerializedName("expired")
     EXPIRED,
+    /**
+     * The document failed to process.
+     */
     @SerializedName("failed")
     FAILED
   }
 
   public enum DocumentType {
+    /**
+     * Document generated from HTML or URL.
+     */
     @SerializedName("from_html")
     FROM_HTML,
+    /**
+     * Document created by flattening a PDF.
+     */
     @SerializedName("flattened")
     FLATTENED,
+    /**
+     * Document created by applying a watermark.
+     */
     @SerializedName("watermarked")
     WATERMARKED,
+    /**
+     * Document created by encryption.
+     */
     @SerializedName("encrypted")
     ENCRYPTED,
+    /**
+     * Document created by compression.
+     */
     @SerializedName("compressed")
     COMPRESSED,
+    /**
+     * Document created by signing.
+     */
     @SerializedName("signed")
     SIGNED
   }

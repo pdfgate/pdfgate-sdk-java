@@ -3,6 +3,12 @@ package com.pdfgate;
 import java.time.Duration;
 import java.util.Objects;
 
+/**
+ * Configuration for the PDFGate client.
+ *
+ * <p>Use {@link #defaultConfig()} to start with defaults and override values using the
+ * factory methods when needed.
+ */
 public final class PdfGateConfig {
   private static final String DEFAULT_PRODUCTION_API_DOMAIN = "https://api.pdfgate.com";
   private static final String DEFAULT_SANDBOX_API_DOMAIN = "https://api-sandbox.pdfgate.com";
@@ -38,6 +44,9 @@ public final class PdfGateConfig {
     this.protectPdfTimeout = Objects.requireNonNull(protectPdfTimeout, "protectPdfTimeout");
   }
 
+  /**
+   * Returns the default configuration for production and sandbox domains.
+   */
   public static PdfGateConfig defaultConfig() {
     return new PdfGateConfig(
         DEFAULT_PRODUCTION_API_DOMAIN,
@@ -50,6 +59,9 @@ public final class PdfGateConfig {
     );
   }
 
+  /**
+   * Creates a configuration with custom domains and default timeout.
+   */
   public static PdfGateConfig of(
       String productionApiDomain,
       String sandboxApiDomain,
@@ -67,6 +79,9 @@ public final class PdfGateConfig {
     );
   }
 
+  /**
+   * Creates a configuration with custom domains and flatten timeout.
+   */
   public static PdfGateConfig of(
       String productionApiDomain,
       String sandboxApiDomain,
@@ -85,6 +100,9 @@ public final class PdfGateConfig {
     );
   }
 
+  /**
+   * Creates a configuration with custom domains and protect timeout.
+   */
   public static PdfGateConfig of(
       String productionApiDomain,
       String sandboxApiDomain,
@@ -104,6 +122,9 @@ public final class PdfGateConfig {
     );
   }
 
+  /**
+   * Creates a configuration with custom domains and per-endpoint timeouts.
+   */
   public static PdfGateConfig of(
       String productionApiDomain,
       String sandboxApiDomain,
@@ -131,30 +152,51 @@ public final class PdfGateConfig {
     return value;
   }
 
+  /**
+   * Returns the production API base URL.
+   */
   public String getProductionApiDomain() {
     return productionApiDomain;
   }
 
+  /**
+   * Returns the sandbox API base URL.
+   */
   public String getSandboxApiDomain() {
     return sandboxApiDomain;
   }
 
+  /**
+   * Returns the default timeout applied when no endpoint-specific timeout exists.
+   */
   public Duration getDefaultTimeout() {
     return defaultTimeout;
   }
 
+  /**
+   * Returns the timeout used for generate PDF requests.
+   */
   public Duration getGeneratePdfTimeout() {
     return generatePdfTimeout;
   }
 
+  /**
+   * Returns the timeout used for flatten PDF requests.
+   */
   public Duration getFlattenPdfTimeout() {
     return flattenPdfTimeout;
   }
 
+  /**
+   * Returns the timeout used for compress PDF requests.
+   */
   public Duration getCompressPdfTimeout() {
     return compressPdfTimeout;
   }
 
+  /**
+   * Returns the timeout used for protect PDF requests.
+   */
   public Duration getProtectPdfTimeout() {
     return protectPdfTimeout;
   }

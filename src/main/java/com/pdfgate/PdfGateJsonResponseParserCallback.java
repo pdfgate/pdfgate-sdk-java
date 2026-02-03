@@ -3,9 +3,15 @@ package com.pdfgate;
 import java.io.IOException;
 import okhttp3.Response;
 
+/**
+ * Parses JSON responses into {@link PdfGateDocument} instances.
+ */
 public class PdfGateJsonResponseParserCallback
     extends PdfGateResponseParserCallback<PdfGateDocument> {
 
+  /**
+   * Creates a response parser callback for JSON document payloads.
+   */
   public PdfGateJsonResponseParserCallback(PdfGateCallback<PdfGateDocument> callback) {
     this.callback = callback;
   }

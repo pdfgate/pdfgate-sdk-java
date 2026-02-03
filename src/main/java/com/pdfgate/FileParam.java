@@ -11,24 +11,46 @@ public final class FileParam {
   private final byte[] data;
   private final String type;
 
+  /**
+   * Creates a file payload with the default content type.
+   *
+   * @param name file name.
+   * @param data file bytes.
+   */
   public FileParam(String name, byte[] data) {
     this(name, data, null);
   }
 
+  /**
+   * Creates a file payload with an explicit content type.
+   *
+   * @param name file name.
+   * @param data file bytes.
+   * @param type content type, or {@code null} to let the client infer it.
+   */
   public FileParam(String name, byte[] data, String type) {
     this.name = Objects.requireNonNull(name, "name");
     this.data = Objects.requireNonNull(data, "data");
     this.type = type;
   }
 
+  /**
+   * Returns the filename.
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Returns the file bytes.
+   */
   public byte[] getData() {
     return data;
   }
 
+  /**
+   * Returns the content type override, if provided.
+   */
   public String getType() {
     return type;
   }

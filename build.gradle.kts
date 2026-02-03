@@ -43,7 +43,7 @@ mavenPublishing {
 
     pom {
         name.set("PDFGate SDK")
-        description.set("The PDFGate's API Java SDK .")
+        description.set("Java SDK for the PDFGate HTTP API.")
         inceptionYear.set("2026")
         url.set("https://github.com/pdfgate/pdfgate-sdk-java/")
         licenses {
@@ -55,9 +55,9 @@ mavenPublishing {
         }
         developers {
             developer {
-                id.set("fgasperij")
-                name.set("Fernando Gasperi")
-                url.set("https://github.com/fgasperij/")
+                id.set("pdfgate")
+                name.set("PDFGate")
+                url.set("https://github.com/pdfgate/")
             }
         }
         scm {

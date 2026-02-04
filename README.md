@@ -42,7 +42,7 @@ We support LTS versions of the JDK. Currently, that's Java versions:
 Add this dependency to your project's build file:
 
 ```groovy
-implementation "com.pdfgate:pdfgate-sdk-java:0.1.0"
+implementation "com.pdfgate:pdfgate:0.1.0"
 ```
 
 ### Maven users
@@ -53,7 +53,7 @@ Add this dependency to your project's POM:
 
 <dependency>
     <groupId>com.pdfgate</groupId>
-    <artifactId>pdfgate-sdk-java</artifactId>
+    <artifactId>pdfgate</artifactId>
     <version>0.1.0</version>
 </dependency>
 ```
@@ -65,7 +65,7 @@ If you are not using Gradle or Maven, you will need to manually install the foll
 1. The PDFGate JAR:
 
 - Download the latest release version
-  from [Maven Central](https://repo1.maven.org/maven2/com/pdfgate/pdfgate-sdk-java/0.1.0/pdfgate-sdk-java-0.1.0.jar)
+  from [Maven Central](https://repo1.maven.org/maven2/com/pdfgate/pdfgate/0.1.0/pdfgate-0.1.0.jar)
 - Current release version: 0.1.0
 
 2. Google Gson:

@@ -4,7 +4,25 @@ plugins {
 }
 
 repositories {
+    maven {
+        name = "Central Portal Snapshots"
+        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+
+        // Only search this repository for the specific dependency
+        content {
+            includeModule("com.pdfgate", "pdfgate")
+        }
+    }
+
     mavenCentral()
+}
+
+sourceSets {
+    create("testingimports") {
+        java.srcDir("src/testingimports/java")
+        compileClasspath += sourceSets.main.get().output + configurations.compileClasspath.get()
+        runtimeClasspath += output + compileClasspath
+    }
 }
 
 dependencies {
@@ -31,6 +49,15 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+tasks.register<JavaExec>("runExample") {
+    group = "application"
+    description = "Runs the PDFGate Example class."
+    dependsOn("compileTestingimportsJava")
+    classpath = sourceSets["testingimports"].runtimeClasspath + sourceSets.main.get().runtimeClasspath
+    mainClass.set("com.fer.Example")
+    environment("PDFGATE_API_KEY", System.getenv("PDFGATE_API_KEY"))
 }
 
 tasks.matching { it.name == "plainJavadocJar" }.configureEach {

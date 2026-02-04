@@ -1,7 +1,7 @@
 # PDFGate's official Java SDK
 
-[![Maven Central](https://img.shields.io/badge/maven--central-v31.3.0-blue)](https://mvnrepository.com/artifact/com.pdfgate/pdfgate-sdk-java)
-[![JavaDoc](http://img.shields.io/badge/javadoc-reference-blue.svg)](https://pdfgate.com/documentation)
+[![Maven Central](https://img.shields.io/badge/maven--central-v31.3.0-blue)](https://mvnrepository.com/artifact/com.pdfgate/pdfgate)
+[![JavaDoc](http://img.shields.io/badge/javadoc-reference-blue.svg)](https://pdfgate.github.io/pdfgate-sdk-java)
 [![Build Status](https://github.com/pdfgate/pdfgate-sdk-java/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pdfgate/pdfgate-sdk-java/actions?query=branch%3Amain)
 
 PDFGate lets you generate, process, and secure PDFs via a simple API:

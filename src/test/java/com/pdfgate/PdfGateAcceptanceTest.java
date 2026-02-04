@@ -101,6 +101,21 @@ public class PdfGateAcceptanceTest {
   }
 
   @Test
+  public void generatePdfSettingEnumParamsWithJsonResponse() throws Exception {
+    GeneratePdfJsonParams params = GeneratePdfParams.builder()
+        .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+        .margin(new GeneratePdfParams.PdfPageMargin("10px", "10px", "10px", "10px"))
+        .pageSizeType(GeneratePdfParams.PageSizeType.A3)
+        .buildWithJsonResponse();
+
+    PdfGateDocument document = client.generatePdf(params);
+    Assertions.assertNotNull(document.getId(), "document id should be present");
+    Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(),
+        "document status should be present");
+    Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
+  }
+
+  @Test
   public void flattenPdfByFile() throws Exception {
     GeneratePdfFileParams generateParams = GeneratePdfParams.builder()
         .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")

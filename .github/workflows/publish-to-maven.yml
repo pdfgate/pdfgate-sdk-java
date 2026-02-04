@@ -34,7 +34,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyId }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
-        run: ./gradlew publishToMavenCentral --no-daemon
+        run: ./gradlew publishToMavenCentral --no-daemon --stacktrace --debug
 
       - name: Publish release (tag)
         if: startsWith(github.ref, 'refs/tags/v')

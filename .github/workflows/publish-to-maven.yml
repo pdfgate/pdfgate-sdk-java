@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
 
     permissions:
@@ -28,8 +28,32 @@ jobs:
       - name: Gradle Wrapper Validation
         uses: gradle/actions/wrapper-validation@v4
 
-      - name: Publish snapshot (main)
-        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-SNAPSHOT')
+      - name: Build
+        run: ./gradlew build --no-daemon
+
+  publish-snapshot:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-SNAPSHOT')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Publish snapshot
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
@@ -38,8 +62,29 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
         run: ./gradlew publishToMavenCentral --no-daemon
 
-      - name: Publish release (tag)
-        if: startsWith(github.ref, 'refs/tags/v') && !endsWith(github.ref, '-SNAPSHOT')
+  publish-release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && !endsWith(github.ref, '-SNAPSHOT')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Publish release
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}

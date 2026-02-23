@@ -280,7 +280,13 @@ final class PdfGateCallBuilder {
     return client.newCall(request);
   }
 
-  Request.Builder authorizedRequestFor(String url) {
+  /**
+   * Returns a request builder with the Authorization header set.
+   *
+   * @param url full request URL.
+   * @return a request builder with authentication configured.
+   */
+  private Request.Builder authorizedRequestFor(String url) {
     return new Request.Builder()
         .url(url)
         .header("Authorization", "Bearer " + apiKey);

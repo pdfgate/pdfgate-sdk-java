@@ -3,7 +3,7 @@ package com.pdfgate;
 import okhttp3.Call;
 
 /**
- * Marker type for calls that expect a file response.
+ * Marker interface for calls that return raw bytes.
  */
 public interface CallFile extends Call {
 }

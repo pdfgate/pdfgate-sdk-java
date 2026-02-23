@@ -4,10 +4,10 @@ package com.pdfgate;
  * Parameters for flattening a PDF by document ID.
  *
  * <p>Flattening converts interactive fields/annotations into a static PDF. Provide {@code
- * documentId}. Use {@link Builder#buildWithFileResponse()} for raw bytes or {@link
- * Builder#buildWithJsonResponse()} for a {@link PdfGateDocument}.
+ * documentId}. Responses are JSON-only; use {@link Builder#build()} for a
+ * {@link PdfGateDocument}.
  */
-public abstract class FlattenPdfParams {
+public final class FlattenPdfParams {
   private final String documentId;
   private final Boolean jsonResponse;
   private final Long preSignedUrlExpiresIn;
@@ -18,7 +18,7 @@ public abstract class FlattenPdfParams {
    *
    * @param builder builder with configured values.
    */
-  protected FlattenPdfParams(Builder builder) {
+  private FlattenPdfParams(Builder builder) {
     this.documentId = builder.documentId;
     this.jsonResponse = builder.jsonResponse;
     this.preSignedUrlExpiresIn = builder.preSignedUrlExpiresIn;
@@ -84,7 +84,7 @@ public abstract class FlattenPdfParams {
    */
   public static final class Builder {
     private String documentId;
-    private Boolean jsonResponse;
+    private Boolean jsonResponse = true;
     private Long preSignedUrlExpiresIn;
     private Object metadata;
 
@@ -125,23 +125,13 @@ public abstract class FlattenPdfParams {
     }
 
     /**
-     * Builds flatten PDF parameters for bytes responses.
-     *
-     * @return parameters configured for file responses.
-     */
-    public FlattenPdfFileParams buildWithFileResponse() {
-      this.jsonResponse = false;
-      return new FlattenPdfFileParams(this);
-    }
-
-    /**
      * Builds flatten PDF parameters for JSON responses.
      *
      * @return parameters configured for JSON responses.
      */
-    public FlattenPdfJsonParams buildWithJsonResponse() {
+    public FlattenPdfParams build() {
       this.jsonResponse = true;
-      return new FlattenPdfJsonParams(this);
+      return new FlattenPdfParams(this);
     }
   }
 }

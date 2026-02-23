@@ -3,11 +3,10 @@ package com.pdfgate;
 /**
  * Parameters for compressing a PDF by document ID.
  *
- * <p>Set {@code linearize} to enable Fast Web View output. Use
- * {@link Builder#buildWithFileResponse()} for raw bytes or
- * {@link Builder#buildWithJsonResponse()} for {@link PdfGateDocument} metadata.
+ * <p>Set {@code linearize} to enable Fast Web View output. Responses are JSON-only; use
+ * {@link Builder#build()} for {@link PdfGateDocument} metadata.
  */
-public abstract class CompressPdfParams {
+public final class CompressPdfParams {
   private final String documentId;
   private final Boolean linearize;
   private final Boolean jsonResponse;
@@ -19,7 +18,7 @@ public abstract class CompressPdfParams {
    *
    * @param builder builder with configured values.
    */
-  protected CompressPdfParams(Builder builder) {
+  private CompressPdfParams(Builder builder) {
     this.documentId = builder.documentId;
     this.linearize = builder.linearize;
     this.jsonResponse = builder.jsonResponse;
@@ -96,7 +95,7 @@ public abstract class CompressPdfParams {
   public static final class Builder {
     private String documentId;
     private Boolean linearize;
-    private Boolean jsonResponse;
+    private Boolean jsonResponse = true;
     private Long preSignedUrlExpiresIn;
     private Object metadata;
 
@@ -148,23 +147,13 @@ public abstract class CompressPdfParams {
     }
 
     /**
-     * Builds compress PDF parameters for file responses.
-     *
-     * @return parameters configured for file responses.
-     */
-    public CompressPdfFileParams buildWithFileResponse() {
-      this.jsonResponse = false;
-      return new CompressPdfFileParams(this);
-    }
-
-    /**
      * Builds compress PDF parameters for JSON responses.
      *
      * @return parameters configured for JSON responses.
      */
-    public CompressPdfJsonParams buildWithJsonResponse() {
+    public CompressPdfParams build() {
       this.jsonResponse = true;
-      return new CompressPdfJsonParams(this);
+      return new CompressPdfParams(this);
     }
   }
 }

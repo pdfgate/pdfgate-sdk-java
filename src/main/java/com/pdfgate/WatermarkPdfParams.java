@@ -7,9 +7,9 @@ import com.google.gson.annotations.SerializedName;
  *
  * <p>{@code type} is required. For text watermarks, set {@code text}. For image
  * watermarks, provide a {@code watermark} image file. Optional settings include
- * font, size, color, opacity, position, and rotation.
+ * font, size, color, opacity, position, and rotation. Responses are JSON-only.
  */
-public abstract class WatermarkPdfParams {
+public final class WatermarkPdfParams {
   private final String documentId;
   private final FileParam watermark;
   private final WatermarkType type;
@@ -32,7 +32,7 @@ public abstract class WatermarkPdfParams {
    *
    * @param builder builder with configured values.
    */
-  protected WatermarkPdfParams(Builder builder) {
+  private WatermarkPdfParams(Builder builder) {
     this.documentId = builder.documentId;
     this.watermark = builder.watermark;
     this.type = builder.type;
@@ -253,7 +253,7 @@ public abstract class WatermarkPdfParams {
     private Integer imageWidth;
     private Integer imageHeight;
     private Double rotate;
-    private Boolean jsonResponse;
+    private Boolean jsonResponse = true;
     private Long preSignedUrlExpiresIn;
     private Object metadata;
 
@@ -426,23 +426,13 @@ public abstract class WatermarkPdfParams {
     }
 
     /**
-     * Builds watermark PDF parameters for bytes responses.
-     *
-     * @return parameters configured for file responses.
-     */
-    public WatermarkPdfFileParams buildWithFileResponse() {
-      this.jsonResponse = false;
-      return new WatermarkPdfFileParams(this);
-    }
-
-    /**
      * Builds watermark PDF parameters for JSON responses.
      *
      * @return parameters configured for JSON responses.
      */
-    public WatermarkPdfJsonParams buildWithJsonResponse() {
+    public WatermarkPdfParams build() {
       this.jsonResponse = true;
-      return new WatermarkPdfJsonParams(this);
+      return new WatermarkPdfParams(this);
     }
   }
 }

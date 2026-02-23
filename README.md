@@ -91,8 +91,10 @@ To use these JARs:
 # Quick start
 
 ```java
-import com.pdfgate.PdfGate;
 import com.pdfgate.GeneratePdfParams;
+import com.pdfgate.GetFileParams;
+import com.pdfgate.PdfGate;
+import com.pdfgate.PdfGateDocument;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -103,15 +105,18 @@ public class PdfGateExample {
     String apiKey = "test_123";
     PdfGate client = new PdfGate(apiKey);
 
-    GeneratePdfJsonParams params = GeneratePdfParams.builder()
+    GeneratePdfParams params = GeneratePdfParams.builder()
         .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-        .buildWithFileResponse();
+        .build();
 
-    byte[] pdfFile = client.generatePdf(params);
+    PdfGateDocument document = client.generatePdf(params);
 
     Path filePath = Paths.get("output.pdf");
     try {
-      Files.write(filePath, pdfFile);
+      byte[] fileBytes = client.getFile(GetFileParams.builder()
+          .documentId(document.getId())
+          .build());
+      Files.write(filePath, fileBytes);
     } catch (IOException e) {
       System.err.println("Error writing to file: " + e.getMessage());
     }
@@ -132,7 +137,7 @@ The public API offers three ways to use any of the endpoints:
 The method without any suffix is regular synchronous code, the call will return the result from the API:
 
 ```java
-byte[] pdfFile = client.generatePdf(params);
+PdfGateDocument document = client.generatePdf(params);
 ```
 
 ### Async with futures
@@ -142,7 +147,7 @@ The method with an `Async` suffix allows you to work asynchronously with `Comple
 ```java
 import java.util.concurrent.CompletableFuture;
 
-CompletableFuture<byte[]> pdfFileFuture = client.generatePdfAsync(params);
+CompletableFuture<PdfGateDocument> pdfFileFuture = client.generatePdfAsync(params);
 ```
 
 ## Async with callbacks
@@ -167,24 +172,19 @@ client.enqueue(call, new PdfGateCallback<>() {
 
 # Responses
 
-The two response types for most endpoints are either the raw bytes of the
-PDF file or the documents metadata that you can use to query or download later:
-
-- file: this is represented by `byte[]` and it can be saved directly into a file.
-- `PdfGateDocument`: this is an object that holds all the metadata of the file including its `id`, and a `fileUrl`
-  to download it if it was requested by specifying `preSignedUrlExpiresIn` in the request.
+Most endpoints return a `PdfGateDocument` containing metadata including the `id` and optional `fileUrl`
+when `preSignedUrlExpiresIn` is provided. To download the file bytes, call `getFile` with the document id.
 
 # Examples
 
 ## Generate PDF
 
 ```java
-GeneratePdfFileParams params = GeneratePdfParams.builder()
+GeneratePdfParams params = GeneratePdfParams.builder()
     .html("<h1>Hello from PDFGate!</h1>")
-    .buildWithFileResponse();
+    .build();
 
-byte[] pdf = client.generatePdf(params);
-Files.write(Paths.get("output.pdf"), pdf);
+PdfGateDocument document = client.generatePdf(params);
 ```
 
 ## Get document metadata
@@ -211,9 +211,9 @@ Files.write(Paths.get("output.pdf"), fileContent);
 ## Flatten a PDF (make form-fields non-editable)
 
 ```java
-FlattenPdfJsonParams flattenParams = FlattenPdfJsonParams.builder()
+FlattenPdfParams flattenParams = FlattenPdfParams.builder()
     .documentId(documentId)
-    .buildWithJsonResponse();
+    .build();
 
 PdfGateDocument flattenedDocument = client.flattenPdf(flattenParams);
 ```
@@ -221,9 +221,9 @@ PdfGateDocument flattenedDocument = client.flattenPdf(flattenParams);
 ## Compress a PDF
 
 ```java
-CompressPdfJsonParams compressParams = CompressPdfParams.builder()
+CompressPdfParams compressParams = CompressPdfParams.builder()
     .documentId(documentId)
-    .buildWithJsonResponse();
+    .build();
 
 PdfGateDocument compressedDocument = client.compressPdf(compressParams);
 ```
@@ -233,11 +233,11 @@ PdfGateDocument compressedDocument = client.compressPdf(compressParams);
 ```java
 byte[] watermarkImage = Files.readAllBytes(Paths.get("watermark.jpg"));
 
-WatermarkPdfJsonParams watermarkParams = WatermarkPdfParams.builder()
+WatermarkPdfParams watermarkParams = WatermarkPdfParams.builder()
     .documentId(documentId)
     .type(WatermarkPdfParams.WatermarkType.IMAGE)
     .watermark(new FileParam("watermark.jpg", watermarkImage, "image/jpeg"))
-    .buildWithJsonResponse();
+    .build();
 
 PdfGateDocument watermarkedPdf = client.watermarkPdf(watermarkParams);
 ```
@@ -245,11 +245,11 @@ PdfGateDocument watermarkedPdf = client.watermarkPdf(watermarkParams);
 ## Protect (encrypt) a PDF
 
 ```java
-ProtectPdfJsonParams protectParams = ProtectPdfParams.builder()
+ProtectPdfParams protectParams = ProtectPdfParams.builder()
     .documentId(documentId)
     .userPassword(UUID.randomUUID().toString())
     .ownerPassword(UUID.randomUUID().toString())
-    .buildWithJsonResponse();
+    .build();
 
 PdfGateDocument protectedDocument = client.protectPdf(protectParams);
 ```
@@ -262,10 +262,10 @@ String htmlForm = "<form>"
     + "<input type='text' name='last_name' value='Doe'/>"
     + "</form>";
 
-GeneratePdfJsonParams generateParams = GeneratePdfParams.builder()
+GeneratePdfParams generateParams = GeneratePdfParams.builder()
     .html(htmlForm)
     .enableFormFields(true)
-    .buildWithJsonResponse();
+    .build();
 
 PdfGateDocument document = client.generatePdf(generateParams);
 String documentId = document.getId();

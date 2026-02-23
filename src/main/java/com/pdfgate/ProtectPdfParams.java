@@ -7,9 +7,10 @@ import com.google.gson.annotations.SerializedName;
  *
  * <p>Use {@link EncryptionAlgorithm} to select AES256 (default) or AES128. Set
  * {@code userPassword} and {@code ownerPassword} to control access and permissions,
- * and use the disable flags to restrict printing, copying, or editing.
+ * and use the disable flags to restrict printing, copying, or editing. Responses are
+ * JSON-only.
  */
-public abstract class ProtectPdfParams {
+public final class ProtectPdfParams {
   private final String documentId;
   private final EncryptionAlgorithm algorithm;
   private final String userPassword;
@@ -27,7 +28,7 @@ public abstract class ProtectPdfParams {
    *
    * @param builder builder with configured values.
    */
-  protected ProtectPdfParams(Builder builder) {
+  private ProtectPdfParams(Builder builder) {
     this.documentId = builder.documentId;
     this.algorithm = builder.algorithm;
     this.userPassword = builder.userPassword;
@@ -193,7 +194,7 @@ public abstract class ProtectPdfParams {
     private Boolean disableCopy;
     private Boolean disableEditing;
     private Boolean encryptMetadata;
-    private Boolean jsonResponse;
+    private Boolean jsonResponse = true;
     private Long preSignedUrlExpiresIn;
     private Object metadata;
 
@@ -311,23 +312,13 @@ public abstract class ProtectPdfParams {
     }
 
     /**
-     * Builds protect PDF parameters for bytes responses.
-     *
-     * @return parameters configured for file responses.
-     */
-    public ProtectPdfFileParams buildWithFileResponse() {
-      this.jsonResponse = false;
-      return new ProtectPdfFileParams(this);
-    }
-
-    /**
      * Builds protect PDF parameters for JSON responses.
      *
      * @return parameters configured for JSON responses.
      */
-    public ProtectPdfJsonParams buildWithJsonResponse() {
+    public ProtectPdfParams build() {
       this.jsonResponse = true;
-      return new ProtectPdfJsonParams(this);
+      return new ProtectPdfParams(this);
     }
   }
 }

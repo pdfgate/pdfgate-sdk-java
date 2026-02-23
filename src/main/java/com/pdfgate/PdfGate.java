@@ -53,41 +53,15 @@ public final class PdfGate {
   }
 
   /**
-   * Generates a PDF from HTML or a URL and returns raw bytes.
-   *
-   * <p>The API expects either {@code html} or {@code url} to be set in {@code params}.
-   *
-   * @param params parameters for the generate PDF request.
-   * @return the generated PDF bytes.
-   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
-   */
-  public byte[] generatePdf(GeneratePdfFileParams params)
-      throws IOException {
-    return PdfGateCallExecutor.execute(generatePdfCall(params));
-  }
-
-  /**
    * Generates a PDF from HTML or a URL and returns a JSON document response.
    *
    * @param params parameters for the generate PDF request.
    * @return the generated document metadata.
    * @throws PdfGateException when the request fails or the API returns a non-2xx response.
    */
-  public PdfGateDocument generatePdf(GeneratePdfJsonParams params)
+  public PdfGateDocument generatePdf(GeneratePdfParams params)
       throws IOException {
     return PdfGateCallExecutor.execute(generatePdfCall(params));
-  }
-
-  /**
-   * Generates a PDF from HTML or a URL asynchronously and returns raw bytes.
-   *
-   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
-   *
-   * @param params parameters for the generate PDF request.
-   * @return a future that completes with the generated PDF bytes.
-   */
-  public CompletableFuture<byte[]> generatePdfAsync(GeneratePdfFileParams params) {
-    return enqueuer.enqueueAsFuture(generatePdfCall(params));
   }
 
   /**
@@ -98,7 +72,7 @@ public final class PdfGate {
    * @param params parameters for the generate PDF request.
    * @return a future that completes with the generated document metadata.
    */
-  public CompletableFuture<PdfGateDocument> generatePdfAsync(GeneratePdfJsonParams params) {
+  public CompletableFuture<PdfGateDocument> generatePdfAsync(GeneratePdfParams params) {
     return enqueuer.enqueueAsFuture(generatePdfCall(params));
   }
 
@@ -108,32 +82,8 @@ public final class PdfGate {
    * @param params parameters for the generate PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
-  public CallJson generatePdfCall(GeneratePdfJsonParams params) {
+  public CallJson generatePdfCall(GeneratePdfParams params) {
     return new PdfGateJsonCall(callBuilder.buildGeneratePdfCall(params));
-  }
-
-  /**
-   * Builds a call that expects a raw bytes response.
-   *
-   * @param params parameters for the generate PDF request.
-   * @return a call that yields raw PDF bytes.
-   */
-  public CallFile generatePdfCall(GeneratePdfFileParams params) {
-    return new PdfGateFileCall(callBuilder.buildGeneratePdfCall(params));
-  }
-
-  /**
-   * Flattens a PDF and returns raw bytes.
-   *
-   * <p>Flattening converts interactive fields into a static PDF.
-   *
-   * @param params parameters for the flatten PDF request.
-   * @return the flattened PDF bytes.
-   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
-   */
-  public byte[] flattenPdf(FlattenPdfFileParams params)
-      throws IOException {
-    return PdfGateCallExecutor.execute(flattenPdfCall(params));
   }
 
   /**
@@ -143,21 +93,9 @@ public final class PdfGate {
    * @return the flattened document metadata.
    * @throws PdfGateException when the request fails or the API returns a non-2xx response.
    */
-  public PdfGateDocument flattenPdf(FlattenPdfJsonParams params)
+  public PdfGateDocument flattenPdf(FlattenPdfParams params)
       throws IOException {
     return PdfGateCallExecutor.execute(flattenPdfCall(params));
-  }
-
-  /**
-   * Flattens a PDF asynchronously and returns raw bytes.
-   *
-   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
-   *
-   * @param params parameters for the flatten PDF request.
-   * @return a future that completes with the flattened PDF bytes.
-   */
-  public CompletableFuture<byte[]> flattenPdfAsync(FlattenPdfFileParams params) {
-    return enqueuer.enqueueAsFuture(flattenPdfCall(params));
   }
 
   /**
@@ -168,7 +106,7 @@ public final class PdfGate {
    * @param params parameters for the flatten PDF request.
    * @return a future that completes with the flattened document metadata.
    */
-  public CompletableFuture<PdfGateDocument> flattenPdfAsync(FlattenPdfJsonParams params) {
+  public CompletableFuture<PdfGateDocument> flattenPdfAsync(FlattenPdfParams params) {
     return enqueuer.enqueueAsFuture(flattenPdfCall(params));
   }
 
@@ -178,32 +116,8 @@ public final class PdfGate {
    * @param params parameters for the flatten PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
-  public CallJson flattenPdfCall(FlattenPdfJsonParams params) {
+  public CallJson flattenPdfCall(FlattenPdfParams params) {
     return new PdfGateJsonCall(callBuilder.buildFlattenPdfCall(params));
-  }
-
-  /**
-   * Builds a call that expects a raw bytes response.
-   *
-   * @param params parameters for the flatten PDF request.
-   * @return a call that yields raw PDF bytes.
-   */
-  public CallFile flattenPdfCall(FlattenPdfFileParams params) {
-    return new PdfGateFileCall(callBuilder.buildFlattenPdfCall(params));
-  }
-
-  /**
-   * Protects a PDF and returns raw bytes.
-   *
-   * <p>Use {@link ProtectPdfParams} to set encryption options and permission restrictions.
-   *
-   * @param params parameters for the protect PDF request.
-   * @return the protected PDF bytes.
-   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
-   */
-  public byte[] protectPdf(ProtectPdfFileParams params)
-      throws IOException {
-    return PdfGateCallExecutor.execute(protectPdfCall(params));
   }
 
   /**
@@ -213,21 +127,9 @@ public final class PdfGate {
    * @return the protected document metadata.
    * @throws PdfGateException when the request fails or the API returns a non-2xx response.
    */
-  public PdfGateDocument protectPdf(ProtectPdfJsonParams params)
+  public PdfGateDocument protectPdf(ProtectPdfParams params)
       throws IOException {
     return PdfGateCallExecutor.execute(protectPdfCall(params));
-  }
-
-  /**
-   * Protects a PDF asynchronously and returns raw bytes.
-   *
-   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
-   *
-   * @param params parameters for the protect PDF request.
-   * @return a future that completes with the protected PDF bytes.
-   */
-  public CompletableFuture<byte[]> protectPdfAsync(ProtectPdfFileParams params) {
-    return enqueuer.enqueueAsFuture(protectPdfCall(params));
   }
 
   /**
@@ -238,7 +140,7 @@ public final class PdfGate {
    * @param params parameters for the protect PDF request.
    * @return a future that completes with the protected document metadata.
    */
-  public CompletableFuture<PdfGateDocument> protectPdfAsync(ProtectPdfJsonParams params) {
+  public CompletableFuture<PdfGateDocument> protectPdfAsync(ProtectPdfParams params) {
     return enqueuer.enqueueAsFuture(protectPdfCall(params));
   }
 
@@ -248,32 +150,8 @@ public final class PdfGate {
    * @param params parameters for the protect PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
-  public CallJson protectPdfCall(ProtectPdfJsonParams params) {
+  public CallJson protectPdfCall(ProtectPdfParams params) {
     return new PdfGateJsonCall(callBuilder.buildProtectPdfCall(params));
-  }
-
-  /**
-   * Builds a call that expects a raw bytes response.
-   *
-   * @param params parameters for the protect PDF request.
-   * @return a call that yields raw PDF bytes.
-   */
-  public CallFile protectPdfCall(ProtectPdfFileParams params) {
-    return new PdfGateFileCall(callBuilder.buildProtectPdfCall(params));
-  }
-
-  /**
-   * Compresses a PDF and returns raw bytes.
-   *
-   * <p>Set {@code linearize} in {@link CompressPdfParams} to enable Fast Web View output.
-   *
-   * @param params parameters for the compress PDF request.
-   * @return the compressed PDF bytes.
-   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
-   */
-  public byte[] compressPdf(CompressPdfFileParams params)
-      throws IOException {
-    return PdfGateCallExecutor.execute(compressPdfCall(params));
   }
 
   /**
@@ -283,21 +161,9 @@ public final class PdfGate {
    * @return the compressed document metadata.
    * @throws PdfGateException when the request fails or the API returns a non-2xx response.
    */
-  public PdfGateDocument compressPdf(CompressPdfJsonParams params)
+  public PdfGateDocument compressPdf(CompressPdfParams params)
       throws IOException {
     return PdfGateCallExecutor.execute(compressPdfCall(params));
-  }
-
-  /**
-   * Compresses a PDF asynchronously and returns raw bytes.
-   *
-   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
-   *
-   * @param params parameters for the compress PDF request.
-   * @return a future that completes with the compressed PDF bytes.
-   */
-  public CompletableFuture<byte[]> compressPdfAsync(CompressPdfFileParams params) {
-    return enqueuer.enqueueAsFuture(compressPdfCall(params));
   }
 
   /**
@@ -308,7 +174,7 @@ public final class PdfGate {
    * @param params parameters for the compress PDF request.
    * @return a future that completes with the compressed document metadata.
    */
-  public CompletableFuture<PdfGateDocument> compressPdfAsync(CompressPdfJsonParams params) {
+  public CompletableFuture<PdfGateDocument> compressPdfAsync(CompressPdfParams params) {
     return enqueuer.enqueueAsFuture(compressPdfCall(params));
   }
 
@@ -318,34 +184,8 @@ public final class PdfGate {
    * @param params parameters for the compress PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
-  public CallJson compressPdfCall(CompressPdfJsonParams params) {
+  public CallJson compressPdfCall(CompressPdfParams params) {
     return new PdfGateJsonCall(callBuilder.buildCompressPdfCall(params));
-  }
-
-  /**
-   * Builds a call that expects a raw bytes response.
-   *
-   * @param params parameters for the compress PDF request.
-   * @return a call that yields raw PDF bytes.
-   */
-  public CallFile compressPdfCall(CompressPdfFileParams params) {
-    return new PdfGateFileCall(callBuilder.buildCompressPdfCall(params));
-  }
-
-  /**
-   * Applies a watermark to a PDF and returns raw bytes.
-   *
-   * <p>Set {@code type} to {@code text} or {@code image}. Text watermarks require {@code text};
-   * image watermarks require a {@code watermark} file. Optional controls include font, size,
-   * opacity, position, and rotation.
-   *
-   * @param params parameters for the watermark PDF request.
-   * @return the watermarked PDF bytes.
-   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
-   */
-  public byte[] watermarkPdf(WatermarkPdfFileParams params)
-      throws IOException {
-    return PdfGateCallExecutor.execute(watermarkPdfCall(params));
   }
 
   /**
@@ -355,21 +195,9 @@ public final class PdfGate {
    * @return the watermarked document metadata.
    * @throws PdfGateException when the request fails or the API returns a non-2xx response.
    */
-  public PdfGateDocument watermarkPdf(WatermarkPdfJsonParams params)
+  public PdfGateDocument watermarkPdf(WatermarkPdfParams params)
       throws IOException {
     return PdfGateCallExecutor.execute(watermarkPdfCall(params));
-  }
-
-  /**
-   * Applies a watermark to a PDF asynchronously and returns raw bytes.
-   *
-   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
-   *
-   * @param params parameters for the watermark PDF request.
-   * @return a future that completes with the watermarked PDF bytes.
-   */
-  public CompletableFuture<byte[]> watermarkPdfAsync(WatermarkPdfFileParams params) {
-    return enqueuer.enqueueAsFuture(watermarkPdfCall(params));
   }
 
   /**
@@ -380,7 +208,7 @@ public final class PdfGate {
    * @param params parameters for the watermark PDF request.
    * @return a future that completes with the watermarked document metadata.
    */
-  public CompletableFuture<PdfGateDocument> watermarkPdfAsync(WatermarkPdfJsonParams params) {
+  public CompletableFuture<PdfGateDocument> watermarkPdfAsync(WatermarkPdfParams params) {
     return enqueuer.enqueueAsFuture(watermarkPdfCall(params));
   }
 
@@ -390,18 +218,8 @@ public final class PdfGate {
    * @param params parameters for the watermark PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
-  public CallJson watermarkPdfCall(WatermarkPdfJsonParams params) {
+  public CallJson watermarkPdfCall(WatermarkPdfParams params) {
     return new PdfGateJsonCall(callBuilder.buildWatermarkPdfCall(params));
-  }
-
-  /**
-   * Builds a call that expects a raw bytes response.
-   *
-   * @param params parameters for the watermark PDF request.
-   * @return a call that yields raw PDF bytes.
-   */
-  public CallFile watermarkPdfCall(WatermarkPdfFileParams params) {
-    return new PdfGateFileCall(callBuilder.buildWatermarkPdfCall(params));
   }
 
   /**

@@ -75,8 +75,7 @@ final class PdfGateCallBuilder {
     validateFlattenPdfParams(params);
     MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
         .setType(MultipartBody.FORM);
-    addFlattenPdfCommonFields(bodyBuilder, params.getJsonResponse(),
-        params.getPreSignedUrlExpiresIn(), params.getMetadata());
+    addFlattenPdfCommonFields(bodyBuilder, params.getPreSignedUrlExpiresIn(), params.getMetadata());
 
     String documentId = params.getDocumentId();
     if (documentId != null && !documentId.isBlank()) {
@@ -117,7 +116,6 @@ final class PdfGateCallBuilder {
         params.getImageWidth(),
         params.getImageHeight(),
         params.getRotate(),
-        params.getJsonResponse(),
         params.getPreSignedUrlExpiresIn(),
         params.getMetadata()
     );
@@ -169,7 +167,6 @@ final class PdfGateCallBuilder {
         params.getDisableCopy(),
         params.getDisableEditing(),
         params.getEncryptMetadata(),
-        params.getJsonResponse(),
         params.getPreSignedUrlExpiresIn(),
         params.getMetadata()
     );
@@ -203,7 +200,6 @@ final class PdfGateCallBuilder {
     addCompressPdfCommonFields(
         bodyBuilder,
         params.getLinearize(),
-        params.getJsonResponse(),
         params.getPreSignedUrlExpiresIn(),
         params.getMetadata()
     );
@@ -234,6 +230,7 @@ final class PdfGateCallBuilder {
     validateExtractPdfFormDataParams(params);
     MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
         .setType(MultipartBody.FORM);
+    bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
 
     String documentId = params.getDocumentId();
     if (documentId != null && !documentId.isBlank()) {
@@ -310,6 +307,9 @@ final class PdfGateCallBuilder {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }
+    if (!params.isJsonResponse()) {
+      throw new IllegalArgumentException("jsonResponse must be true.");
+    }
     String html = params.getHtml();
     String url = params.getUrl();
     if ((html == null || html.isBlank()) && (url == null || url.isBlank())) {
@@ -324,13 +324,10 @@ final class PdfGateCallBuilder {
    */
   private void addFlattenPdfCommonFields(
       MultipartBody.Builder bodyBuilder,
-      Boolean jsonResponse,
       Long preSignedUrlExpiresIn,
       Object metadata
   ) {
-    if (jsonResponse != null) {
-      bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
-    }
+    bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
     if (preSignedUrlExpiresIn != null) {
       bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
     }
@@ -358,7 +355,6 @@ final class PdfGateCallBuilder {
       Integer imageWidth,
       Integer imageHeight,
       Double rotate,
-      Boolean jsonResponse,
       Long preSignedUrlExpiresIn,
       Object metadata
   ) {
@@ -395,9 +391,7 @@ final class PdfGateCallBuilder {
     if (rotate != null) {
       bodyBuilder.addFormDataPart("rotate", rotate.toString());
     }
-    if (jsonResponse != null) {
-      bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
-    }
+    bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
     if (preSignedUrlExpiresIn != null) {
       bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
     }
@@ -421,7 +415,6 @@ final class PdfGateCallBuilder {
       Boolean disableCopy,
       Boolean disableEditing,
       Boolean encryptMetadata,
-      Boolean jsonResponse,
       Long preSignedUrlExpiresIn,
       Object metadata
   ) {
@@ -446,9 +439,7 @@ final class PdfGateCallBuilder {
     if (encryptMetadata != null) {
       bodyBuilder.addFormDataPart("encryptMetadata", encryptMetadata.toString());
     }
-    if (jsonResponse != null) {
-      bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
-    }
+    bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
     if (preSignedUrlExpiresIn != null) {
       bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
     }
@@ -466,16 +457,13 @@ final class PdfGateCallBuilder {
   private void addCompressPdfCommonFields(
       MultipartBody.Builder bodyBuilder,
       Boolean linearize,
-      Boolean jsonResponse,
       Long preSignedUrlExpiresIn,
       Object metadata
   ) {
     if (linearize != null) {
       bodyBuilder.addFormDataPart("linearize", linearize.toString());
     }
-    if (jsonResponse != null) {
-      bodyBuilder.addFormDataPart("jsonResponse", jsonResponse.toString());
-    }
+    bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
     if (preSignedUrlExpiresIn != null) {
       bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
     }
@@ -494,6 +482,9 @@ final class PdfGateCallBuilder {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }
+    if (!params.isJsonResponse()) {
+      throw new IllegalArgumentException("jsonResponse must be true.");
+    }
     String documentId = params.getDocumentId();
     if (documentId == null || documentId.isBlank()) {
       throw new IllegalArgumentException("documentId must be provided.");
@@ -506,6 +497,9 @@ final class PdfGateCallBuilder {
   private void validateWatermarkPdfParams(WatermarkPdfParams params) {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
+    }
+    if (!params.isJsonResponse()) {
+      throw new IllegalArgumentException("jsonResponse must be true.");
     }
     if (params.getType() == null) {
       throw new IllegalArgumentException("type must be provided.");
@@ -540,6 +534,9 @@ final class PdfGateCallBuilder {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }
+    if (!params.isJsonResponse()) {
+      throw new IllegalArgumentException("jsonResponse must be true.");
+    }
     String documentId = params.getDocumentId();
     if (documentId == null || documentId.isBlank()) {
       throw new IllegalArgumentException("documentId must be provided.");
@@ -552,6 +549,9 @@ final class PdfGateCallBuilder {
   private void validateCompressPdfParams(CompressPdfParams params) {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
+    }
+    if (!params.isJsonResponse()) {
+      throw new IllegalArgumentException("jsonResponse must be true.");
     }
     String documentId = params.getDocumentId();
     if (documentId == null || documentId.isBlank()) {

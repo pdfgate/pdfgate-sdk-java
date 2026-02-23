@@ -2,7 +2,6 @@ package com.pdfgate;
 
 import com.google.gson.JsonObject;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import okio.Buffer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -47,9 +45,9 @@ public class PdfGateTest {
           .setBody(body));
       server.start();
 
-      GeneratePdfJsonParams params = GeneratePdfParams.builder()
+      GeneratePdfParams params = GeneratePdfParams.builder()
           .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithJsonResponse();
+          .build();
 
       CountDownLatch latch = new CountDownLatch(1);
       AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -84,6 +82,103 @@ public class PdfGateTest {
   }
 
   @Test
+  public void generatePdfRequestAlwaysIncludesJsonResponse() throws Exception {
+    String body = PdfGateJson.gson().toJson(Map.of(
+        "id", "doc_123",
+        "status", "completed"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      GeneratePdfParams params = GeneratePdfParams.builder()
+          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.generatePdf(params);
+
+      String requestBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
+      JsonObject requestJson = PdfGateJson.gson().fromJson(requestBody, JsonObject.class);
+      Assertions.assertTrue(requestJson.get("jsonResponse").getAsBoolean(),
+          "jsonResponse should be true");
+    }
+  }
+
+  @Test
+  public void multipartRequestsAlwaysIncludeJsonResponse() throws Exception {
+    String documentBody = PdfGateJson.gson().toJson(Map.of(
+        "id", "doc_123",
+        "status", "completed"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(documentBody));
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(documentBody));
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(documentBody));
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(documentBody));
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody("{\"field\":\"value\"}"));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+
+      FlattenPdfParams flattenParams = FlattenPdfParams.builder()
+          .documentId("doc_123")
+          .build();
+      pdfGateClient.flattenPdf(flattenParams);
+
+      ProtectPdfParams protectParams = ProtectPdfParams.builder()
+          .documentId("doc_123")
+          .build();
+      pdfGateClient.protectPdf(protectParams);
+
+      CompressPdfParams compressParams = CompressPdfParams.builder()
+          .documentId("doc_123")
+          .build();
+      pdfGateClient.compressPdf(compressParams);
+
+      WatermarkPdfParams watermarkParams = WatermarkPdfParams.builder()
+          .documentId("doc_123")
+          .type(WatermarkPdfParams.WatermarkType.TEXT)
+          .text("CONFIDENTIAL")
+          .build();
+      pdfGateClient.watermarkPdf(watermarkParams);
+
+      ExtractPdfFormDataParams extractParams = ExtractPdfFormDataParams.builder()
+          .documentId("doc_123")
+          .build();
+      pdfGateClient.extractPdfFormData(extractParams);
+
+      for (int i = 0; i < 5; i++) {
+        String requestBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
+        Assertions.assertTrue(requestBody.contains("name=\"jsonResponse\""),
+            "jsonResponse should be included in multipart body");
+        Assertions.assertTrue(requestBody.contains("true"),
+            "jsonResponse should be true");
+      }
+    }
+  }
+
+  @Test
   public void generatePdfCallWithJsonResponse() throws Exception {
     Random random = new Random();
     Instant now = Instant.now();
@@ -104,9 +199,9 @@ public class PdfGateTest {
           .setBody(body));
       server.start();
 
-      GeneratePdfJsonParams params = GeneratePdfParams.builder()
+      GeneratePdfParams params = GeneratePdfParams.builder()
           .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithJsonResponse();
+          .build();
 
       CountDownLatch latch = new CountDownLatch(1);
       AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -143,58 +238,15 @@ public class PdfGateTest {
   }
 
   @Test
-  public void generatePdfCallWithFileResponse() throws Exception {
-    byte[] pdfBytes =
-        "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(
-            StandardCharsets.UTF_8);
-    Buffer buffer = new Buffer().write(pdfBytes);
-
-    try (MockWebServer server = new MockWebServer()) {
-      server.enqueue(new MockResponse()
-          .setResponseCode(201)
-          .setHeader("Content-Type", "application/octet-stream")
-          .setBody(buffer));
-      server.start();
-
-      GeneratePdfFileParams params = GeneratePdfParams.builder()
-          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithFileResponse();
-
-      CountDownLatch latch = new CountDownLatch(1);
-      AtomicReference<byte[]> success = new AtomicReference<>();
-      AtomicReference<Throwable> failure = new AtomicReference<>();
-
-      PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
-        @Override
-        public void onSuccess(okhttp3.Call call, byte[] value) {
-          success.set(value);
-          latch.countDown();
-        }
-
-        @Override
-        public void onFailure(okhttp3.Call call, Throwable t) {
-          failure.set(t);
-          latch.countDown();
-        }
-      });
-
-      Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
-      Assertions.assertNull(failure.get(), "failure callback should not be invoked");
-      Assertions.assertArrayEquals(pdfBytes, success.get(), "bytes should match response");
-    }
-  }
-
-  @Test
   public void generatePdfCallWithIoFailureWrapsException() throws Exception {
     try (MockWebServer server = new MockWebServer()) {
       server.start();
       String baseUrl = server.url("/").toString();
       server.shutdown();
 
-      GeneratePdfJsonParams params = GeneratePdfParams.builder()
+      GeneratePdfParams params = GeneratePdfParams.builder()
           .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithJsonResponse();
+          .build();
 
       CountDownLatch latch = new CountDownLatch(1);
       AtomicReference<PdfGateDocument> success = new AtomicReference<>();
@@ -204,48 +256,6 @@ public class PdfGateTest {
       pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
         @Override
         public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
-          success.set(value);
-          latch.countDown();
-        }
-
-        @Override
-        public void onFailure(okhttp3.Call call, Throwable t) {
-          failure.set(t);
-          latch.countDown();
-        }
-      });
-
-      Assertions.assertTrue(latch.await(3, TimeUnit.SECONDS), "callback should be invoked");
-      Assertions.assertNull(success.get(), "success callback should not be invoked");
-      Assertions.assertNotNull(failure.get(), "failure callback should be invoked");
-      Assertions.assertInstanceOf(PdfGateException.class, failure.get(),
-          "failure should be PdfGateException");
-      Assertions.assertNotNull(failure.get().getCause(),
-          "failure should preserve the original cause");
-      Assertions.assertInstanceOf(IOException.class, failure.get().getCause(),
-          "failure cause should be IOException");
-    }
-  }
-
-  @Test
-  public void generatePdfCallWithFileIoFailureWrapsException() throws Exception {
-    try (MockWebServer server = new MockWebServer()) {
-      server.start();
-      String baseUrl = server.url("/").toString();
-      server.shutdown();
-
-      GeneratePdfFileParams params = GeneratePdfParams.builder()
-          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithFileResponse();
-
-      CountDownLatch latch = new CountDownLatch(1);
-      AtomicReference<byte[]> success = new AtomicReference<>();
-      AtomicReference<Throwable> failure = new AtomicReference<>();
-
-      PdfGate pdfGateClient = buildClient(baseUrl);
-      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
-        @Override
-        public void onSuccess(okhttp3.Call call, byte[] value) {
           success.set(value);
           latch.countDown();
         }
@@ -290,9 +300,9 @@ public class PdfGateTest {
           .setBody(body));
       server.start();
 
-      GeneratePdfJsonParams params = GeneratePdfParams.builder()
+      GeneratePdfParams params = GeneratePdfParams.builder()
           .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithJsonResponse();
+          .build();
 
       PdfGate pdfGateClient = buildClient(server.url("/").toString());
       PdfGateDocument result = pdfGateClient.generatePdf(params);
@@ -303,30 +313,6 @@ public class PdfGateTest {
           result,
           "document should match JSON response"
       );
-    }
-  }
-
-  @Test
-  public void generatePdfWithFileResponse() throws Exception {
-    byte[] pdfBytes =
-        "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(
-            StandardCharsets.UTF_8);
-    Buffer buffer = new Buffer().write(pdfBytes);
-
-    try (MockWebServer server = new MockWebServer()) {
-      server.enqueue(new MockResponse()
-          .setResponseCode(201)
-          .setHeader("Content-Type", "application/octet-stream")
-          .setBody(buffer));
-      server.start();
-
-      GeneratePdfFileParams params = GeneratePdfParams.builder()
-          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithFileResponse();
-
-      PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      byte[] result = pdfGateClient.generatePdf(params);
-      Assertions.assertArrayEquals(pdfBytes, result, "bytes should match response");
     }
   }
 
@@ -347,9 +333,9 @@ public class PdfGateTest {
           .setBody(body));
       server.start();
 
-      GeneratePdfJsonParams params = GeneratePdfParams.builder()
+      GeneratePdfParams params = GeneratePdfParams.builder()
           .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithJsonResponse();
+          .build();
 
       PdfGate pdfGateClient = buildClient(server.url("/").toString());
       ExecutionException exception = Assertions.assertThrows(
@@ -388,9 +374,9 @@ public class PdfGateTest {
           .setBody(body));
       server.start();
 
-      GeneratePdfJsonParams params = GeneratePdfParams.builder()
+      GeneratePdfParams params = GeneratePdfParams.builder()
           .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithJsonResponse();
+          .build();
 
       PdfGate pdfGateClient = buildClient(server.url("/").toString());
       PdfGateDocument result = pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS);
@@ -401,109 +387,6 @@ public class PdfGateTest {
           expected,
           result,
           "document should match JSON response"
-      );
-    }
-  }
-
-  @Test
-  public void generatePdfAsyncWithFileResponse() throws Exception {
-    byte[] pdfBytes =
-        "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(
-            StandardCharsets.UTF_8);
-    Buffer buffer = new Buffer().write(pdfBytes);
-
-    try (MockWebServer server = new MockWebServer()) {
-      server.enqueue(new MockResponse()
-          .setResponseCode(201)
-          .setHeader("Content-Type", "application/octet-stream")
-          .setBody(buffer));
-      server.start();
-
-      GeneratePdfFileParams params = GeneratePdfParams.builder()
-          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithFileResponse();
-
-      PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      byte[] result = pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS);
-      Assertions.assertArrayEquals(pdfBytes, result, "bytes should match response");
-    }
-  }
-
-  @Test
-  public void generatePdfAsyncWithFileIoFailureWrapsException() throws Exception {
-    byte[] pdfBytes =
-        "%%PDF-1.4\\n%\\xd3\\xeb\\xe9\\xe1\\n1 0 obj\\n<</Title (PDF - Wikipedia)\\n/Creator (Mozilla/5.0 \\\\(X11; Linux x86_64\\\\) AppleW".getBytes(
-            StandardCharsets.UTF_8);
-    Buffer buffer = new Buffer().write(pdfBytes);
-    try (MockWebServer server = new MockWebServer()) {
-      server.start();
-      String baseUrl = server.url("/").toString();
-      server.shutdown();
-
-      GeneratePdfFileParams params = GeneratePdfParams.builder()
-          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-          .buildWithFileResponse();
-
-      PdfGate pdfGateClient = buildClient(baseUrl);
-      ExecutionException exception = Assertions.assertThrows(
-          ExecutionException.class,
-          () -> pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS),
-          "future should complete exceptionally"
-      );
-      Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(),
-          "failure should be PdfGateException");
-      Assertions.assertTrue(
-          exception.getCause().getMessage()
-              .startsWith("PdfGate API request failed: Failed to connect"),
-          "error message should include JSON message"
-      );
-    }
-  }
-
-  @Test
-  public void extractPdfFormDataCallWithFileResponseWithError() throws Exception {
-    String body = "PDFGATE_BINARY_ERROR";
-    Buffer buffer = new Buffer().write(body.getBytes(StandardCharsets.UTF_8));
-
-    try (MockWebServer server = new MockWebServer()) {
-      server.enqueue(new MockResponse()
-          .setResponseCode(500)
-          .setHeader("Content-Type", "application/octet-stream")
-          .setBody(buffer));
-      server.start();
-
-      ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
-          .documentId("doc_123")
-          .build();
-
-      CountDownLatch latch = new CountDownLatch(1);
-      AtomicReference<JsonObject> success = new AtomicReference<>();
-      AtomicReference<Throwable> failure = new AtomicReference<>();
-
-      PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params), new PdfGateCallback<>() {
-        @Override
-        public void onSuccess(okhttp3.Call call, JsonObject value) {
-          success.set(value);
-          latch.countDown();
-        }
-
-        @Override
-        public void onFailure(okhttp3.Call call, Throwable t) {
-          failure.set(t);
-          latch.countDown();
-        }
-      });
-
-      Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
-      Assertions.assertNull(success.get(), "success callback should not be invoked");
-      Assertions.assertNotNull(failure.get(), "failure callback should be invoked");
-      Assertions.assertInstanceOf(PdfGateException.class, failure.get(),
-          "failure should be PdfGateException");
-      Assertions.assertEquals(
-          "PdfGate API request failed with status 500: " + body,
-          failure.get().getMessage(),
-          "error message should include raw response body"
       );
     }
   }
@@ -600,38 +483,6 @@ public class PdfGateTest {
           "failure should preserve the original cause");
       Assertions.assertInstanceOf(IOException.class, failure.get().getCause(),
           "failure cause should be IOException");
-    }
-  }
-
-  @Test
-  public void extractPdfFormDataAsyncWithFileResponseWithError() throws Exception {
-    String body = "PDFGATE_BINARY_ERROR";
-    Buffer buffer = new Buffer().write(body.getBytes(StandardCharsets.UTF_8));
-
-    try (MockWebServer server = new MockWebServer()) {
-      server.enqueue(new MockResponse()
-          .setResponseCode(500)
-          .setHeader("Content-Type", "application/octet-stream")
-          .setBody(buffer));
-      server.start();
-
-      ExtractPdfFormDataParams params = ExtractPdfFormDataParams.builder()
-          .documentId("doc_123")
-          .build();
-
-      PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      ExecutionException exception = Assertions.assertThrows(
-          ExecutionException.class,
-          () -> pdfGateClient.extractPdfFormDataAsync(params).get(2, TimeUnit.SECONDS),
-          "future should complete exceptionally"
-      );
-      Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(),
-          "failure should be PdfGateException");
-      Assertions.assertEquals(
-          "PdfGate API request failed with status 500: " + body,
-          exception.getCause().getMessage(),
-          "error message should include raw response body"
-      );
     }
   }
 

@@ -8,11 +8,10 @@ import java.util.Map;
  * Parameters for generating a PDF from raw HTML or a public URL.
  *
  * <p>Provide either {@code html} or {@code url}. Additional options control page size,
- * margins, rendering behavior, media emulation, and advanced wait conditions. Use
- * {@link Builder#buildWithFileResponse()} for raw PDF bytes or
- * {@link Builder#buildWithJsonResponse()} for a {@link PdfGateDocument} response.
+ * margins, rendering behavior, media emulation, and advanced wait conditions. Responses are
+ * JSON-only; use {@link Builder#build()} for a {@link PdfGateDocument} response.
  */
-public abstract class GeneratePdfParams {
+public final class GeneratePdfParams {
   private final String html;
   private final String url;
   private final Boolean jsonResponse;
@@ -49,7 +48,7 @@ public abstract class GeneratePdfParams {
    *
    * @param builder builder with configured values.
    */
-  protected GeneratePdfParams(Builder builder) {
+  private GeneratePdfParams(Builder builder) {
     this.html = builder.html;
     this.url = builder.url;
     this.jsonResponse = builder.jsonResponse;
@@ -636,7 +635,7 @@ public abstract class GeneratePdfParams {
   public static final class Builder {
     private String html;
     private String url;
-    private Boolean jsonResponse;
+    private Boolean jsonResponse = true;
     private Long preSignedUrlExpiresIn;
     private PageSizeType pageSizeType;
     private Integer width;
@@ -988,23 +987,13 @@ public abstract class GeneratePdfParams {
     }
 
     /**
-     * Builds parameters that request raw PDF bytes.
-     *
-     * @return parameters configured for file responses.
-     */
-    public GeneratePdfFileParams buildWithFileResponse() {
-      this.jsonResponse = false;
-      return new GeneratePdfFileParams(this);
-    }
-
-    /**
      * Builds parameters that request a JSON document response.
      *
      * @return parameters configured for JSON responses.
      */
-    public GeneratePdfJsonParams buildWithJsonResponse() {
+    public GeneratePdfParams build() {
       this.jsonResponse = true;
-      return new GeneratePdfJsonParams(this);
+      return new GeneratePdfParams(this);
     }
   }
 }

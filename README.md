@@ -10,6 +10,7 @@ PDFGate lets you generate, process, and secure PDFs via a simple API:
 - Fillable forms
 - Flatten, compress, watermark, protect PDFs
 - Extract PDF form data
+- Upload PDF files
 
 📘 Documentation: https://pdfgate.com/documentation<br>
 🔑 Dashboard & API keys: https://dashboard.pdfgate.com
@@ -206,6 +207,28 @@ GetFileParams params = GetFileParams.builder()
 
 byte[] fileContent = client.getFile(params);
 Files.write(Paths.get("output.pdf"), fileContent);
+```
+
+## Upload a PDF file
+
+```java
+byte[] fileBytes = Files.readAllBytes(Paths.get("input.pdf"));
+
+UploadFileParams uploadParams = UploadFileParams.builder()
+    .file(new FileParam("input.pdf", fileBytes, "application/pdf"))
+    .build();
+
+PdfGateDocument uploadedDocument = client.uploadFile(uploadParams);
+```
+
+If you already have a public URL to a PDF, omit `file` and use `url` instead:
+
+```java
+UploadFileParams uploadParams = UploadFileParams.builder()
+    .url("https://example.com/input.pdf")
+    .build();
+
+PdfGateDocument uploadedDocument = client.uploadFile(uploadParams);
 ```
 
 ## Flatten a PDF (make form-fields non-editable)

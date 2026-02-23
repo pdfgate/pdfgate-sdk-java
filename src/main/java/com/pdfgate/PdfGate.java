@@ -327,6 +327,42 @@ public final class PdfGate {
   }
 
   /**
+   * Uploads a PDF file passing the file or through a URL pointing to the file and
+   * returns a JSON document response.
+   *
+   * @param params parameters for the upload file request.
+   * @return the uploaded document metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateDocument uploadFile(UploadFileParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(uploadFileCall(params));
+  }
+
+  /**
+   * Uploads a PDF file passing the file or through a URL pointing to the file and
+   * returns a JSON document response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the upload file request.
+   * @return a future that completes with the uploaded document metadata.
+   */
+  public CompletableFuture<PdfGateDocument> uploadFileAsync(UploadFileParams params) {
+    return enqueuer.enqueueAsFuture(uploadFileCall(params));
+  }
+
+  /**
+   * Builds a call that expects a JSON document response.
+   *
+   * @param params parameters for the upload file request.
+   * @return a call that yields a {@link PdfGateDocument} response.
+   */
+  public CallJson uploadFileCall(UploadFileParams params) {
+    return new PdfGateJsonCall(callBuilder.buildUploadFileCall(params));
+  }
+
+  /**
    * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
    *
    * @param call     the call to enqueue.

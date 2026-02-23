@@ -137,6 +137,10 @@ public class PdfGateTest {
           .setResponseCode(200)
           .setHeader("Content-Type", "application/json")
           .setBody("{\"field\":\"value\"}"));
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(documentBody));
       server.start();
 
       PdfGate pdfGateClient = buildClient(server.url("/").toString());
@@ -168,13 +172,92 @@ public class PdfGateTest {
           .build();
       pdfGateClient.extractPdfFormData(extractParams);
 
-      for (int i = 0; i < 5; i++) {
+      UploadFileParams uploadParams = UploadFileParams.builder()
+          .file(new FileParam("upload.pdf", "file".getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+          .build();
+      pdfGateClient.uploadFile(uploadParams);
+
+      for (int i = 0; i < 6; i++) {
         String requestBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
         Assertions.assertTrue(requestBody.contains("name=\"jsonResponse\""),
             "jsonResponse should be included in multipart body");
         Assertions.assertTrue(requestBody.contains("true"),
             "jsonResponse should be true");
       }
+    }
+  }
+
+  @Test
+  public void uploadFilePrefersMultipartWhenFileProvided() throws Exception {
+    String body = PdfGateJson.gson().toJson(Map.of(
+        "id", "doc_123",
+        "status", "completed"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      UploadFileParams params = UploadFileParams.builder()
+          .file(new FileParam("upload.pdf", "file".getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+          .url("https://example.com/sample.pdf")
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.uploadFile(params);
+
+      okhttp3.mockwebserver.RecordedRequest request =
+          server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertNotNull(request, "request should be recorded");
+      String requestBody = request.getBody().readUtf8();
+      String contentType = request.getHeader("Content-Type");
+      Assertions.assertNotNull(contentType, "content type should be present");
+      Assertions.assertTrue(contentType.startsWith("multipart/form-data"),
+          "content type should be multipart when file is present");
+      Assertions.assertTrue(requestBody.contains("name=\"file\"; filename=\"upload.pdf\""),
+          "file part should be present");
+      Assertions.assertFalse(requestBody.contains("name=\"url\""),
+          "url should not be included when file is present");
+    }
+  }
+
+  @Test
+  public void uploadFileUsesJsonWhenNoFileProvided() throws Exception {
+    String body = PdfGateJson.gson().toJson(Map.of(
+        "id", "doc_123",
+        "status", "completed"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      UploadFileParams params = UploadFileParams.builder()
+          .url("https://example.com/sample.pdf")
+          .metadata(Map.of("source", "test"))
+          .preSignedUrlExpiresIn(120L)
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.uploadFile(params);
+
+      String requestBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
+      JsonObject requestJson = PdfGateJson.gson().fromJson(requestBody, JsonObject.class);
+      Assertions.assertEquals("https://example.com/sample.pdf",
+          requestJson.get("url").getAsString(), "url should be included");
+      Assertions.assertTrue(requestJson.get("jsonResponse").getAsBoolean(),
+          "jsonResponse should be true");
+      Assertions.assertEquals(120L, requestJson.get("preSignedUrlExpiresIn").getAsLong(),
+          "preSignedUrlExpiresIn should be included");
+      Assertions.assertEquals("test",
+          requestJson.getAsJsonObject("metadata").get("source").getAsString(),
+          "metadata should be included");
     }
   }
 

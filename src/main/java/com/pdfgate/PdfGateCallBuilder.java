@@ -280,17 +280,66 @@ final class PdfGateCallBuilder {
     return client.newCall(request);
   }
 
+  Request.Builder authorizedRequestFor(String url) {
+    return new Request.Builder()
+        .url(url)
+        .header("Authorization", "Bearer " + apiKey);
+  }
+
   /**
    * Builds the call for retrieving a document's file.
    */
   Call buildGetFileCall(GetFileParams params) {
     validateGetFileParams(params);
     String requestUrl = urlBuilder.getFile(params.getDocumentId());
-    Request request = new Request.Builder()
-        .url(requestUrl)
-        .header("Authorization", "Bearer " + apiKey)
+    Request request = authorizedRequestFor(requestUrl)
         .get()
         .build();
+
+    OkHttpClient client = httpClient.newBuilder()
+        .callTimeout(config.getDefaultTimeout())
+        .readTimeout(config.getDefaultTimeout())
+        .build();
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for uploading a PDF file or URL.
+   */
+  Call buildUploadFileCall(UploadFileParams params) {
+    validateUploadFileParams(params);
+    FileParam file = params.getFile();
+    Request request;
+    if (file != null) {
+      MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+          .setType(MultipartBody.FORM);
+      bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
+      addCommonFields(bodyBuilder, params.getPreSignedUrlExpiresIn(),
+          params.getMetadata());
+
+      MediaType mediaType = resolveFileMediaType(file);
+      bodyBuilder.addFormDataPart(
+          "file",
+          file.getName(),
+          RequestBody.create(file.getData(), mediaType)
+      );
+
+      request = authorizedRequestFor(urlBuilder.uploadFile())
+          .post(bodyBuilder.build())
+          .build();
+    } else {
+      UploadFileJsonPayload payload = new UploadFileJsonPayload(
+          params.getUrl(),
+          params.getMetadata(),
+          params.getPreSignedUrlExpiresIn()
+      );
+      String jsonBody = PdfGateJson.gson().toJson(payload);
+      RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+      request = authorizedRequestFor(urlBuilder.uploadFile())
+          .post(body)
+          .build();
+    }
 
     OkHttpClient client = httpClient.newBuilder()
         .callTimeout(config.getDefaultTimeout())
@@ -328,15 +377,7 @@ final class PdfGateCallBuilder {
       Object metadata
   ) {
     bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
-    if (preSignedUrlExpiresIn != null) {
-      bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
-    }
-    if (metadata != null) {
-      String metadataValue = metadata instanceof String
-          ? (String) metadata
-          : PdfGateJson.gson().toJson(metadata);
-      bodyBuilder.addFormDataPart("metadata", metadataValue);
-    }
+    addCommonFields(bodyBuilder, preSignedUrlExpiresIn, metadata);
   }
 
   /**
@@ -392,15 +433,7 @@ final class PdfGateCallBuilder {
       bodyBuilder.addFormDataPart("rotate", rotate.toString());
     }
     bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
-    if (preSignedUrlExpiresIn != null) {
-      bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
-    }
-    if (metadata != null) {
-      String metadataValue = metadata instanceof String
-          ? (String) metadata
-          : PdfGateJson.gson().toJson(metadata);
-      bodyBuilder.addFormDataPart("metadata", metadataValue);
-    }
+    addCommonFields(bodyBuilder, preSignedUrlExpiresIn, metadata);
   }
 
   /**
@@ -440,15 +473,7 @@ final class PdfGateCallBuilder {
       bodyBuilder.addFormDataPart("encryptMetadata", encryptMetadata.toString());
     }
     bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
-    if (preSignedUrlExpiresIn != null) {
-      bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
-    }
-    if (metadata != null) {
-      String metadataValue = metadata instanceof String
-          ? (String) metadata
-          : PdfGateJson.gson().toJson(metadata);
-      bodyBuilder.addFormDataPart("metadata", metadataValue);
-    }
+    addCommonFields(bodyBuilder, preSignedUrlExpiresIn, metadata);
   }
 
   /**
@@ -464,15 +489,7 @@ final class PdfGateCallBuilder {
       bodyBuilder.addFormDataPart("linearize", linearize.toString());
     }
     bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
-    if (preSignedUrlExpiresIn != null) {
-      bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
-    }
-    if (metadata != null) {
-      String metadataValue = metadata instanceof String
-          ? (String) metadata
-          : PdfGateJson.gson().toJson(metadata);
-      bodyBuilder.addFormDataPart("metadata", metadataValue);
-    }
+    addCommonFields(bodyBuilder, preSignedUrlExpiresIn, metadata);
   }
 
   /**
@@ -595,6 +612,54 @@ final class PdfGateCallBuilder {
     String documentId = params.getDocumentId();
     if (documentId == null || documentId.isBlank()) {
       throw new IllegalArgumentException("documentId must be provided.");
+    }
+  }
+
+  /**
+   * Validates upload file request parameters.
+   */
+  private void validateUploadFileParams(UploadFileParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    FileParam file = params.getFile();
+    String url = params.getUrl();
+    if (file == null && (url == null || url.isBlank())) {
+      throw new IllegalArgumentException("Either the 'file' or 'url' parameters must be provided.");
+    }
+    if (file != null) {
+      if (file.getName() == null || file.getName().isBlank()) {
+        throw new IllegalArgumentException("file name must be provided.");
+      }
+      if (file.getData() == null || file.getData().length == 0) {
+        throw new IllegalArgumentException("file data must be provided.");
+      }
+    }
+  }
+
+  private void addCommonFields(MultipartBody.Builder bodyBuilder, Long preSignedUrlExpiresIn,
+                               Object metadata) {
+    if (preSignedUrlExpiresIn != null) {
+      bodyBuilder.addFormDataPart("preSignedUrlExpiresIn", preSignedUrlExpiresIn.toString());
+    }
+    if (metadata != null) {
+      String metadataValue = metadata instanceof String
+          ? (String) metadata
+          : PdfGateJson.gson().toJson(metadata);
+      bodyBuilder.addFormDataPart("metadata", metadataValue);
+    }
+  }
+
+  private static final class UploadFileJsonPayload {
+    private final String url;
+    private final Object metadata;
+    private final Long preSignedUrlExpiresIn;
+    private final Boolean jsonResponse = true;
+
+    private UploadFileJsonPayload(String url, Object metadata, Long preSignedUrlExpiresIn) {
+      this.url = url;
+      this.metadata = metadata;
+      this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
     }
   }
 

@@ -130,6 +130,23 @@ public class PdfGateAcceptanceTest {
   }
 
   @Test
+  public void uploadFileWithMultipart() throws Exception {
+    byte[] fileBytes = client.getFile(GetFileParams.builder()
+        .documentId(documentId)
+        .build());
+
+    UploadFileParams params = UploadFileParams.builder()
+        .file(new FileParam("upload.pdf", fileBytes, "application/pdf"))
+        .build();
+
+    PdfGateDocument document = client.uploadFile(params);
+    Assertions.assertNotNull(document.getId(), "document id should be present");
+    Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(),
+        "document status should be completed");
+    Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
+  }
+
+  @Test
   public void getFileByIdMissing() {
     String missingDocumentId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
     GetFileParams params = GetFileParams.builder()

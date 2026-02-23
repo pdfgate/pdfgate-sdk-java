@@ -63,4 +63,8 @@ final class UrlBuilder {
   String getFile(String documentId) {
     return baseUrl + "/file/" + documentId;
   }
+
+  String uploadFile() {
+    return baseUrl + "/upload";
+  }
 }

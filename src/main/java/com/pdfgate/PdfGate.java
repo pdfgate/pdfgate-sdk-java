@@ -89,6 +89,10 @@ public final class PdfGate {
   /**
    * Flattens a PDF and returns a JSON document response.
    *
+   * <p>This SDK currently supports flattening by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * @param params parameters for the flatten PDF request.
    * @return the flattened document metadata.
    * @throws PdfGateException when the request fails or the API returns a non-2xx response.
@@ -100,6 +104,10 @@ public final class PdfGate {
 
   /**
    * Flattens a PDF asynchronously and returns a JSON document response.
+   *
+   * <p>This SDK currently supports flattening by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
    *
    * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
    *
@@ -113,6 +121,10 @@ public final class PdfGate {
   /**
    * Builds a call that expects a JSON document response.
    *
+   * <p>This SDK currently supports flattening by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * @param params parameters for the flatten PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
@@ -122,6 +134,10 @@ public final class PdfGate {
 
   /**
    * Protects a PDF and returns a JSON document response.
+   *
+   * <p>This SDK currently supports protecting by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
    *
    * @param params parameters for the protect PDF request.
    * @return the protected document metadata.
@@ -135,6 +151,10 @@ public final class PdfGate {
   /**
    * Protects a PDF asynchronously and returns a JSON document response.
    *
+   * <p>This SDK currently supports protecting by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
    *
    * @param params parameters for the protect PDF request.
@@ -147,6 +167,10 @@ public final class PdfGate {
   /**
    * Builds a call that expects a JSON document response.
    *
+   * <p>This SDK currently supports protecting by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * @param params parameters for the protect PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
@@ -156,6 +180,10 @@ public final class PdfGate {
 
   /**
    * Compresses a PDF and returns a JSON document response.
+   *
+   * <p>This SDK currently supports compressing by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
    *
    * @param params parameters for the compress PDF request.
    * @return the compressed document metadata.
@@ -169,6 +197,10 @@ public final class PdfGate {
   /**
    * Compresses a PDF asynchronously and returns a JSON document response.
    *
+   * <p>This SDK currently supports compressing by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
    *
    * @param params parameters for the compress PDF request.
@@ -181,6 +213,10 @@ public final class PdfGate {
   /**
    * Builds a call that expects a JSON document response.
    *
+   * <p>This SDK currently supports compressing by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * @param params parameters for the compress PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
@@ -190,6 +226,10 @@ public final class PdfGate {
 
   /**
    * Applies a watermark to a PDF and returns a JSON document response.
+   *
+   * <p>This SDK currently supports watermarking by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
    *
    * @param params parameters for the watermark PDF request.
    * @return the watermarked document metadata.
@@ -203,6 +243,10 @@ public final class PdfGate {
   /**
    * Applies a watermark to a PDF asynchronously and returns a JSON document response.
    *
+   * <p>This SDK currently supports watermarking by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
    *
    * @param params parameters for the watermark PDF request.
@@ -215,6 +259,10 @@ public final class PdfGate {
   /**
    * Builds a call that expects a JSON document response.
    *
+   * <p>This SDK currently supports watermarking by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * @param params parameters for the watermark PDF request.
    * @return a call that yields a {@link PdfGateDocument} response.
    */
@@ -224,6 +272,10 @@ public final class PdfGate {
 
   /**
    * Extracts PDF form field data and returns the JSON response.
+   *
+   * <p>This SDK currently supports extraction by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
    *
    * @param params parameters for the extract form data request.
    * @return the JSON response containing form field data.
@@ -237,6 +289,10 @@ public final class PdfGate {
   /**
    * Extracts PDF form field data asynchronously and returns the JSON response.
    *
+   * <p>This SDK currently supports extraction by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
    * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
    *
    * @param params parameters for the extract form data request.
@@ -248,6 +304,10 @@ public final class PdfGate {
 
   /**
    * Builds a call that expects a JSON response containing form field data.
+   *
+   * <p>This SDK currently supports extraction by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
    *
    * @param params parameters for the extract form data request.
    * @return a call that yields JSON form field data.

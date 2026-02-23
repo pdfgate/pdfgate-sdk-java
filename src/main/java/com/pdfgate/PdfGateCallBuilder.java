@@ -60,10 +60,7 @@ final class PdfGateCallBuilder {
         .post(body)
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getGeneratePdfTimeout())
-        .readTimeout(config.getGeneratePdfTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getGeneratePdfTimeout());
 
     return client.newCall(request);
   }
@@ -88,10 +85,7 @@ final class PdfGateCallBuilder {
         .post(bodyBuilder.build())
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getFlattenPdfTimeout())
-        .readTimeout(config.getFlattenPdfTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getFlattenPdfTimeout());
 
     return client.newCall(request);
   }
@@ -143,10 +137,7 @@ final class PdfGateCallBuilder {
         .post(bodyBuilder.build())
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getDefaultTimeout())
-        .readTimeout(config.getDefaultTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
 
     return client.newCall(request);
   }
@@ -182,10 +173,7 @@ final class PdfGateCallBuilder {
         .post(bodyBuilder.build())
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getProtectPdfTimeout())
-        .readTimeout(config.getProtectPdfTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getProtectPdfTimeout());
 
     return client.newCall(request);
   }
@@ -215,10 +203,7 @@ final class PdfGateCallBuilder {
         .post(bodyBuilder.build())
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getCompressPdfTimeout())
-        .readTimeout(config.getCompressPdfTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getCompressPdfTimeout());
 
     return client.newCall(request);
   }
@@ -243,10 +228,7 @@ final class PdfGateCallBuilder {
         .post(bodyBuilder.build())
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getDefaultTimeout())
-        .readTimeout(config.getDefaultTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
 
     return client.newCall(request);
   }
@@ -261,21 +243,18 @@ final class PdfGateCallBuilder {
     if (url == null) {
       throw new IllegalArgumentException("Failed to build document URL.");
     }
-    HttpUrl.Builder urlBuilder = url.newBuilder();
+    HttpUrl.Builder requestUrlBuilder = url.newBuilder();
     if (params.getPreSignedUrlExpiresIn() != null) {
-      urlBuilder.addQueryParameter("preSignedUrlExpiresIn",
+      requestUrlBuilder.addQueryParameter("preSignedUrlExpiresIn",
           params.getPreSignedUrlExpiresIn().toString());
     }
     Request request = new Request.Builder()
-        .url(urlBuilder.build())
+        .url(requestUrlBuilder.build())
         .header("Authorization", "Bearer " + apiKey)
         .get()
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getDefaultTimeout())
-        .readTimeout(config.getDefaultTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
 
     return client.newCall(request);
   }
@@ -302,10 +281,7 @@ final class PdfGateCallBuilder {
         .get()
         .build();
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getDefaultTimeout())
-        .readTimeout(config.getDefaultTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
 
     return client.newCall(request);
   }
@@ -347,10 +323,7 @@ final class PdfGateCallBuilder {
           .build();
     }
 
-    OkHttpClient client = httpClient.newBuilder()
-        .callTimeout(config.getDefaultTimeout())
-        .readTimeout(config.getDefaultTimeout())
-        .build();
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
 
     return client.newCall(request);
   }
@@ -667,6 +640,13 @@ final class PdfGateCallBuilder {
       this.metadata = metadata;
       this.preSignedUrlExpiresIn = preSignedUrlExpiresIn;
     }
+  }
+
+  private OkHttpClient clientWithTimeout(java.time.Duration timeout) {
+    return httpClient.newBuilder()
+        .callTimeout(timeout)
+        .readTimeout(timeout)
+        .build();
   }
 
   /**

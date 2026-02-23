@@ -3,14 +3,13 @@ package com.pdfgate;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Parameters for watermarking a PDF by file or document ID.
+ * Parameters for watermarking a PDF by document ID.
  *
  * <p>{@code type} is required. For text watermarks, set {@code text}. For image
  * watermarks, provide a {@code watermark} image file. Optional settings include
  * font, size, color, opacity, position, and rotation.
  */
 public abstract class WatermarkPdfParams {
-  private final FileParam file;
   private final String documentId;
   private final FileParam watermark;
   private final WatermarkType type;
@@ -34,7 +33,6 @@ public abstract class WatermarkPdfParams {
    * @param builder builder with configured values.
    */
   protected WatermarkPdfParams(Builder builder) {
-    this.file = builder.file;
     this.documentId = builder.documentId;
     this.watermark = builder.watermark;
     this.type = builder.type;
@@ -60,15 +58,6 @@ public abstract class WatermarkPdfParams {
    */
   public static Builder builder() {
     return new Builder();
-  }
-
-  /**
-   * Returns the PDF file payload when watermarking by file.
-   *
-   * @return the PDF file payload when watermarking by file.
-   */
-  public FileParam getFile() {
-    return file;
   }
 
   /**
@@ -251,7 +240,6 @@ public abstract class WatermarkPdfParams {
    * Builder for {@link WatermarkPdfParams}.
    */
   public static final class Builder {
-    private FileParam file;
     private String documentId;
     private FileParam watermark;
     private WatermarkType type;
@@ -270,17 +258,6 @@ public abstract class WatermarkPdfParams {
     private Object metadata;
 
     private Builder() {
-    }
-
-    /**
-     * Sets the PDF file payload.
-     *
-     * @param file the PDF file payload.
-     * @return this builder.
-     */
-    public Builder file(FileParam file) {
-      this.file = file;
-      return this;
     }
 
     /**

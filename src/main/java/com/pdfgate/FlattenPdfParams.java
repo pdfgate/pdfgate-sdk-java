@@ -1,14 +1,13 @@
 package com.pdfgate;
 
 /**
- * Parameters for flattening a PDF by file or document ID.
+ * Parameters for flattening a PDF by document ID.
  *
- * <p>Flattening converts interactive fields/annotations into a static PDF. Provide either
- * {@link FileParam} or {@code documentId}. Use {@link Builder#buildWithFileResponse()} for raw
- * bytes or {@link Builder#buildWithJsonResponse()} for a {@link PdfGateDocument}.
+ * <p>Flattening converts interactive fields/annotations into a static PDF. Provide {@code
+ * documentId}. Use {@link Builder#buildWithFileResponse()} for raw bytes or {@link
+ * Builder#buildWithJsonResponse()} for a {@link PdfGateDocument}.
  */
 public abstract class FlattenPdfParams {
-  private final FileParam file;
   private final String documentId;
   private final Boolean jsonResponse;
   private final Long preSignedUrlExpiresIn;
@@ -20,7 +19,6 @@ public abstract class FlattenPdfParams {
    * @param builder builder with configured values.
    */
   protected FlattenPdfParams(Builder builder) {
-    this.file = builder.file;
     this.documentId = builder.documentId;
     this.jsonResponse = builder.jsonResponse;
     this.preSignedUrlExpiresIn = builder.preSignedUrlExpiresIn;
@@ -34,15 +32,6 @@ public abstract class FlattenPdfParams {
    */
   public static Builder builder() {
     return new Builder();
-  }
-
-  /**
-   * Returns the PDF file payload when flattening by file.
-   *
-   * @return the PDF file payload when flattening by file.
-   */
-  public FileParam getFile() {
-    return file;
   }
 
   /**
@@ -94,24 +83,12 @@ public abstract class FlattenPdfParams {
    * Builder for {@link FlattenPdfParams}.
    */
   public static final class Builder {
-    private FileParam file;
     private String documentId;
     private Boolean jsonResponse;
     private Long preSignedUrlExpiresIn;
     private Object metadata;
 
     private Builder() {
-    }
-
-    /**
-     * Sets the PDF file payload.
-     *
-     * @param file the PDF file payload.
-     * @return this builder.
-     */
-    public Builder file(FileParam file) {
-      this.file = file;
-      return this;
     }
 
     /**

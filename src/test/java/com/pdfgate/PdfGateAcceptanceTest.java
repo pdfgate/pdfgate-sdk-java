@@ -116,23 +116,13 @@ public class PdfGateAcceptanceTest {
   }
 
   @Test
-  public void flattenPdfByFile() throws Exception {
-    GeneratePdfFileParams generateParams = GeneratePdfParams.builder()
-        .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+  public void flattenPdfByDocumentIdWithFileResponse() throws Exception {
+    FlattenPdfFileParams flattenParams = FlattenPdfParams.builder()
+        .documentId(documentId)
         .buildWithFileResponse();
-    byte[] pdfBytes = client.generatePdf(generateParams);
 
-    FileParam fileParam = new FileParam("input.pdf", pdfBytes, "application/pdf");
-    FlattenPdfJsonParams flattenParams = FlattenPdfJsonParams.builder()
-        .file(fileParam)
-        .buildWithJsonResponse();
-
-    PdfGateDocument flattenedDocument = client.flattenPdf(flattenParams);
-    Assertions.assertNotNull(flattenedDocument.getId(), "document id should be present");
-    Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, flattenedDocument.getStatus(),
-        "document status should be completed");
-    Assertions.assertNotNull(flattenedDocument.getCreatedAt(),
-        "document createdAt should be present");
+    byte[] flattenedFile = client.flattenPdf(flattenParams);
+    assertIsValidPdf(flattenedFile);
   }
 
   @Test
@@ -211,25 +201,10 @@ public class PdfGateAcceptanceTest {
     Assertions.assertEquals("Doe", response.get("last_name").getAsString());
   }
 
-  /**
-   * Extracts form data using a PDF file upload.
-   */
   @Test
-  public void extractPdfFormDataByFile() throws Exception {
-    ExtractPdfFormDataParams extractParams = ExtractPdfFormDataParams.builder()
-        .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
-        .build();
-
-    JsonObject response = client.extractPdfFormData(extractParams);
-
-    Assertions.assertEquals("John", response.get("first_name").getAsString());
-    Assertions.assertEquals("Doe", response.get("last_name").getAsString());
-  }
-
-  @Test
-  public void watermarkPdfByFileWithJsonResponse() throws Exception {
+  public void watermarkPdfByDocumentIdWithJsonResponse() throws Exception {
     WatermarkPdfJsonParams params = WatermarkPdfParams.builder()
-        .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
+        .documentId(documentId)
         .type(WatermarkPdfParams.WatermarkType.TEXT)
         .text("CONFIDENTIAL")
         .buildWithJsonResponse();
@@ -285,11 +260,11 @@ public class PdfGateAcceptanceTest {
   }
 
   @Test
-  public void protectPdfByFileWithFileResponse() throws Exception {
+  public void protectPdfByDocumentIdWithFileResponse() throws Exception {
     String userPassword = UUID.randomUUID().toString();
     String ownerPassword = UUID.randomUUID().toString();
     ProtectPdfFileParams params = ProtectPdfParams.builder()
-        .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
+        .documentId(documentId)
         .userPassword(userPassword)
         .ownerPassword(ownerPassword)
         .buildWithFileResponse();
@@ -307,9 +282,9 @@ public class PdfGateAcceptanceTest {
   }
 
   @Test
-  public void compressPdfByFileWithJsonResponse() throws Exception {
+  public void compressPdfByDocumentIdWithJsonResponse() throws Exception {
     CompressPdfJsonParams params = CompressPdfParams.builder()
-        .file(new FileParam("input.pdf", fileWithForm, "application/pdf"))
+        .documentId(documentId)
         .buildWithJsonResponse();
 
     PdfGateDocument document = client.compressPdf(params);

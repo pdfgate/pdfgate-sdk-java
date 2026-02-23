@@ -1,22 +1,17 @@
 package com.pdfgate;
 
 /**
- * Parameters for extracting PDF form data from a file or an already uploaded document by ID.
+ * Parameters for extracting PDF form data from an already uploaded document by ID.
  *
- * <p>Provide either {@link FileParam} or {@code documentId}. The response is always JSON.
+ * <p>Provide {@code documentId}. The response is always JSON.
  */
 public final class ExtractPdfFormDataParams {
-  /**
-   * PDF file payload when extracting by file.
-   */
-  private final FileParam file;
   /**
    * Document id when extracting by document id.
    */
   private final String documentId;
 
   private ExtractPdfFormDataParams(Builder builder) {
-    this.file = builder.file;
     this.documentId = builder.documentId;
   }
 
@@ -27,15 +22,6 @@ public final class ExtractPdfFormDataParams {
    */
   public static Builder builder() {
     return new Builder();
-  }
-
-  /**
-   * Returns the file payload if extracting by file.
-   *
-   * @return the file payload if extracting by file.
-   */
-  public FileParam getFile() {
-    return file;
   }
 
   /**
@@ -52,10 +38,6 @@ public final class ExtractPdfFormDataParams {
    */
   public static final class Builder {
     /**
-     * PDF file payload when extracting by file.
-     */
-    private FileParam file;
-    /**
      * Document id when extracting by document id.
      */
     private String documentId;
@@ -64,17 +46,6 @@ public final class ExtractPdfFormDataParams {
      * Creates a builder for extract PDF form data parameters.
      */
     public Builder() {
-    }
-
-    /**
-     * Sets the file payload for extraction.
-     *
-     * @param file the PDF file payload.
-     * @return this builder.
-     */
-    public Builder file(FileParam file) {
-      this.file = file;
-      return this;
     }
 
     /**

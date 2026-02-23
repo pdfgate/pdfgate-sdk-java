@@ -1,14 +1,13 @@
 package com.pdfgate;
 
 /**
- * Parameters for compressing a PDF by file or document ID.
+ * Parameters for compressing a PDF by document ID.
  *
  * <p>Set {@code linearize} to enable Fast Web View output. Use
  * {@link Builder#buildWithFileResponse()} for raw bytes or
  * {@link Builder#buildWithJsonResponse()} for {@link PdfGateDocument} metadata.
  */
 public abstract class CompressPdfParams {
-  private final FileParam file;
   private final String documentId;
   private final Boolean linearize;
   private final Boolean jsonResponse;
@@ -21,7 +20,6 @@ public abstract class CompressPdfParams {
    * @param builder builder with configured values.
    */
   protected CompressPdfParams(Builder builder) {
-    this.file = builder.file;
     this.documentId = builder.documentId;
     this.linearize = builder.linearize;
     this.jsonResponse = builder.jsonResponse;
@@ -36,15 +34,6 @@ public abstract class CompressPdfParams {
    */
   public static Builder builder() {
     return new Builder();
-  }
-
-  /**
-   * Returns the PDF file payload when compressing by file.
-   *
-   * @return the PDF file payload.
-   */
-  public FileParam getFile() {
-    return file;
   }
 
   /**
@@ -105,7 +94,6 @@ public abstract class CompressPdfParams {
    * Builder for {@link CompressPdfParams}.
    */
   public static final class Builder {
-    private FileParam file;
     private String documentId;
     private Boolean linearize;
     private Boolean jsonResponse;
@@ -113,17 +101,6 @@ public abstract class CompressPdfParams {
     private Object metadata;
 
     private Builder() {
-    }
-
-    /**
-     * Sets the PDF file payload.
-     *
-     * @param file the PDF file payload.
-     * @return this builder.
-     */
-    public Builder file(FileParam file) {
-      this.file = file;
-      return this;
     }
 
     /**

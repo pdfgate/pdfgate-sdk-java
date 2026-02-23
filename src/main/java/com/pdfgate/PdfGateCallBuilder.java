@@ -78,19 +78,9 @@ final class PdfGateCallBuilder {
     addFlattenPdfCommonFields(bodyBuilder, params.getJsonResponse(),
         params.getPreSignedUrlExpiresIn(), params.getMetadata());
 
-    FileParam file = params.getFile();
-    if (file != null) {
-      MediaType mediaType = resolveFileMediaType(file);
-      bodyBuilder.addFormDataPart(
-          "file",
-          file.getName(),
-          RequestBody.create(file.getData(), mediaType)
-      );
-    } else {
-      String documentId = params.getDocumentId();
-      if (documentId != null && !documentId.isBlank()) {
-        bodyBuilder.addFormDataPart("documentId", documentId);
-      }
+    String documentId = params.getDocumentId();
+    if (documentId != null && !documentId.isBlank()) {
+      bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
     Request request = new Request.Builder()
@@ -132,19 +122,9 @@ final class PdfGateCallBuilder {
         params.getMetadata()
     );
 
-    FileParam file = params.getFile();
-    if (file != null) {
-      MediaType mediaType = resolveFileMediaType(file);
-      bodyBuilder.addFormDataPart(
-          "file",
-          file.getName(),
-          RequestBody.create(file.getData(), mediaType)
-      );
-    } else {
-      String documentId = params.getDocumentId();
-      if (documentId != null && !documentId.isBlank()) {
-        bodyBuilder.addFormDataPart("documentId", documentId);
-      }
+    String documentId = params.getDocumentId();
+    if (documentId != null && !documentId.isBlank()) {
+      bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
     if (params.getType() == WatermarkPdfParams.WatermarkType.IMAGE) {
@@ -194,19 +174,9 @@ final class PdfGateCallBuilder {
         params.getMetadata()
     );
 
-    FileParam file = params.getFile();
-    if (file != null) {
-      MediaType mediaType = resolveFileMediaType(file);
-      bodyBuilder.addFormDataPart(
-          "file",
-          file.getName(),
-          RequestBody.create(file.getData(), mediaType)
-      );
-    } else {
-      String documentId = params.getDocumentId();
-      if (documentId != null && !documentId.isBlank()) {
-        bodyBuilder.addFormDataPart("documentId", documentId);
-      }
+    String documentId = params.getDocumentId();
+    if (documentId != null && !documentId.isBlank()) {
+      bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
     Request request = new Request.Builder()
@@ -238,19 +208,9 @@ final class PdfGateCallBuilder {
         params.getMetadata()
     );
 
-    FileParam file = params.getFile();
-    if (file != null) {
-      MediaType mediaType = resolveFileMediaType(file);
-      bodyBuilder.addFormDataPart(
-          "file",
-          file.getName(),
-          RequestBody.create(file.getData(), mediaType)
-      );
-    } else {
-      String documentId = params.getDocumentId();
-      if (documentId != null && !documentId.isBlank()) {
-        bodyBuilder.addFormDataPart("documentId", documentId);
-      }
+    String documentId = params.getDocumentId();
+    if (documentId != null && !documentId.isBlank()) {
+      bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
     Request request = new Request.Builder()
@@ -275,19 +235,9 @@ final class PdfGateCallBuilder {
     MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
         .setType(MultipartBody.FORM);
 
-    FileParam file = params.getFile();
-    if (file != null) {
-      MediaType mediaType = resolveFileMediaType(file);
-      bodyBuilder.addFormDataPart(
-          "file",
-          file.getName(),
-          RequestBody.create(file.getData(), mediaType)
-      );
-    } else {
-      String documentId = params.getDocumentId();
-      if (documentId != null && !documentId.isBlank()) {
-        bodyBuilder.addFormDataPart("documentId", documentId);
-      }
+    String documentId = params.getDocumentId();
+    if (documentId != null && !documentId.isBlank()) {
+      bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
     Request request = new Request.Builder()
@@ -544,18 +494,9 @@ final class PdfGateCallBuilder {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }
-    FileParam file = params.getFile();
     String documentId = params.getDocumentId();
-    if (file == null && (documentId == null || documentId.isBlank())) {
-      throw new IllegalArgumentException("Either file or documentId must be provided.");
-    }
-    if (file != null) {
-      if (file.getName() == null || file.getName().isBlank()) {
-        throw new IllegalArgumentException("file name must be provided.");
-      }
-      if (file.getData() == null || file.getData().length == 0) {
-        throw new IllegalArgumentException("file data must be provided.");
-      }
+    if (documentId == null || documentId.isBlank()) {
+      throw new IllegalArgumentException("documentId must be provided.");
     }
   }
 
@@ -569,18 +510,9 @@ final class PdfGateCallBuilder {
     if (params.getType() == null) {
       throw new IllegalArgumentException("type must be provided.");
     }
-    FileParam file = params.getFile();
     String documentId = params.getDocumentId();
-    if (file == null && (documentId == null || documentId.isBlank())) {
-      throw new IllegalArgumentException("Either file or documentId must be provided.");
-    }
-    if (file != null) {
-      if (file.getName() == null || file.getName().isBlank()) {
-        throw new IllegalArgumentException("file name must be provided.");
-      }
-      if (file.getData() == null || file.getData().length == 0) {
-        throw new IllegalArgumentException("file data must be provided.");
-      }
+    if (documentId == null || documentId.isBlank()) {
+      throw new IllegalArgumentException("documentId must be provided.");
     }
     if (params.getType() == WatermarkPdfParams.WatermarkType.TEXT) {
       if (params.getText() == null || params.getText().isBlank()) {
@@ -608,18 +540,9 @@ final class PdfGateCallBuilder {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }
-    FileParam file = params.getFile();
     String documentId = params.getDocumentId();
-    if (file == null && (documentId == null || documentId.isBlank())) {
-      throw new IllegalArgumentException("Either file or documentId must be provided.");
-    }
-    if (file != null) {
-      if (file.getName() == null || file.getName().isBlank()) {
-        throw new IllegalArgumentException("file name must be provided.");
-      }
-      if (file.getData() == null || file.getData().length == 0) {
-        throw new IllegalArgumentException("file data must be provided.");
-      }
+    if (documentId == null || documentId.isBlank()) {
+      throw new IllegalArgumentException("documentId must be provided.");
     }
   }
 
@@ -630,18 +553,9 @@ final class PdfGateCallBuilder {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }
-    FileParam file = params.getFile();
     String documentId = params.getDocumentId();
-    if (file == null && (documentId == null || documentId.isBlank())) {
-      throw new IllegalArgumentException("Either file or documentId must be provided.");
-    }
-    if (file != null) {
-      if (file.getName() == null || file.getName().isBlank()) {
-        throw new IllegalArgumentException("file name must be provided.");
-      }
-      if (file.getData() == null || file.getData().length == 0) {
-        throw new IllegalArgumentException("file data must be provided.");
-      }
+    if (documentId == null || documentId.isBlank()) {
+      throw new IllegalArgumentException("documentId must be provided.");
     }
   }
 
@@ -652,18 +566,9 @@ final class PdfGateCallBuilder {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }
-    FileParam file = params.getFile();
     String documentId = params.getDocumentId();
-    if (file == null && (documentId == null || documentId.isBlank())) {
-      throw new IllegalArgumentException("Either file or documentId must be provided.");
-    }
-    if (file != null) {
-      if (file.getName() == null || file.getName().isBlank()) {
-        throw new IllegalArgumentException("file name must be provided.");
-      }
-      if (file.getData() == null || file.getData().length == 0) {
-        throw new IllegalArgumentException("file data must be provided.");
-      }
+    if (documentId == null || documentId.isBlank()) {
+      throw new IllegalArgumentException("documentId must be provided.");
     }
   }
 

@@ -3,14 +3,13 @@ package com.pdfgate;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Parameters for protecting a PDF by file or document ID.
+ * Parameters for protecting a PDF by document ID.
  *
  * <p>Use {@link EncryptionAlgorithm} to select AES256 (default) or AES128. Set
  * {@code userPassword} and {@code ownerPassword} to control access and permissions,
  * and use the disable flags to restrict printing, copying, or editing.
  */
 public abstract class ProtectPdfParams {
-  private final FileParam file;
   private final String documentId;
   private final EncryptionAlgorithm algorithm;
   private final String userPassword;
@@ -29,7 +28,6 @@ public abstract class ProtectPdfParams {
    * @param builder builder with configured values.
    */
   protected ProtectPdfParams(Builder builder) {
-    this.file = builder.file;
     this.documentId = builder.documentId;
     this.algorithm = builder.algorithm;
     this.userPassword = builder.userPassword;
@@ -50,15 +48,6 @@ public abstract class ProtectPdfParams {
    */
   public static Builder builder() {
     return new Builder();
-  }
-
-  /**
-   * Returns the PDF file payload when protecting by file.
-   *
-   * @return the PDF file payload when protecting by file.
-   */
-  public FileParam getFile() {
-    return file;
   }
 
   /**
@@ -196,7 +185,6 @@ public abstract class ProtectPdfParams {
    * Builder for {@link ProtectPdfParams}.
    */
   public static final class Builder {
-    private FileParam file;
     private String documentId;
     private EncryptionAlgorithm algorithm;
     private String userPassword;
@@ -210,17 +198,6 @@ public abstract class ProtectPdfParams {
     private Object metadata;
 
     private Builder() {
-    }
-
-    /**
-     * Sets the PDF file payload.
-     *
-     * @param file the PDF file payload.
-     * @return this builder.
-     */
-    public Builder file(FileParam file) {
-      this.file = file;
-      return this;
     }
 
     /**

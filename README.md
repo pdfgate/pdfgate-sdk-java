@@ -231,11 +231,10 @@ PdfGateDocument compressedDocument = client.compressPdf(compressParams);
 ## Watermark a PDF
 
 ```java
-byte[] pdfFile = Files.readAllBytes(Paths.get("input.pdf"));
 byte[] watermarkImage = Files.readAllBytes(Paths.get("watermark.jpg"));
 
 WatermarkPdfJsonParams watermarkParams = WatermarkPdfParams.builder()
-    .file(new FileParam("input.pdf", pdfFile, "application/pdf"))
+    .documentId(documentId)
     .type(WatermarkPdfParams.WatermarkType.IMAGE)
     .watermark(new FileParam("watermark.jpg", watermarkImage, "image/jpeg"))
     .buildWithJsonResponse();

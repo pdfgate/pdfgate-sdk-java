@@ -35,7 +35,7 @@ public final class PdfGate {
    * Creates a client with a custom configuration.
    *
    * @param apiKey API key used for authentication.
-   * @param config configuration for base URL, timeouts, and headers.
+   * @param config configuration for API domains and timeouts.
    */
   public PdfGate(String apiKey, PdfGateConfig config) {
     if (Strings.isBlank(apiKey)) {

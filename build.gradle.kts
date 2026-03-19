@@ -26,7 +26,7 @@ java {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(11)
+    options.release.set(8)
 }
 
 tasks.withType<Test>().configureEach {

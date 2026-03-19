@@ -38,7 +38,7 @@ public final class PdfGate {
    * @param config configuration for base URL, timeouts, and headers.
    */
   public PdfGate(String apiKey, PdfGateConfig config) {
-    if (apiKey == null || apiKey.isBlank()) {
+    if (Strings.isBlank(apiKey)) {
       throw new IllegalArgumentException("apiKey must be provided.");
     }
     if (config == null) {

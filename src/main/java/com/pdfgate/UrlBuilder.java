@@ -6,7 +6,7 @@ final class UrlBuilder {
 
   UrlBuilder(String apiKey, PdfGateConfig config) {
     String domain = getDomainFromApiKey(apiKey, config);
-    if (domain == null || domain.isBlank()) {
+    if (Strings.isBlank(domain)) {
       throw new IllegalArgumentException("domain must be provided.");
     }
     this.baseUrl = normalizeBase(domain);

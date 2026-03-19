@@ -12,7 +12,7 @@ final class PdfGateJson {
           return null;
         }
         String value = json.getAsString();
-        if (value == null || value.isBlank()) {
+        if (Strings.isBlank(value)) {
           return null;
         }
         return Instant.parse(value);

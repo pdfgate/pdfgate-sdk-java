@@ -76,7 +76,7 @@ public final class PdfGateException extends IOException {
    */
   public static PdfGateException fromException(IOException e) {
     String message = e == null ? null : e.getMessage();
-    if (message == null || message.isBlank()) {
+    if (Strings.isBlank(message)) {
       message = e == null ? "IOException" : e.getClass().getSimpleName();
     }
     PdfGateException exception = new PdfGateException(

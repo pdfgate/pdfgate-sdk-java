@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -17,6 +18,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PdfGateTest {
+  private Map<String, Object> mapOf(Object... keyValues) {
+    Map<String, Object> values = new LinkedHashMap<String, Object>();
+    for (int i = 0; i < keyValues.length; i += 2) {
+      values.put((String) keyValues[i], keyValues[i + 1]);
+    }
+    return values;
+  }
 
   private PdfGate buildClient(String url) {
     PdfGateConfig config = PdfGateConfig.of(
@@ -31,7 +39,7 @@ public class PdfGateTest {
   @Test
   public void generatePdfCallWithJsonResponseWithError() throws Exception {
     String errorMessage = "Required field 'pdf' is missing";
-    Map<String, Object> payload = Map.of(
+    Map<String, Object> payload = mapOf(
         "statusCode", 400,
         "error", "Bad Request",
         "message", errorMessage
@@ -54,7 +62,8 @@ public class PdfGateTest {
       AtomicReference<Throwable> failure = new AtomicReference<>();
 
       PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
+      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params),
+          new PdfGateCallback<PdfGateDocument>() {
         @Override
         public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
           success.set(value);
@@ -66,7 +75,7 @@ public class PdfGateTest {
           failure.set(t);
           latch.countDown();
         }
-      });
+          });
 
       Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
       Assertions.assertNull(success.get(), "success callback should not be invoked");
@@ -83,7 +92,7 @@ public class PdfGateTest {
 
   @Test
   public void generatePdfRequestAlwaysIncludesJsonResponse() throws Exception {
-    String body = PdfGateJson.gson().toJson(Map.of(
+    String body = PdfGateJson.gson().toJson(mapOf(
         "id", "doc_123",
         "status", "completed"
     ));
@@ -111,7 +120,7 @@ public class PdfGateTest {
 
   @Test
   public void multipartRequestsAlwaysIncludeJsonResponse() throws Exception {
-    String documentBody = PdfGateJson.gson().toJson(Map.of(
+    String documentBody = PdfGateJson.gson().toJson(mapOf(
         "id", "doc_123",
         "status", "completed"
     ));
@@ -189,7 +198,7 @@ public class PdfGateTest {
 
   @Test
   public void uploadFilePrefersMultipartWhenFileProvided() throws Exception {
-    String body = PdfGateJson.gson().toJson(Map.of(
+    String body = PdfGateJson.gson().toJson(mapOf(
         "id", "doc_123",
         "status", "completed"
     ));
@@ -226,7 +235,7 @@ public class PdfGateTest {
 
   @Test
   public void uploadFileUsesJsonWhenNoFileProvided() throws Exception {
-    String body = PdfGateJson.gson().toJson(Map.of(
+    String body = PdfGateJson.gson().toJson(mapOf(
         "id", "doc_123",
         "status", "completed"
     ));
@@ -240,7 +249,7 @@ public class PdfGateTest {
 
       UploadFileParams params = UploadFileParams.builder()
           .url("https://example.com/sample.pdf")
-          .metadata(Map.of("source", "test"))
+          .metadata(mapOf("source", "test"))
           .preSignedUrlExpiresIn(120L)
           .build();
 
@@ -266,7 +275,7 @@ public class PdfGateTest {
     Random random = new Random();
     Instant now = Instant.now();
     String createdAt = DateTimeFormatter.ISO_INSTANT.format(now);
-    Map<String, Object> payload = Map.of(
+    Map<String, Object> payload = mapOf(
         "id", "6642381c5c61",
         "status", "completed",
         "type", "from_html",
@@ -291,7 +300,8 @@ public class PdfGateTest {
       AtomicReference<Throwable> failure = new AtomicReference<>();
 
       PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
+      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params),
+          new PdfGateCallback<PdfGateDocument>() {
         @Override
         public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
           success.set(value);
@@ -303,7 +313,7 @@ public class PdfGateTest {
           failure.set(t);
           latch.countDown();
         }
-      });
+          });
 
       Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
       Assertions.assertNull(failure.get(), "failure callback should not be invoked");
@@ -336,7 +346,8 @@ public class PdfGateTest {
       AtomicReference<Throwable> failure = new AtomicReference<>();
 
       PdfGate pdfGateClient = buildClient(baseUrl);
-      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params), new PdfGateCallback<>() {
+      pdfGateClient.enqueue(pdfGateClient.generatePdfCall(params),
+          new PdfGateCallback<PdfGateDocument>() {
         @Override
         public void onSuccess(okhttp3.Call call, PdfGateDocument value) {
           success.set(value);
@@ -348,7 +359,7 @@ public class PdfGateTest {
           failure.set(t);
           latch.countDown();
         }
-      });
+          });
 
       Assertions.assertTrue(latch.await(3, TimeUnit.SECONDS), "callback should be invoked");
       Assertions.assertNull(success.get(), "success callback should not be invoked");
@@ -367,7 +378,7 @@ public class PdfGateTest {
     Random random = new Random();
     Instant now = Instant.now();
     String createdAt = DateTimeFormatter.ISO_INSTANT.format(now);
-    Map<String, Object> payload = Map.of(
+    Map<String, Object> payload = mapOf(
         "id", "6642381c5c61",
         "status", "completed",
         "type", "from_html",
@@ -402,7 +413,7 @@ public class PdfGateTest {
   @Test
   public void generatePdfAsyncWithJsonResponseWithError() throws Exception {
     String errorMessage = "Required field 'pdf' is missing";
-    Map<String, Object> payload = Map.of(
+    Map<String, Object> payload = mapOf(
         "statusCode", 400,
         "error", "Bad Request",
         "message", errorMessage
@@ -441,7 +452,7 @@ public class PdfGateTest {
     Random random = new Random();
     Instant now = Instant.now();
     String createdAt = DateTimeFormatter.ISO_INSTANT.format(now);
-    Map<String, Object> payload = Map.of(
+    Map<String, Object> payload = mapOf(
         "id", "6642381c5c61",
         "status", "completed",
         "type", "from_html",
@@ -477,7 +488,7 @@ public class PdfGateTest {
   @Test
   public void extractPdfFormDataCallWithJsonResponseWithError() throws Exception {
     String errorMessage = "Invalid document id";
-    Map<String, Object> payload = Map.of(
+    Map<String, Object> payload = mapOf(
         "statusCode", 404,
         "error", "Not Found",
         "message", errorMessage
@@ -500,7 +511,8 @@ public class PdfGateTest {
       AtomicReference<Throwable> failure = new AtomicReference<>();
 
       PdfGate pdfGateClient = buildClient(server.url("/").toString());
-      pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params), new PdfGateCallback<>() {
+      pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params),
+          new PdfGateCallback<JsonObject>() {
         @Override
         public void onSuccess(okhttp3.Call call, JsonObject value) {
           success.set(value);
@@ -512,7 +524,7 @@ public class PdfGateTest {
           failure.set(t);
           latch.countDown();
         }
-      });
+          });
 
       Assertions.assertTrue(latch.await(2, TimeUnit.SECONDS), "callback should be invoked");
       Assertions.assertNull(success.get(), "success callback should not be invoked");
@@ -543,7 +555,8 @@ public class PdfGateTest {
       AtomicReference<Throwable> failure = new AtomicReference<>();
 
       PdfGate pdfGateClient = buildClient(baseUrl);
-      pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params), new PdfGateCallback<>() {
+      pdfGateClient.enqueue(pdfGateClient.extractPdfFormDataCall(params),
+          new PdfGateCallback<JsonObject>() {
         @Override
         public void onSuccess(okhttp3.Call call, JsonObject value) {
           success.set(value);
@@ -555,7 +568,7 @@ public class PdfGateTest {
           failure.set(t);
           latch.countDown();
         }
-      });
+          });
 
       Assertions.assertTrue(latch.await(3, TimeUnit.SECONDS), "callback should be invoked");
       Assertions.assertNull(success.get(), "success callback should not be invoked");
@@ -572,7 +585,7 @@ public class PdfGateTest {
   @Test
   public void extractPdfFormDataAsyncWithJsonResponseWithError() throws Exception {
     String errorMessage = "Invalid document id";
-    Map<String, Object> payload = Map.of(
+    Map<String, Object> payload = mapOf(
         "statusCode", 404,
         "error", "Not Found",
         "message", errorMessage

@@ -178,7 +178,7 @@ public final class PdfGateConfig {
   }
 
   private static String requireNonBlank(String value, String label) {
-    if (value == null || value.isBlank()) {
+    if (Strings.isBlank(value)) {
       throw new IllegalArgumentException(label + " must be provided.");
     }
     return value;

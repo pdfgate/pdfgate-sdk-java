@@ -75,7 +75,7 @@ final class PdfGateCallBuilder {
     addFlattenPdfCommonFields(bodyBuilder, params.getPreSignedUrlExpiresIn(), params.getMetadata());
 
     String documentId = params.getDocumentId();
-    if (documentId != null && !documentId.isBlank()) {
+    if (!Strings.isBlank(documentId)) {
       bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
@@ -115,7 +115,7 @@ final class PdfGateCallBuilder {
     );
 
     String documentId = params.getDocumentId();
-    if (documentId != null && !documentId.isBlank()) {
+    if (!Strings.isBlank(documentId)) {
       bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
@@ -163,7 +163,7 @@ final class PdfGateCallBuilder {
     );
 
     String documentId = params.getDocumentId();
-    if (documentId != null && !documentId.isBlank()) {
+    if (!Strings.isBlank(documentId)) {
       bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
@@ -193,7 +193,7 @@ final class PdfGateCallBuilder {
     );
 
     String documentId = params.getDocumentId();
-    if (documentId != null && !documentId.isBlank()) {
+    if (!Strings.isBlank(documentId)) {
       bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
@@ -218,7 +218,7 @@ final class PdfGateCallBuilder {
     bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
 
     String documentId = params.getDocumentId();
-    if (documentId != null && !documentId.isBlank()) {
+    if (!Strings.isBlank(documentId)) {
       bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
@@ -340,7 +340,7 @@ final class PdfGateCallBuilder {
     }
     String html = params.getHtml();
     String url = params.getUrl();
-    if ((html == null || html.isBlank()) && (url == null || url.isBlank())) {
+    if (Strings.isBlank(html) && Strings.isBlank(url)) {
       throw new IllegalArgumentException(
           "Either the 'html' or 'url' parameters must be provided to generate a PDF."
       );
@@ -482,7 +482,7 @@ final class PdfGateCallBuilder {
       throw new IllegalArgumentException("jsonResponse must be true.");
     }
     String documentId = params.getDocumentId();
-    if (documentId == null || documentId.isBlank()) {
+    if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
     }
   }
@@ -501,11 +501,11 @@ final class PdfGateCallBuilder {
       throw new IllegalArgumentException("type must be provided.");
     }
     String documentId = params.getDocumentId();
-    if (documentId == null || documentId.isBlank()) {
+    if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
     }
     if (params.getType() == WatermarkPdfParams.WatermarkType.TEXT) {
-      if (params.getText() == null || params.getText().isBlank()) {
+      if (Strings.isBlank(params.getText())) {
         throw new IllegalArgumentException("text must be provided when type is text.");
       }
     }
@@ -514,7 +514,7 @@ final class PdfGateCallBuilder {
       if (watermark == null) {
         throw new IllegalArgumentException("watermark file must be provided when type is image.");
       }
-      if (watermark.getName() == null || watermark.getName().isBlank()) {
+      if (Strings.isBlank(watermark.getName())) {
         throw new IllegalArgumentException("watermark file name must be provided.");
       }
       if (watermark.getData() == null || watermark.getData().length == 0) {
@@ -534,7 +534,7 @@ final class PdfGateCallBuilder {
       throw new IllegalArgumentException("jsonResponse must be true.");
     }
     String documentId = params.getDocumentId();
-    if (documentId == null || documentId.isBlank()) {
+    if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
     }
   }
@@ -550,7 +550,7 @@ final class PdfGateCallBuilder {
       throw new IllegalArgumentException("jsonResponse must be true.");
     }
     String documentId = params.getDocumentId();
-    if (documentId == null || documentId.isBlank()) {
+    if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
     }
   }
@@ -563,7 +563,7 @@ final class PdfGateCallBuilder {
       throw new IllegalArgumentException("params must be provided.");
     }
     String documentId = params.getDocumentId();
-    if (documentId == null || documentId.isBlank()) {
+    if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
     }
   }
@@ -576,7 +576,7 @@ final class PdfGateCallBuilder {
       throw new IllegalArgumentException("params must be provided.");
     }
     String documentId = params.getDocumentId();
-    if (documentId == null || documentId.isBlank()) {
+    if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
     }
   }
@@ -589,7 +589,7 @@ final class PdfGateCallBuilder {
       throw new IllegalArgumentException("params must be provided.");
     }
     String documentId = params.getDocumentId();
-    if (documentId == null || documentId.isBlank()) {
+    if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
     }
   }
@@ -603,11 +603,11 @@ final class PdfGateCallBuilder {
     }
     FileParam file = params.getFile();
     String url = params.getUrl();
-    if (file == null && (url == null || url.isBlank())) {
+    if (file == null && Strings.isBlank(url)) {
       throw new IllegalArgumentException("Either the 'file' or 'url' parameters must be provided.");
     }
     if (file != null) {
-      if (file.getName() == null || file.getName().isBlank()) {
+      if (Strings.isBlank(file.getName())) {
         throw new IllegalArgumentException("file name must be provided.");
       }
       if (file.getData() == null || file.getData().length == 0) {
@@ -663,10 +663,10 @@ final class PdfGateCallBuilder {
    */
   private MediaType resolveFileMediaType(FileParam file) {
     String mimeType = file.getType();
-    if (mimeType == null || mimeType.isBlank()) {
+    if (Strings.isBlank(mimeType)) {
       mimeType = URLConnection.guessContentTypeFromName(file.getName());
     }
-    if (mimeType == null || mimeType.isBlank()) {
+    if (Strings.isBlank(mimeType)) {
       mimeType = "application/octet-stream";
     }
     return MediaType.get(mimeType);

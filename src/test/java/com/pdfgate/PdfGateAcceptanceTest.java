@@ -26,7 +26,7 @@ public class PdfGateAcceptanceTest {
   static void setUpClient() {
     String apiKey = System.getenv("PDFGATE_API_KEY");
 
-    Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "PDFGATE_API_KEY not set");
+    Assumptions.assumeTrue(!Strings.isBlank(apiKey), "PDFGATE_API_KEY not set");
     Assumptions.assumeTrue(apiKey.startsWith("test_"), "PDFGATE_API_KEY must be a sandbox key");
 
     client = new PdfGate(apiKey);
@@ -103,7 +103,8 @@ public class PdfGateAcceptanceTest {
         "document status should be completed");
     Assertions.assertNotNull(flattenedDocument.getCreatedAt(),
         "document createdAt should be present");
-    Assertions.assertEquals(documentId, flattenedDocument.getDerivedFrom().orElseThrow());
+    Assertions.assertEquals(documentId,
+        flattenedDocument.getDerivedFrom().orElseThrow(AssertionError::new));
   }
 
   @Test
@@ -212,7 +213,8 @@ public class PdfGateAcceptanceTest {
     Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(),
         "document status should be completed");
     Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
-    Assertions.assertEquals(documentId, document.getDerivedFrom().orElseThrow());
+    Assertions.assertEquals(documentId,
+        document.getDerivedFrom().orElseThrow(AssertionError::new));
   }
 
   @Test

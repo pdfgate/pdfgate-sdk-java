@@ -106,14 +106,14 @@ public class PdfGateExample {
     String apiKey = "test_123";
     PdfGate client = new PdfGate(apiKey);
 
-    GeneratePdfParams params = GeneratePdfParams.builder()
-        .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
-        .build();
-
-    PdfGateDocument document = client.generatePdf(params);
-
-    Path filePath = Paths.get("output.pdf");
     try {
+      GeneratePdfParams params = GeneratePdfParams.builder()
+          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+          .build();
+
+      PdfGateDocument document = client.generatePdf(params);
+
+      Path filePath = Paths.get("output.pdf");
       byte[] fileBytes = client.getFile(GetFileParams.builder()
           .documentId(document.getId())
           .build());

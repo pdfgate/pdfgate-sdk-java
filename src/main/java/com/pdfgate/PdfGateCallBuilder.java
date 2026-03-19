@@ -642,10 +642,19 @@ final class PdfGateCallBuilder {
     }
   }
 
+  /**
+   * Creates a client where the same timeout applies to every phase of the request lifecycle.
+   *
+   * <p>Connect timeout covers establishing the TCP/TLS connection, write timeout covers sending
+   * the request body, read timeout covers receiving the response body, and call timeout caps the
+   * total end-to-end request duration.
+   */
   private OkHttpClient clientWithTimeout(java.time.Duration timeout) {
     return httpClient.newBuilder()
+        .connectTimeout(timeout)
         .callTimeout(timeout)
         .readTimeout(timeout)
+        .writeTimeout(timeout)
         .build();
   }
 

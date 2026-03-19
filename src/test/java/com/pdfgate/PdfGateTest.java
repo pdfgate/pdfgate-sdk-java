@@ -91,6 +91,42 @@ public class PdfGateTest {
   }
 
   @Test
+  public void generatePdfErrorResponseBodyIsTruncated() throws Exception {
+    StringBuilder bodyBuilder = new StringBuilder();
+    for (int i = 0; i < 5000; i++) {
+      bodyBuilder.append('x');
+    }
+    String body = bodyBuilder.toString();
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(400)
+          .setHeader("Content-Type", "text/plain")
+          .setBody(body));
+      server.start();
+
+      GeneratePdfParams params = GeneratePdfParams.builder()
+          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateException exception = Assertions.assertThrows(
+          PdfGateException.class,
+          () -> pdfGateClient.generatePdf(params)
+      );
+
+      Assertions.assertEquals(400, exception.getStatusCode(),
+          "status code should be preserved");
+      Assertions.assertTrue(exception.getResponseBody().length() <= 4096,
+          "stored response body should be truncated");
+      Assertions.assertTrue(exception.getResponseBody().endsWith("...(truncated)"),
+          "stored response body should indicate truncation");
+      Assertions.assertTrue(exception.getMessage().endsWith("...(truncated)"),
+          "error message should indicate truncation");
+    }
+  }
+
+  @Test
   public void generatePdfRequestAlwaysIncludesJsonResponse() throws Exception {
     String body = PdfGateJson.gson().toJson(mapOf(
         "id", "doc_123",

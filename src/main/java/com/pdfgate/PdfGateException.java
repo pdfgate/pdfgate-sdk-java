@@ -14,6 +14,13 @@ import okhttp3.ResponseBody;
  */
 public final class PdfGateException extends IOException {
   /**
+   * Caps stored error bodies at 4 KiB so exceptions keep useful API context without retaining
+   * arbitrarily large payloads in memory or logs.
+   */
+  private static final int MAX_RESPONSE_BODY_LENGTH = 4096;
+  private static final String TRUNCATION_SUFFIX = "...(truncated)";
+
+  /**
    * HTTP status code returned by the API.
    */
   private final int statusCode;
@@ -60,12 +67,15 @@ public final class PdfGateException extends IOException {
     int statusCode = response.code();
     ResponseBody body = response.body();
     String bodyText = body == null ? "" : body.string();
+    String truncatedBodyText = truncate(bodyText);
     String errorDetail = parseErrorMessageFromBody(bodyText);
     if (errorDetail == null || errorDetail.isEmpty()) {
-      errorDetail = bodyText;
+      errorDetail = truncatedBodyText;
+    } else {
+      errorDetail = truncate(errorDetail);
     }
     String message = "PdfGate API request failed with status " + statusCode + ": " + errorDetail;
-    return new PdfGateException(message, statusCode, bodyText, response.headers());
+    return new PdfGateException(message, statusCode, truncatedBodyText, response.headers());
   }
 
   /**
@@ -146,6 +156,17 @@ public final class PdfGateException extends IOException {
     } catch (JsonSyntaxException ignored) {
       return null;
     }
+  }
+
+  private static String truncate(String value) {
+    if (value == null || value.length() <= MAX_RESPONSE_BODY_LENGTH) {
+      return value;
+    }
+    int maxPrefixLength = MAX_RESPONSE_BODY_LENGTH - TRUNCATION_SUFFIX.length();
+    if (maxPrefixLength <= 0) {
+      return TRUNCATION_SUFFIX.substring(0, MAX_RESPONSE_BODY_LENGTH);
+    }
+    return value.substring(0, maxPrefixLength) + TRUNCATION_SUFFIX;
   }
 
   /**

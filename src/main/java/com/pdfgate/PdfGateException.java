@@ -91,6 +91,39 @@ public final class PdfGateException extends IOException {
     return exception;
   }
 
+  /**
+   * Creates a {@link PdfGateException} from a successful response that could not be parsed.
+   *
+   * @param response the successful HTTP response, possibly {@code null}.
+   * @param responseBody raw response body that failed to parse.
+   * @param cause the underlying parsing failure.
+   * @return a populated {@link PdfGateException} describing the parse failure.
+   */
+  public static PdfGateException fromParseFailure(
+      Response response,
+      String responseBody,
+      Throwable cause
+  ) {
+    int statusCode = response == null ? -1 : response.code();
+    Headers headers = response == null ? new Headers.Builder().build() : response.headers();
+    String causeMessage = cause == null ? null : cause.getMessage();
+    if (Strings.isBlank(causeMessage)) {
+      causeMessage = cause == null ? "Unknown parse error" : cause.getClass().getSimpleName();
+    }
+
+    PdfGateException exception = new PdfGateException(
+        "PdfGate API request failed while parsing successful response"
+            + " with status " + statusCode + ": " + causeMessage,
+        statusCode,
+        responseBody == null ? "" : responseBody,
+        headers
+    );
+    if (cause != null) {
+      exception.initCause(cause);
+    }
+    return exception;
+  }
+
   private static String parseErrorMessageFromBody(String bodyText) {
     if (bodyText == null || bodyText.isEmpty()) {
       return null;

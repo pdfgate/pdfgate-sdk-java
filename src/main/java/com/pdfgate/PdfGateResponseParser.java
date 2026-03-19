@@ -13,7 +13,11 @@ final class PdfGateResponseParser {
     ensureSuccess(response);
     ResponseBody body = response.body();
     String json = body == null ? "" : body.string();
-    return PdfGateJson.gson().fromJson(json, PdfGateDocument.class);
+    try {
+      return PdfGateJson.gson().fromJson(json, PdfGateDocument.class);
+    } catch (RuntimeException e) {
+      throw PdfGateException.fromParseFailure(response, json, e);
+    }
   }
 
   /**
@@ -23,7 +27,11 @@ final class PdfGateResponseParser {
     ensureSuccess(response);
     ResponseBody body = response.body();
     String json = body == null ? "" : body.string();
-    return PdfGateJson.gson().fromJson(json, JsonObject.class);
+    try {
+      return PdfGateJson.gson().fromJson(json, JsonObject.class);
+    } catch (RuntimeException e) {
+      throw PdfGateException.fromParseFailure(response, json, e);
+    }
   }
 
   static byte[] parseBytes(Response response) throws IOException {

@@ -411,6 +411,41 @@ public class PdfGateTest {
   }
 
   @Test
+  public void generatePdfWithMalformedSuccessPayloadWrapsException() throws Exception {
+    String body = "{\"id\":\"doc_123\",\"createdAt\":\"not-an-instant\"}";
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      GeneratePdfParams params = GeneratePdfParams.builder()
+          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateException exception = Assertions.assertThrows(
+          PdfGateException.class,
+          () -> pdfGateClient.generatePdf(params)
+      );
+
+      Assertions.assertEquals(200, exception.getStatusCode(),
+          "status code should be preserved on parse failure");
+      Assertions.assertEquals(body, exception.getResponseBody(),
+          "raw response body should be preserved on parse failure");
+      Assertions.assertNotNull(exception.getCause(),
+          "parse failure should preserve the original cause");
+      Assertions.assertTrue(
+          exception.getMessage().startsWith(
+              "PdfGate API request failed while parsing successful response with status 200:"),
+          "error message should describe a parse failure"
+      );
+    }
+  }
+
+  @Test
   public void generatePdfAsyncWithJsonResponseWithError() throws Exception {
     String errorMessage = "Required field 'pdf' is missing";
     Map<String, Object> payload = mapOf(
@@ -482,6 +517,40 @@ public class PdfGateTest {
           result,
           "document should match JSON response"
       );
+    }
+  }
+
+  @Test
+  public void generatePdfAsyncWithMalformedSuccessPayloadWrapsException() throws Exception {
+    String body = "{\"id\":\"doc_123\",\"createdAt\":\"not-an-instant\"}";
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      GeneratePdfParams params = GeneratePdfParams.builder()
+          .html("<html><body><h1>Hello, PDFGate!</h1></body></html>")
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      ExecutionException exception = Assertions.assertThrows(
+          ExecutionException.class,
+          () -> pdfGateClient.generatePdfAsync(params).get(2, TimeUnit.SECONDS),
+          "future should complete exceptionally"
+      );
+
+      Assertions.assertInstanceOf(PdfGateException.class, exception.getCause(),
+          "failure should be PdfGateException");
+      PdfGateException pdfGateException = (PdfGateException) exception.getCause();
+      Assertions.assertEquals(200, pdfGateException.getStatusCode(),
+          "status code should be preserved on parse failure");
+      Assertions.assertEquals(body, pdfGateException.getResponseBody(),
+          "raw response body should be preserved on parse failure");
+      Assertions.assertNotNull(pdfGateException.getCause(),
+          "parse failure should preserve the original cause");
     }
   }
 

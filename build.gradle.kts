@@ -42,7 +42,11 @@ mavenPublishing {
 
     signAllPublications()
 
-    coordinates("com.pdfgate", "pdfgate", "0.1.0-SNAPSHOT")
+    coordinates(
+        providers.gradleProperty("GROUP").get(),
+        "pdfgate",
+        providers.gradleProperty("VERSION_NAME").get()
+    )
 
     pom {
         name.set("PDFGate SDK")

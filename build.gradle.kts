@@ -52,7 +52,7 @@ mavenPublishing {
         name.set("PDFGate SDK")
         description.set("Java SDK for the PDFGate HTTP API.")
         inceptionYear.set("2026")
-        url.set("https://github.com/pdfgate/pdfgate-sdk-java/")
+        url.set("https://pdfgate.com")
         licenses {
             license {
                 name.set("MIT License")

@@ -271,6 +271,40 @@ public final class PdfGate {
   }
 
   /**
+   * Creates an envelope and returns the envelope metadata response.
+   *
+   * @param params parameters for the create envelope request.
+   * @return the created envelope metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PDFGateEnvelope createEnvelope(CreateEnvelopeParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(createEnvelopeCall(params));
+  }
+
+  /**
+   * Creates an envelope asynchronously and returns the envelope metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the create envelope request.
+   * @return a future that completes with the created envelope metadata.
+   */
+  public CompletableFuture<PDFGateEnvelope> createEnvelopeAsync(CreateEnvelopeParams params) {
+    return enqueuer.enqueueAsFuture(createEnvelopeCall(params));
+  }
+
+  /**
+   * Builds a call that expects an envelope JSON response.
+   *
+   * @param params parameters for the create envelope request.
+   * @return a call that yields a {@link PDFGateEnvelope} response.
+   */
+  public CallEnvelope createEnvelopeCall(CreateEnvelopeParams params) {
+    return new PdfGateEnvelopeCall(callBuilder.buildCreateEnvelopeCall(params));
+  }
+
+  /**
    * Extracts PDF form field data and returns the JSON response.
    *
    * <p>This SDK currently supports extraction by {@code documentId} only. To upload a file
@@ -449,6 +483,16 @@ public final class PdfGate {
    * @param callback the callback for the response.
    */
   public void enqueue(CallJsonObject call, PdfGateCallback<JsonObject> callback) {
+    enqueuer.enqueue(call, callback);
+  }
+
+  /**
+   * Enqueues a JSON response call and maps the response to {@link PDFGateEnvelope}.
+   *
+   * @param call     the call to enqueue.
+   * @param callback the callback for the response.
+   */
+  public void enqueue(CallEnvelope call, PdfGateCallback<PDFGateEnvelope> callback) {
     enqueuer.enqueue(call, callback);
   }
 

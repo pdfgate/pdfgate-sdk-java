@@ -209,6 +209,22 @@ final class PdfGateCallBuilder {
   }
 
   /**
+   * Builds the call for creating an envelope.
+   */
+  Call buildCreateEnvelopeCall(CreateEnvelopeParams params) {
+    validateCreateEnvelopeParams(params);
+    String jsonBody = PdfGateJson.gson().toJson(params);
+    RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+    Request request = authorizedRequestFor(urlBuilder.createEnvelope())
+        .post(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
    * Builds the call for extracting form data from a PDF.
    */
   Call buildExtractPdfFormDataCall(ExtractPdfFormDataParams params) {
@@ -565,6 +581,15 @@ final class PdfGateCallBuilder {
     String documentId = params.getDocumentId();
     if (Strings.isBlank(documentId)) {
       throw new IllegalArgumentException("documentId must be provided.");
+    }
+  }
+
+  /**
+   * Validates create envelope request parameters.
+   */
+  private void validateCreateEnvelopeParams(CreateEnvelopeParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
     }
   }
 

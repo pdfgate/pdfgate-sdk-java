@@ -31,6 +31,16 @@ final class PdfGateCallExecutor {
     }
   }
 
+  static PDFGateEnvelope execute(CallEnvelope call) throws PdfGateException {
+    try (Response response = call.execute()) {
+      return PdfGateResponseParser.parseEnvelope(response);
+    } catch (PdfGateException e) {
+      throw e;
+    } catch (IOException e) {
+      throw PdfGateException.fromException(e);
+    }
+  }
+
   static JsonObject execute(CallJsonObject call) throws PdfGateException {
     try (Response response = call.execute()) {
       return PdfGateResponseParser.parseJsonObject(response);

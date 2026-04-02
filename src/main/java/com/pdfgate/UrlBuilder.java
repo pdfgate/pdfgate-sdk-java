@@ -56,6 +56,10 @@ final class UrlBuilder {
     return baseUrl + "/compress/pdf";
   }
 
+  String createEnvelope() {
+    return baseUrl + "/envelope";
+  }
+
   String getDocument(String documentId) {
     return baseUrl + "/document/" + documentId;
   }

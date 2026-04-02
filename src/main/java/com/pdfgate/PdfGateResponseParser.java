@@ -10,14 +10,11 @@ final class PdfGateResponseParser {
   }
 
   static PdfGateDocument parseJson(Response response) throws IOException {
-    ensureSuccess(response);
-    ResponseBody body = response.body();
-    String json = body == null ? "" : body.string();
-    try {
-      return PdfGateJson.gson().fromJson(json, PdfGateDocument.class);
-    } catch (RuntimeException e) {
-      throw PdfGateException.fromParseFailure(response, json, e);
-    }
+    return parseJson(response, PdfGateDocument.class);
+  }
+
+  static PDFGateEnvelope parseEnvelope(Response response) throws IOException {
+    return parseJson(response, PDFGateEnvelope.class);
   }
 
   /**
@@ -43,6 +40,17 @@ final class PdfGateResponseParser {
   static void ensureSuccess(Response response) throws IOException {
     if (!response.isSuccessful()) {
       throw PdfGateException.fromResponse(response);
+    }
+  }
+
+  private static <T> T parseJson(Response response, Class<T> responseType) throws IOException {
+    ensureSuccess(response);
+    ResponseBody body = response.body();
+    String json = body == null ? "" : body.string();
+    try {
+      return PdfGateJson.gson().fromJson(json, responseType);
+    } catch (RuntimeException e) {
+      throw PdfGateException.fromParseFailure(response, json, e);
     }
   }
 }

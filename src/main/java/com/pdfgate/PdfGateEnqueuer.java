@@ -18,6 +18,13 @@ final class PdfGateEnqueuer {
   }
 
   /**
+   * Enqueues a JSON response call and maps the response to {@link PDFGateEnvelope}.
+   */
+  public void enqueue(CallEnvelope call, PdfGateCallback<PDFGateEnvelope> callback) {
+    call.enqueue(new PdfGateEnvelopeResponseParserCallback(callback));
+  }
+
+  /**
    * Enqueues a bytes response call and returns the raw response bytes.
    */
   public void enqueue(CallFile call, PdfGateCallback<byte[]> callback) {
@@ -35,6 +42,13 @@ final class PdfGateEnqueuer {
    * Enqueues a JSON response call and returns a {@link CompletableFuture}.
    */
   public CompletableFuture<PdfGateDocument> enqueueAsFuture(CallJson call) {
+    return enqueueAsFuture(call, this::enqueue);
+  }
+
+  /**
+   * Enqueues a JSON response call and returns a {@link CompletableFuture}.
+   */
+  public CompletableFuture<PDFGateEnvelope> enqueueAsFuture(CallEnvelope call) {
     return enqueueAsFuture(call, this::enqueue);
   }
 

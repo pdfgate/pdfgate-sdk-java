@@ -591,6 +591,203 @@ public class PdfGateTest {
   }
 
   @Test
+  public void createEnvelopeSerializesNestedCamelCaseKeysAndParsesResponse() throws Exception {
+    String createdAt = "2024-02-13T15:56:12.607Z";
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "created",
+        "documents", java.util.Collections.singletonList(mapOf(
+            "sourceDocumentId", "src_123",
+            "recipients", java.util.Collections.singletonList(mapOf(
+                "email", "anna@example.com",
+                "status", "pending",
+                "fields", java.util.Collections.singletonList(mapOf(
+                    "name", "signature",
+                    "type", "signature"
+                ))
+            )),
+            "status", "pending"
+        )),
+        "createdAt", createdAt,
+        "metadata", mapOf(
+            "customerId", "cus_123",
+            "department", "sales"
+        )
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      CreateEnvelopeParams params = CreateEnvelopeParams.builder()
+          .requesterName("John Doe")
+          .documents(java.util.Collections.singletonList(
+              EnvelopeDocument.builder()
+                  .sourceDocumentId("src_123")
+                  .name("Employment Agreement")
+                  .recipients(java.util.Collections.singletonList(
+                      EnvelopeRecipient.builder()
+                          .email("anna@example.com")
+                          .name("Anna Smith")
+                          .role("signer")
+                          .build()
+                  ))
+                  .build()
+          ))
+          .metadata(mapOf(
+              "customerId", "cus_123",
+              "department", "sales"
+          ))
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PDFGateEnvelope result = pdfGateClient.createEnvelope(params);
+
+      String requestBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
+      JsonObject requestJson = PdfGateJson.gson().fromJson(requestBody, JsonObject.class);
+      Assertions.assertEquals("John Doe", requestJson.get("requesterName").getAsString());
+      Assertions.assertFalse(requestJson.has("requester_name"),
+          "requesterName should remain camelCase");
+      JsonObject requestDocument = requestJson.getAsJsonArray("documents").get(0).getAsJsonObject();
+      Assertions.assertEquals("src_123", requestDocument.get("sourceDocumentId").getAsString());
+      Assertions.assertFalse(requestDocument.has("source_document_id"),
+          "sourceDocumentId should remain camelCase");
+      JsonObject requestRecipient = requestDocument.getAsJsonArray("recipients")
+          .get(0)
+          .getAsJsonObject();
+      Assertions.assertEquals("anna@example.com", requestRecipient.get("email").getAsString());
+      Assertions.assertEquals("Anna Smith", requestRecipient.get("name").getAsString());
+      Assertions.assertEquals("signer", requestRecipient.get("role").getAsString());
+
+      Assertions.assertEquals("env_123", result.getId(), "envelope id should be present");
+      Assertions.assertEquals(EnvelopeStatus.CREATED, result.getStatus(),
+          "envelope status should use enum values");
+      Assertions.assertEquals(EnvelopeDocumentStatus.PENDING,
+          result.getDocuments().get(0).getStatus(),
+          "document status should use enum values");
+      Assertions.assertEquals(DocumentRecipientStatus.PENDING,
+          result.getDocuments().get(0).getRecipients().get(0).getStatus(),
+          "recipient status should use enum values");
+      Assertions.assertEquals(DocumentFieldType.SIGNATURE,
+          result.getDocuments().get(0).getRecipients().get(0).getFields().get(0).getType(),
+          "field type should use enum values");
+      Assertions.assertEquals(Instant.parse(createdAt), result.getCreatedAt(),
+          "createdAt should parse as an instant");
+      Assertions.assertEquals("cus_123",
+          result.getMetadata().orElseThrow(AssertionError::new).get("customerId"),
+          "metadata should round-trip");
+    }
+  }
+
+  @Test
+  public void createEnvelopeOmitsOptionalFieldsRecursively() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "created",
+        "documents", java.util.Collections.singletonList(mapOf(
+            "sourceDocumentId", "src_123",
+            "recipients", java.util.Collections.singletonList(mapOf(
+                "email", "anna@example.com",
+                "status", "pending",
+                "fields", java.util.Collections.emptyList()
+            )),
+            "status", "pending"
+        )),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      CreateEnvelopeParams params = CreateEnvelopeParams.builder()
+          .requesterName("John Doe")
+          .documents(java.util.Collections.singletonList(
+              EnvelopeDocument.builder()
+                  .sourceDocumentId("src_123")
+                  .name("Employment Agreement")
+                  .recipients(java.util.Collections.singletonList(
+                      EnvelopeRecipient.builder()
+                          .email("anna@example.com")
+                          .name("Anna Smith")
+                          .build()
+                  ))
+                  .build()
+          ))
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.createEnvelope(params);
+
+      String requestBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
+      JsonObject requestJson = PdfGateJson.gson().fromJson(requestBody, JsonObject.class);
+      Assertions.assertFalse(requestJson.has("metadata"), "metadata should be omitted");
+      JsonObject requestRecipient = requestJson.getAsJsonArray("documents")
+          .get(0)
+          .getAsJsonObject()
+          .getAsJsonArray("recipients")
+          .get(0)
+          .getAsJsonObject();
+      Assertions.assertFalse(requestRecipient.has("role"), "role should be omitted");
+    }
+  }
+
+  @Test
+  public void createEnvelopeAsyncReturnsEnvelopeResponse() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "created",
+        "documents", java.util.Collections.singletonList(mapOf(
+            "sourceDocumentId", "src_123",
+            "recipients", java.util.Collections.singletonList(mapOf(
+                "email", "anna@example.com",
+                "status", "pending",
+                "fields", java.util.Collections.emptyList()
+            )),
+            "status", "pending"
+        )),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      CreateEnvelopeParams params = CreateEnvelopeParams.builder()
+          .requesterName("John Doe")
+          .documents(java.util.Collections.singletonList(
+              EnvelopeDocument.builder()
+                  .sourceDocumentId("src_123")
+                  .name("Employment Agreement")
+                  .recipients(java.util.Collections.singletonList(
+                      EnvelopeRecipient.builder()
+                          .email("anna@example.com")
+                          .name("Anna Smith")
+                          .build()
+                  ))
+                  .build()
+          ))
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PDFGateEnvelope result = pdfGateClient.createEnvelopeAsync(params).get(2, TimeUnit.SECONDS);
+
+      Assertions.assertEquals("env_123", result.getId(), "envelope id should be present");
+      Assertions.assertEquals(EnvelopeStatus.CREATED, result.getStatus(),
+          "status should parse correctly");
+    }
+  }
+
+  @Test
   public void extractPdfFormDataCallWithJsonResponseWithError() throws Exception {
     String errorMessage = "Invalid document id";
     Map<String, Object> payload = mapOf(

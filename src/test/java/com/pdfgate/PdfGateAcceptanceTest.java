@@ -3,6 +3,7 @@ package com.pdfgate;
 import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
@@ -16,6 +17,28 @@ public class PdfGateAcceptanceTest {
   private static PdfGate client;
   private static String documentId;
   private static String documentIdWithForm;
+  private static String envelopeSourceDocumentId;
+  private static final String ENVELOPE_FORM_HTML = "<html>"
+      + "<body style=\"font-family: Arial, sans-serif; padding: 40px;\">"
+      + "<h2>Agreement</h2>"
+      + "<p>Please review and complete the required fields below.</p>"
+      + "<div style=\"margin-top: 30px;\">"
+      + "<label>Full Name</label><br />"
+      + "<input type=\"text\" name=\"recipient-name\" "
+      + "style=\"width: 300px; height: 30px;\" />"
+      + "</div>"
+      + "<div style=\"margin-top: 30px;\">"
+      + "<label>Signature</label><br />"
+      + "<pdfgate-signature-field name=\"signature\" "
+      + "style=\"width: 200px; height: 200px;\"></pdfgate-signature-field>"
+      + "</div>"
+      + "<div style=\"margin-top: 30px;\">"
+      + "<label>Date</label><br />"
+      + "<input type=\"datetime-local\" name=\"signature-date\" pdfgate-auto-fill=\"true\" "
+      + "style=\"width: 200px; height: 30px;\" />"
+      + "</div>"
+      + "</body>"
+      + "</html>";
 
   @BeforeAll
   static void beforeAll() throws IOException {
@@ -52,7 +75,7 @@ public class PdfGateAcceptanceTest {
         + "</form>";
     PdfGateDocument documentWithForm = createDocument(htmlWithForm);
     documentIdWithForm = documentWithForm.getId();
-
+    envelopeSourceDocumentId = createDocument(ENVELOPE_FORM_HTML).getId();
   }
 
   private void assertIsValidPdf(byte[] content) {
@@ -215,6 +238,37 @@ public class PdfGateAcceptanceTest {
     Assertions.assertNotNull(document.getCreatedAt(), "document createdAt should be present");
     Assertions.assertEquals(documentId,
         document.getDerivedFrom().orElseThrow(AssertionError::new));
+  }
+
+  @Test
+  public void createEnvelope() throws Exception {
+    CreateEnvelopeParams params = CreateEnvelopeParams.builder()
+        .requesterName("John Doe")
+        .documents(Collections.singletonList(
+            EnvelopeDocument.builder()
+                .sourceDocumentId(envelopeSourceDocumentId)
+                .name("Employment Agreement")
+                .recipients(Collections.singletonList(
+                    EnvelopeRecipient.builder()
+                        .email("anna@example.com")
+                        .name("Anna Smith")
+                        .build()
+                ))
+                .build()
+        ))
+        .metadata(Collections.singletonMap("customerId", "cus_123"))
+        .build();
+
+    PDFGateEnvelope envelope = client.createEnvelope(params);
+    Assertions.assertNotNull(envelope.getId(), "envelope id should be present");
+    Assertions.assertEquals(EnvelopeStatus.CREATED, envelope.getStatus(),
+        "envelope status should be created");
+    Assertions.assertNotNull(envelope.getCreatedAt(), "createdAt should be present");
+    Assertions.assertFalse(envelope.getDocuments().isEmpty(),
+        "envelope should include at least one document");
+    Assertions.assertEquals("cus_123",
+        envelope.getMetadata().orElseThrow(AssertionError::new).get("customerId"),
+        "metadata should round-trip");
   }
 
   @Test

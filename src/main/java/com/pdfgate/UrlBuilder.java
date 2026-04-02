@@ -64,6 +64,10 @@ final class UrlBuilder {
     return baseUrl + "/envelope/" + id + "/send";
   }
 
+  String getEnvelope(String id) {
+    return baseUrl + "/envelope/" + id;
+  }
+
   String getDocument(String documentId) {
     return baseUrl + "/document/" + documentId;
   }

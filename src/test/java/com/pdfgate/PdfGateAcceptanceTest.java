@@ -290,6 +290,20 @@ public class PdfGateAcceptanceTest {
   }
 
   @Test
+  public void getEnvelope() throws Exception {
+    PDFGateEnvelope fetchedEnvelope = client.getEnvelope(GetEnvelopeParams.builder()
+        .id(envelope.getId())
+        .build());
+
+    Assertions.assertEquals(envelope.getId(), fetchedEnvelope.getId(),
+        "envelope id should match");
+    Assertions.assertNotNull(fetchedEnvelope.getStatus(), "envelope status should be present");
+    Assertions.assertNotNull(fetchedEnvelope.getCreatedAt(), "createdAt should be present");
+    Assertions.assertFalse(fetchedEnvelope.getDocuments().isEmpty(),
+        "envelope should include at least one document");
+  }
+
+  @Test
   public void protectPdfByDocumentIdWithJsonResponse() throws Exception {
     ProtectPdfParams params = ProtectPdfParams.builder()
         .documentId(documentId)

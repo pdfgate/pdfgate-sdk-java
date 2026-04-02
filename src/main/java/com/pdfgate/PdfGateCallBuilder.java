@@ -240,6 +240,20 @@ final class PdfGateCallBuilder {
   }
 
   /**
+   * Builds the call for retrieving an envelope.
+   */
+  Call buildGetEnvelopeCall(GetEnvelopeParams params) {
+    validateGetEnvelopeParams(params);
+    Request request = authorizedRequestFor(urlBuilder.getEnvelope(params.getId()))
+        .get()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
    * Builds the call for extracting form data from a PDF.
    */
   Call buildExtractPdfFormDataCall(ExtractPdfFormDataParams params) {
@@ -612,6 +626,18 @@ final class PdfGateCallBuilder {
    * Validates send envelope request parameters.
    */
   private void validateSendEnvelopeParams(SendEnvelopeParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates get envelope request parameters.
+   */
+  private void validateGetEnvelopeParams(GetEnvelopeParams params) {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }

@@ -179,11 +179,9 @@ Most document-processing endpoints return a `PdfGateDocument` containing metadat
 and optional `fileUrl` when `preSignedUrlExpiresIn` is provided. To download the file bytes, call
 `getFile` with the document id.
 
-The `createEnvelope` endpoint returns a `PDFGateEnvelope`, which includes the envelope `id`, envelope
-status, per-document recipient state, timestamps, and optional metadata.
-
-The `sendEnvelope` endpoint also returns a `PDFGateEnvelope`, typically with the envelope status
-transitioned to `IN_PROGRESS`.
+Envelope operations such as `createEnvelope` and `sendEnvelope` return a `PDFGateEnvelope`, which
+includes the envelope `id`, envelope status, per-document recipient state, timestamps, and optional
+metadata.
 
 # Examples
 

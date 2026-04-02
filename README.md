@@ -8,6 +8,7 @@ PDFGate lets you generate, process, and secure PDFs via a simple API:
 
 - HTML or URL to PDF
 - Fillable forms
+- Create signing envelopes
 - Flatten, compress, watermark, protect PDFs
 - Extract PDF form data
 - Upload PDF files
@@ -173,8 +174,12 @@ client.enqueue(call, new PdfGateCallback<>() {
 
 # Responses
 
-Most endpoints return a `PdfGateDocument` containing metadata including the `id` and optional `fileUrl`
-when `preSignedUrlExpiresIn` is provided. To download the file bytes, call `getFile` with the document id.
+Most document-processing endpoints return a `PdfGateDocument` containing metadata including the `id`
+and optional `fileUrl` when `preSignedUrlExpiresIn` is provided. To download the file bytes, call
+`getFile` with the document id.
+
+The `createEnvelope` endpoint returns a `PDFGateEnvelope`, which includes the envelope `id`, envelope
+status, per-document recipient state, timestamps, and optional metadata.
 
 # Examples
 
@@ -275,6 +280,29 @@ ProtectPdfParams protectParams = ProtectPdfParams.builder()
     .build();
 
 PdfGateDocument protectedDocument = client.protectPdf(protectParams);
+```
+
+## Create an envelope
+
+```java
+CreateEnvelopeParams params = CreateEnvelopeParams.builder()
+    .requesterName("John Doe")
+    .documents(Collections.singletonList(
+        EnvelopeDocument.builder()
+            .sourceDocumentId(documentId)
+            .name("Employment Agreement")
+            .recipients(Collections.singletonList(
+                EnvelopeRecipient.builder()
+                    .email("anna@example.com")
+                    .name("Anna Smith")
+                    .build()
+            ))
+            .build()
+    ))
+    .metadata(Collections.singletonMap("customerId", "cus_123"))
+    .build();
+
+PDFGateEnvelope envelope = client.createEnvelope(params);
 ```
 
 ## Extract PDF form fields values

@@ -18,6 +18,7 @@ public class PdfGateAcceptanceTest {
   private static String documentId;
   private static String documentIdWithForm;
   private static String envelopeSourceDocumentId;
+  private static PDFGateEnvelope envelope;
   private static final String ENVELOPE_FORM_HTML = "<html>"
       + "<body style=\"font-family: Arial, sans-serif; padding: 40px;\">"
       + "<h2>Agreement</h2>"
@@ -66,6 +67,27 @@ public class PdfGateAcceptanceTest {
     return document;
   }
 
+  static PDFGateEnvelope createEnvelopeFixture() throws IOException {
+    CreateEnvelopeParams params = CreateEnvelopeParams.builder()
+        .requesterName("John Doe")
+        .documents(Collections.singletonList(
+            EnvelopeDocument.builder()
+                .sourceDocumentId(envelopeSourceDocumentId)
+                .name("Employment Agreement")
+                .recipients(Collections.singletonList(
+                    EnvelopeRecipient.builder()
+                        .email("anna@example.com")
+                        .name("Anna Smith")
+                        .build()
+                ))
+                .build()
+        ))
+        .metadata(Collections.singletonMap("customerId", "cus_123"))
+        .build();
+
+    return client.createEnvelope(params);
+  }
+
   static void setUpFiles() throws IOException {
     PdfGateDocument document = createDocument("<html><body><h1>Hello, PDFGate!</h1></body></html>");
     documentId = document.getId();
@@ -76,6 +98,7 @@ public class PdfGateAcceptanceTest {
     PdfGateDocument documentWithForm = createDocument(htmlWithForm);
     documentIdWithForm = documentWithForm.getId();
     envelopeSourceDocumentId = createDocument(ENVELOPE_FORM_HTML).getId();
+    envelope = createEnvelopeFixture();
   }
 
   private void assertIsValidPdf(byte[] content) {
@@ -242,24 +265,6 @@ public class PdfGateAcceptanceTest {
 
   @Test
   public void createEnvelope() throws Exception {
-    CreateEnvelopeParams params = CreateEnvelopeParams.builder()
-        .requesterName("John Doe")
-        .documents(Collections.singletonList(
-            EnvelopeDocument.builder()
-                .sourceDocumentId(envelopeSourceDocumentId)
-                .name("Employment Agreement")
-                .recipients(Collections.singletonList(
-                    EnvelopeRecipient.builder()
-                        .email("anna@example.com")
-                        .name("Anna Smith")
-                        .build()
-                ))
-                .build()
-        ))
-        .metadata(Collections.singletonMap("customerId", "cus_123"))
-        .build();
-
-    PDFGateEnvelope envelope = client.createEnvelope(params);
     Assertions.assertNotNull(envelope.getId(), "envelope id should be present");
     Assertions.assertEquals(EnvelopeStatus.CREATED, envelope.getStatus(),
         "envelope status should be created");
@@ -269,6 +274,19 @@ public class PdfGateAcceptanceTest {
     Assertions.assertEquals("cus_123",
         envelope.getMetadata().orElseThrow(AssertionError::new).get("customerId"),
         "metadata should round-trip");
+  }
+
+  @Test
+  public void sendEnvelope() throws Exception {
+    PDFGateEnvelope sentEnvelope = client.sendEnvelope(SendEnvelopeParams.builder()
+        .id(envelope.getId())
+        .build());
+
+    Assertions.assertEquals(envelope.getId(), sentEnvelope.getId(), "envelope id should match");
+    Assertions.assertEquals(EnvelopeStatus.IN_PROGRESS, sentEnvelope.getStatus(),
+        "envelope status should be in progress after send");
+    Assertions.assertFalse(sentEnvelope.getDocuments().isEmpty(),
+        "sent envelope should include at least one document");
   }
 
   @Test

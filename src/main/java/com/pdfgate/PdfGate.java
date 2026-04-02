@@ -305,6 +305,40 @@ public final class PdfGate {
   }
 
   /**
+   * Sends an envelope and returns the updated envelope metadata response.
+   *
+   * @param params parameters for the send envelope request.
+   * @return the updated envelope metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PDFGateEnvelope sendEnvelope(SendEnvelopeParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(sendEnvelopeCall(params));
+  }
+
+  /**
+   * Sends an envelope asynchronously and returns the updated envelope metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the send envelope request.
+   * @return a future that completes with the updated envelope metadata.
+   */
+  public CompletableFuture<PDFGateEnvelope> sendEnvelopeAsync(SendEnvelopeParams params) {
+    return enqueuer.enqueueAsFuture(sendEnvelopeCall(params));
+  }
+
+  /**
+   * Builds a call that expects an envelope JSON response.
+   *
+   * @param params parameters for the send envelope request.
+   * @return a call that yields a {@link PDFGateEnvelope} response.
+   */
+  public CallEnvelope sendEnvelopeCall(SendEnvelopeParams params) {
+    return new PdfGateEnvelopeCall(callBuilder.buildSendEnvelopeCall(params));
+  }
+
+  /**
    * Extracts PDF form field data and returns the JSON response.
    *
    * <p>This SDK currently supports extraction by {@code documentId} only. To upload a file

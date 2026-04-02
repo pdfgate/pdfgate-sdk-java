@@ -9,6 +9,7 @@ PDFGate lets you generate, process, and secure PDFs via a simple API:
 - HTML or URL to PDF
 - Fillable forms
 - Create signing envelopes
+- Send signing envelopes
 - Flatten, compress, watermark, protect PDFs
 - Extract PDF form data
 - Upload PDF files
@@ -181,6 +182,9 @@ and optional `fileUrl` when `preSignedUrlExpiresIn` is provided. To download the
 The `createEnvelope` endpoint returns a `PDFGateEnvelope`, which includes the envelope `id`, envelope
 status, per-document recipient state, timestamps, and optional metadata.
 
+The `sendEnvelope` endpoint also returns a `PDFGateEnvelope`, typically with the envelope status
+transitioned to `IN_PROGRESS`.
+
 # Examples
 
 ## Generate PDF
@@ -303,6 +307,16 @@ CreateEnvelopeParams params = CreateEnvelopeParams.builder()
     .build();
 
 PDFGateEnvelope envelope = client.createEnvelope(params);
+```
+
+## Send an envelope
+
+```java
+SendEnvelopeParams params = SendEnvelopeParams.builder()
+    .id(envelopeId)
+    .build();
+
+PDFGateEnvelope envelope = client.sendEnvelope(params);
 ```
 
 ## Extract PDF form fields values

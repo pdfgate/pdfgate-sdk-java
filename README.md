@@ -25,6 +25,7 @@ PDFGate lets you generate, process, and secure PDFs via a simple API:
 - [Sync & Async](#sync--async)
 - [Responses](#responses)
 - [Examples](#examples)
+- [Webhooks](#webhooks)
 - [Development](#development)
 - [Support](#support)
 - [License](#license)
@@ -328,6 +329,15 @@ SendEnvelopeParams params = SendEnvelopeParams.builder()
 PDFGateEnvelope envelope = client.sendEnvelope(params);
 ```
 
+## Verify a webhook signature
+
+```java
+byte[] rawPayload = requestBodyBytes;
+String signatureHeader = request.getHeader("x-pdfgate-signature");
+
+PdfGateWebhooks.verifySignature("whsecret_123", signatureHeader, rawPayload);
+```
+
 ## Extract PDF form fields values
 
 ```java
@@ -349,6 +359,27 @@ ExtractPdfFormDataParams extractParams = ExtractPdfFormDataParams.builder()
     .build();
 
 JsonObject response = client.extractPdfFormData(extractParams);
+```
+
+# Webhooks
+
+Each webhook request includes an `x-pdfgate-signature` header. Verify this header against the raw
+request body to confirm the request came from PDFGate and was not modified in transit.
+
+Use `PdfGateWebhooks.verifySignature(...)` with your webhook secret, the header value, and the raw
+request payload exactly as received. Verification succeeds if at least one `v1` signature in the
+header matches the expected HMAC-SHA256 digest and the timestamp is within 5 minutes.
+
+```java
+import com.pdfgate.PdfGateWebhookVerificationException;
+import com.pdfgate.PdfGateWebhooks;
+
+try {
+  PdfGateWebhooks.verifySignature(webhookSecret, signatureHeader, rawPayload);
+  // process webhook
+} catch (PdfGateWebhookVerificationException e) {
+  // reject webhook
+}
 ```
 
 # Development

@@ -7,11 +7,13 @@ import com.google.gson.annotations.SerializedName;
  *
  * <p>{@code type} is required. For text watermarks, set {@code text}. For image
  * watermarks, provide a {@code watermark} image file. Optional settings include
- * font, size, color, opacity, position, and rotation. Responses are JSON-only.
+ * font, size, color, opacity, position, and rotation. A {@code fontFile} (TTF/OTF)
+ * may be uploaded to override the built-in {@code font}. Responses are JSON-only.
  */
 public final class WatermarkPdfParams {
   private final String documentId;
   private final FileParam watermark;
+  private final FileParam fontFile;
   private final WatermarkType type;
   private final String text;
   private final String font;
@@ -35,6 +37,7 @@ public final class WatermarkPdfParams {
   private WatermarkPdfParams(Builder builder) {
     this.documentId = builder.documentId;
     this.watermark = builder.watermark;
+    this.fontFile = builder.fontFile;
     this.type = builder.type;
     this.text = builder.text;
     this.font = builder.font;
@@ -76,6 +79,15 @@ public final class WatermarkPdfParams {
    */
   public FileParam getWatermark() {
     return watermark;
+  }
+
+  /**
+   * Returns the custom font file (TTF/OTF) used to override the built-in font.
+   *
+   * @return the custom font file, or {@code null} when not set.
+   */
+  public FileParam getFontFile() {
+    return fontFile;
   }
 
   /**
@@ -242,6 +254,7 @@ public final class WatermarkPdfParams {
   public static final class Builder {
     private String documentId;
     private FileParam watermark;
+    private FileParam fontFile;
     private WatermarkType type;
     private String text;
     private String font;
@@ -279,6 +292,17 @@ public final class WatermarkPdfParams {
      */
     public Builder watermark(FileParam watermark) {
       this.watermark = watermark;
+      return this;
+    }
+
+    /**
+     * Sets a custom font file (TTF/OTF) that overrides the built-in {@code font}.
+     *
+     * @param fontFile custom font file.
+     * @return this builder.
+     */
+    public Builder fontFile(FileParam fontFile) {
+      this.fontFile = fontFile;
       return this;
     }
 

@@ -14,6 +14,8 @@ public final class EnvelopeRecipientResponse {
   private Instant signedAt;
   private Instant viewedAt;
   private List<EnvelopeFieldResponse> fields;
+  private String signingLink;
+  private String previewLink;
 
   /**
    * Creates an empty recipient response for JSON deserialization.
@@ -66,6 +68,28 @@ public final class EnvelopeRecipientResponse {
     return fields;
   }
 
+  /**
+   * Returns the signing link for the recipient, if present.
+   *
+   * <p>Present while the recipient still needs to sign.
+   *
+   * @return the signing link, if present.
+   */
+  public Optional<String> getSigningLink() {
+    return Optional.ofNullable(signingLink);
+  }
+
+  /**
+   * Returns the preview link for the recipient, if present.
+   *
+   * <p>Present once the recipient has signed.
+   *
+   * @return the preview link, if present.
+   */
+  public Optional<String> getPreviewLink() {
+    return Optional.ofNullable(previewLink);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -79,11 +103,13 @@ public final class EnvelopeRecipientResponse {
         && status == that.status
         && Objects.equals(signedAt, that.signedAt)
         && Objects.equals(viewedAt, that.viewedAt)
-        && Objects.equals(fields, that.fields);
+        && Objects.equals(fields, that.fields)
+        && Objects.equals(signingLink, that.signingLink)
+        && Objects.equals(previewLink, that.previewLink);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(email, status, signedAt, viewedAt, fields);
+    return Objects.hash(email, status, signedAt, viewedAt, fields, signingLink, previewLink);
   }
 }

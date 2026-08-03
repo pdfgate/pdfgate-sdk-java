@@ -155,7 +155,7 @@ public class PdfGateTest {
   }
 
   @Test
-  public void multipartRequestsAlwaysIncludeJsonResponse() throws Exception {
+  public void multipartRequestsIncludeJsonResponseExceptExtractAndUpload() throws Exception {
     String documentBody = PdfGateJson.gson().toJson(mapOf(
         "id", "doc_123",
         "status", "completed"
@@ -222,13 +222,22 @@ public class PdfGateTest {
           .build();
       pdfGateClient.uploadFile(uploadParams);
 
-      for (int i = 0; i < 6; i++) {
+      // flatten, protect, compress, watermark support jsonResponse and must send it.
+      for (int i = 0; i < 4; i++) {
         String requestBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
         Assertions.assertTrue(requestBody.contains("name=\"jsonResponse\""),
             "jsonResponse should be included in multipart body");
         Assertions.assertTrue(requestBody.contains("true"),
             "jsonResponse should be true");
       }
+
+      // extract-data and upload always return JSON and have no jsonResponse param.
+      String extractBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
+      Assertions.assertFalse(extractBody.contains("name=\"jsonResponse\""),
+          "extract-data must not send jsonResponse");
+      String uploadBody = server.takeRequest(2, TimeUnit.SECONDS).getBody().readUtf8();
+      Assertions.assertFalse(uploadBody.contains("name=\"jsonResponse\""),
+          "upload must not send jsonResponse");
     }
   }
 
@@ -296,8 +305,8 @@ public class PdfGateTest {
       JsonObject requestJson = PdfGateJson.gson().fromJson(requestBody, JsonObject.class);
       Assertions.assertEquals("https://example.com/sample.pdf",
           requestJson.get("url").getAsString(), "url should be included");
-      Assertions.assertTrue(requestJson.get("jsonResponse").getAsBoolean(),
-          "jsonResponse should be true");
+      Assertions.assertFalse(requestJson.has("jsonResponse"),
+          "upload has no jsonResponse param");
       Assertions.assertEquals(120L, requestJson.get("preSignedUrlExpiresIn").getAsLong(),
           "preSignedUrlExpiresIn should be included");
       Assertions.assertEquals("test",
@@ -945,6 +954,257 @@ public class PdfGateTest {
               .startsWith("PdfGate API request failed: Failed to connect"),
           "error message should include JSON message"
       );
+    }
+  }
+
+  @Test
+  public void watermarkPdfSendsFontFile() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "doc_wm",
+        "status", "completed",
+        "type", "watermarked",
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      WatermarkPdfParams params = WatermarkPdfParams.builder()
+          .documentId("doc_123")
+          .type(WatermarkPdfParams.WatermarkType.TEXT)
+          .text("Confidential")
+          .fontFile(new FileParam("custom.ttf", "fake-font-bytes".getBytes(), "font/ttf"))
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateDocument result = pdfGateClient.watermarkPdf(params);
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      String requestBody = request.getBody().readUtf8();
+      Assertions.assertEquals("/watermark/pdf", request.getPath(), "path should be watermark/pdf");
+      Assertions.assertTrue(requestBody.contains("name=\"fontFile\""),
+          "multipart body should include the fontFile part");
+      Assertions.assertTrue(requestBody.contains("filename=\"custom.ttf\""),
+          "multipart body should include the font file name");
+      Assertions.assertEquals("doc_wm", result.getId(), "document id should be parsed");
+    }
+  }
+
+  @Test
+  public void flattenPdfSendsFieldNames() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "doc_flat",
+        "status", "completed",
+        "type", "flattened",
+        "derivedFrom", "doc_123",
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      FlattenPdfParams params = FlattenPdfParams.builder()
+          .documentId("doc_123")
+          .fieldNames(java.util.Arrays.asList("name", "email"))
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateDocument result = pdfGateClient.flattenPdf(params);
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      String requestBody = request.getBody().readUtf8();
+      Assertions.assertEquals("/forms/flatten", request.getPath(), "path should be forms/flatten");
+      Assertions.assertTrue(requestBody.contains("name=\"fieldNames\""),
+          "multipart body should include fieldNames part");
+      Assertions.assertTrue(requestBody.contains("[\"name\",\"email\"]"),
+          "fieldNames should be sent as a JSON array");
+      Assertions.assertTrue(requestBody.contains("name=\"jsonResponse\""),
+          "multipart body should request a JSON response");
+      Assertions.assertEquals("doc_flat", result.getId(), "document id should be parsed");
+    }
+  }
+
+  @Test
+  public void addFormFieldsSendsOverridesAndFields() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "doc_fields",
+        "status", "completed",
+        "type", "document_fields_added",
+        "derivedFrom", "doc_123",
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      AddFormFieldsParams params = AddFormFieldsParams.builder()
+          .documentId("doc_123")
+          .fieldOverrides(java.util.Collections.singletonMap(
+              "full_name",
+              FieldOverride.builder().role("signer").fontSize(12).build()
+          ))
+          .fields(java.util.Collections.singletonList(
+              ManualFormField.builder()
+                  .name("signed_on")
+                  .type(DocumentFieldType.DATE)
+                  .page(1)
+                  .x(10.0)
+                  .y(20.0)
+                  .width(100)
+                  .height(24)
+                  .fontSize(10)
+                  .build()
+          ))
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateDocument result = pdfGateClient.addFormFields(params);
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("/forms/fields", request.getPath(), "path should be forms/fields");
+      JsonObject requestJson = PdfGateJson.gson()
+          .fromJson(request.getBody().readUtf8(), JsonObject.class);
+      Assertions.assertEquals("doc_123", requestJson.get("documentId").getAsString());
+      Assertions.assertTrue(requestJson.get("jsonResponse").getAsBoolean(),
+          "jsonResponse should be true");
+      JsonObject overrides = requestJson.getAsJsonObject("fieldOverrides");
+      Assertions.assertTrue(overrides.has("full_name"),
+          "field-override keys must be preserved verbatim");
+      Assertions.assertEquals("signer",
+          overrides.getAsJsonObject("full_name").get("role").getAsString());
+      Assertions.assertEquals(12,
+          overrides.getAsJsonObject("full_name").get("fontSize").getAsInt(),
+          "override option keys should be camelCase");
+      JsonObject manualField = requestJson.getAsJsonArray("fields").get(0).getAsJsonObject();
+      Assertions.assertEquals("signed_on", manualField.get("name").getAsString());
+      Assertions.assertEquals("date", manualField.get("type").getAsString());
+      Assertions.assertEquals(10, manualField.get("fontSize").getAsInt());
+      Assertions.assertEquals("doc_fields", result.getId(), "document id should be parsed");
+      Assertions.assertEquals(PdfGateDocument.DocumentType.DOCUMENT_FIELDS_ADDED, result.getType(),
+          "document type should parse the new enum value");
+    }
+  }
+
+  @Test
+  public void deleteDocumentSendsDeleteRequest() throws Exception {
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse().setResponseCode(204));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.deleteDocument(DeleteDocumentParams.builder().documentId("doc_123").build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("DELETE", request.getMethod(), "method should be DELETE");
+      Assertions.assertEquals("/document/doc_123", request.getPath(),
+          "path should target the document");
+    }
+  }
+
+  @Test
+  public void createWebhookSendsConfigAndParsesResponse() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "wh_123",
+        "url", "https://example.com/hook",
+        "eventTypes", java.util.Collections.singletonList("envelope.completed"),
+        "status", "active",
+        "secret", "whsec_abc",
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      CreateWebhookParams params = CreateWebhookParams.builder()
+          .url("https://example.com/hook")
+          .eventTypes(java.util.Arrays.asList(
+              WebhookEventType.ENVELOPE_COMPLETED,
+              WebhookEventType.ENVELOPE_SENT
+          ))
+          .description("my hook")
+          .build();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateWebhookResponse result = pdfGateClient.createWebhook(params);
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("/webhook", request.getPath(), "path should be webhook");
+      JsonObject requestJson = PdfGateJson.gson()
+          .fromJson(request.getBody().readUtf8(), JsonObject.class);
+      Assertions.assertEquals("https://example.com/hook", requestJson.get("url").getAsString());
+      Assertions.assertEquals("envelope.completed",
+          requestJson.getAsJsonArray("eventTypes").get(0).getAsString(),
+          "event types should serialize to their wire values");
+      Assertions.assertEquals("my hook", requestJson.get("description").getAsString());
+
+      Assertions.assertEquals("wh_123", result.getId(), "webhook id should be parsed");
+      Assertions.assertEquals(WebhookStatus.ACTIVE, result.getStatus());
+      Assertions.assertEquals(WebhookEventType.ENVELOPE_COMPLETED, result.getEventTypes().get(0));
+      Assertions.assertEquals("whsec_abc",
+          result.getSecret().orElseThrow(AssertionError::new),
+          "secret should be present at creation");
+    }
+  }
+
+  @Test
+  public void getWebhookReturnsResponse() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "wh_123",
+        "url", "https://example.com/hook",
+        "eventTypes", java.util.Collections.singletonList("envelope.sent"),
+        "status", "active",
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateWebhookResponse result =
+          pdfGateClient.getWebhook(GetWebhookParams.builder().id("wh_123").build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("GET", request.getMethod(), "method should be GET");
+      Assertions.assertEquals("/webhook/wh_123", request.getPath(), "path should target the webhook");
+      Assertions.assertEquals("wh_123", result.getId(), "webhook id should be parsed");
+      Assertions.assertFalse(result.getSecret().isPresent(),
+          "secret should not be returned outside of creation");
+    }
+  }
+
+  @Test
+  public void deleteWebhookSendsDeleteRequest() throws Exception {
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse().setResponseCode(204));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.deleteWebhook(DeleteWebhookParams.builder().id("wh_123").build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("DELETE", request.getMethod(), "method should be DELETE");
+      Assertions.assertEquals("/webhook/wh_123", request.getPath(),
+          "path should target the webhook");
     }
   }
 }

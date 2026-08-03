@@ -7,6 +7,8 @@ public final class EnvelopeRecipient {
   private final String email;
   private final String name;
   private final String role;
+  private final Integer reminderIntervalDays;
+  private final Integer reminderAttempts;
 
   /**
    * Initializes envelope recipient parameters from the builder.
@@ -17,6 +19,8 @@ public final class EnvelopeRecipient {
     this.email = builder.email;
     this.name = builder.name;
     this.role = builder.role;
+    this.reminderIntervalDays = builder.reminderIntervalDays;
+    this.reminderAttempts = builder.reminderAttempts;
   }
 
   /**
@@ -56,12 +60,32 @@ public final class EnvelopeRecipient {
   }
 
   /**
+   * Returns the number of days between signing reminders, if present.
+   *
+   * @return the reminder interval in days, if present.
+   */
+  public Integer getReminderIntervalDays() {
+    return reminderIntervalDays;
+  }
+
+  /**
+   * Returns the maximum number of reminder attempts, if present.
+   *
+   * @return the maximum number of reminder attempts, if present.
+   */
+  public Integer getReminderAttempts() {
+    return reminderAttempts;
+  }
+
+  /**
    * Builder for {@link EnvelopeRecipient}.
    */
   public static final class Builder {
     private String email;
     private String name;
     private String role;
+    private Integer reminderIntervalDays;
+    private Integer reminderAttempts;
 
     private Builder() {
     }
@@ -96,6 +120,28 @@ public final class EnvelopeRecipient {
      */
     public Builder role(String role) {
       this.role = role;
+      return this;
+    }
+
+    /**
+     * Sets the number of days between signing reminders.
+     *
+     * @param reminderIntervalDays reminder interval in days.
+     * @return this builder.
+     */
+    public Builder reminderIntervalDays(Integer reminderIntervalDays) {
+      this.reminderIntervalDays = reminderIntervalDays;
+      return this;
+    }
+
+    /**
+     * Sets the maximum number of reminder attempts.
+     *
+     * @param reminderAttempts maximum number of reminder attempts.
+     * @return this builder.
+     */
+    public Builder reminderAttempts(Integer reminderAttempts) {
+      this.reminderAttempts = reminderAttempts;
       return this;
     }
 

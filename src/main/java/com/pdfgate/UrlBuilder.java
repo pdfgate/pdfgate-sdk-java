@@ -44,6 +44,10 @@ final class UrlBuilder {
     return baseUrl + "/forms/extract-data";
   }
 
+  String addFormFields() {
+    return baseUrl + "/forms/fields";
+  }
+
   String watermarkPdf() {
     return baseUrl + "/watermark/pdf";
   }
@@ -78,5 +82,13 @@ final class UrlBuilder {
 
   String uploadFile() {
     return baseUrl + "/upload";
+  }
+
+  String webhook() {
+    return baseUrl + "/webhook";
+  }
+
+  String webhook(String id) {
+    return baseUrl + "/webhook/" + id;
   }
 }

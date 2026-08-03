@@ -7,6 +7,11 @@ import com.google.gson.annotations.SerializedName;
  */
 public enum EnvelopeStatus {
   /**
+   * The envelope is a draft and has not been created yet.
+   */
+  @SerializedName("draft")
+  DRAFT,
+  /**
    * The envelope has been created.
    */
   @SerializedName("created")

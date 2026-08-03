@@ -1,62 +1,73 @@
 package com.pdfgate;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * Parameters for flattening a PDF by document ID.
+ * Parameters for adding interactive form fields to a PDF by document ID.
  *
- * <p>Flattening converts interactive fields/annotations into a static PDF. Provide {@code
- * documentId}. Responses are JSON-only; use {@link Builder#build()} for a
- * {@link PdfGateDocument}.
+ * <p>Two complementary ways to add fields:
+ *
+ * <ul>
+ *   <li>{@code fieldOverrides}: customize placeholder fields detected in the PDF, keyed by
+ *       field name.
+ *   <li>{@code fields}: place fields at explicit {@code x}/{@code y} positions on a page.
+ * </ul>
+ *
+ * <p>PDFGate creates a new document with the added fields; the original is left untouched.
+ * Responses are JSON-only; use {@link Builder#build()} for {@link PdfGateDocument} metadata.
  */
-public final class FlattenPdfParams {
+public final class AddFormFieldsParams {
   private final String documentId;
-  private final List<String> fieldNames;
+  private final Map<String, FieldOverride> fieldOverrides;
+  private final List<ManualFormField> fields;
   private final Boolean jsonResponse;
   private final Long preSignedUrlExpiresIn;
   private final Object metadata;
 
-  /**
-   * Initializes flatten PDF parameters from the builder.
-   *
-   * @param builder builder with configured values.
-   */
-  private FlattenPdfParams(Builder builder) {
+  private AddFormFieldsParams(Builder builder) {
     this.documentId = builder.documentId;
-    this.fieldNames = builder.fieldNames;
+    this.fieldOverrides = builder.fieldOverrides;
+    this.fields = builder.fields;
     this.jsonResponse = builder.jsonResponse;
     this.preSignedUrlExpiresIn = builder.preSignedUrlExpiresIn;
     this.metadata = builder.metadata;
   }
 
   /**
-   * Creates a new builder for flatten PDF parameters.
+   * Creates a new builder for add form fields parameters.
    *
-   * @return the builder for flatten PDF parameters.
+   * @return the builder for add form fields parameters.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Returns the document ID when flattening by document ID.
+   * Returns the document ID of the source PDF.
    *
-   * @return the document ID when flattening by document ID.
+   * @return the document ID.
    */
   public String getDocumentId() {
     return documentId;
   }
 
   /**
-   * Returns the names of the fields to flatten, if present.
+   * Returns the placeholder field overrides, keyed by field name, if present.
    *
-   * <p>When present, only these fields are flattened and the rest of the form stays
-   * interactive. When absent, the whole document is flattened.
-   *
-   * @return the field names to flatten, if present.
+   * @return the field overrides, if present.
    */
-  public List<String> getFieldNames() {
-    return fieldNames;
+  public Map<String, FieldOverride> getFieldOverrides() {
+    return fieldOverrides;
+  }
+
+  /**
+   * Returns the manually positioned fields, if present.
+   *
+   * @return the manually positioned fields, if present.
+   */
+  public List<ManualFormField> getFields() {
+    return fields;
   }
 
   /**
@@ -96,11 +107,12 @@ public final class FlattenPdfParams {
   }
 
   /**
-   * Builder for {@link FlattenPdfParams}.
+   * Builder for {@link AddFormFieldsParams}.
    */
   public static final class Builder {
     private String documentId;
-    private List<String> fieldNames;
+    private Map<String, FieldOverride> fieldOverrides;
+    private List<ManualFormField> fields;
     private Boolean jsonResponse = true;
     private Long preSignedUrlExpiresIn;
     private Object metadata;
@@ -120,16 +132,24 @@ public final class FlattenPdfParams {
     }
 
     /**
-     * Sets the names of the fields to flatten.
+     * Sets the placeholder field overrides, keyed by field name.
      *
-     * <p>When provided, only these fields are flattened and the rest of the form stays
-     * interactive. Omit to flatten the whole document.
-     *
-     * @param fieldNames the field names to flatten.
+     * @param fieldOverrides the field overrides.
      * @return this builder.
      */
-    public Builder fieldNames(List<String> fieldNames) {
-      this.fieldNames = fieldNames;
+    public Builder fieldOverrides(Map<String, FieldOverride> fieldOverrides) {
+      this.fieldOverrides = fieldOverrides;
+      return this;
+    }
+
+    /**
+     * Sets the manually positioned fields.
+     *
+     * @param fields the manually positioned fields.
+     * @return this builder.
+     */
+    public Builder fields(List<ManualFormField> fields) {
+      this.fields = fields;
       return this;
     }
 
@@ -156,13 +176,13 @@ public final class FlattenPdfParams {
     }
 
     /**
-     * Builds flatten PDF parameters for JSON responses.
+     * Builds add form fields parameters for JSON responses.
      *
      * @return parameters configured for JSON responses.
      */
-    public FlattenPdfParams build() {
+    public AddFormFieldsParams build() {
       this.jsonResponse = true;
-      return new FlattenPdfParams(this);
+      return new AddFormFieldsParams(this);
     }
   }
 }

@@ -12,6 +12,11 @@ public enum DocumentRecipientStatus {
   @SerializedName("pending")
   PENDING,
   /**
+   * The recipient has expired.
+   */
+  @SerializedName("expired")
+  EXPIRED,
+  /**
    * The recipient has signed.
    */
   @SerializedName("signed")

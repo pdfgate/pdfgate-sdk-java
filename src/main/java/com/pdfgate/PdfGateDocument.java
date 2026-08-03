@@ -169,6 +169,11 @@ public final class PdfGateDocument {
     @SerializedName("from_html")
     FROM_HTML,
     /**
+     * Document uploaded to PDFGate storage.
+     */
+    @SerializedName("uploaded")
+    UPLOADED,
+    /**
      * Document created by flattening a PDF.
      */
     @SerializedName("flattened")
@@ -192,6 +197,21 @@ public final class PdfGateDocument {
      * Document created by signing.
      */
     @SerializedName("signed")
-    SIGNED
+    SIGNED,
+    /**
+     * Signature audit log document produced by a signing flow.
+     */
+    @SerializedName("signature_audit_log")
+    SIGNATURE_AUDIT_LOG,
+    /**
+     * Document created by adding form fields.
+     */
+    @SerializedName("document_fields_added")
+    DOCUMENT_FIELDS_ADDED,
+    /**
+     * Signing template document.
+     */
+    @SerializedName("signing_template")
+    SIGNING_TEMPLATE
   }
 }

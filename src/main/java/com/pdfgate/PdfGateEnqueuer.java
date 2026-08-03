@@ -39,6 +39,20 @@ final class PdfGateEnqueuer {
   }
 
   /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateWebhookResponse}.
+   */
+  public void enqueue(CallWebhook call, PdfGateCallback<PdfGateWebhookResponse> callback) {
+    call.enqueue(new PdfGateWebhookResponseParserCallback(callback));
+  }
+
+  /**
+   * Enqueues an empty (no content) response call.
+   */
+  public void enqueue(CallVoid call, PdfGateCallback<Void> callback) {
+    call.enqueue(new PdfGateVoidResponseParserCallback(callback));
+  }
+
+  /**
    * Enqueues a JSON response call and returns a {@link CompletableFuture}.
    */
   public CompletableFuture<PdfGateDocument> enqueueAsFuture(CallJson call) {
@@ -63,6 +77,20 @@ final class PdfGateEnqueuer {
    * Enqueues a bytes response call and returns a {@link CompletableFuture}.
    */
   public CompletableFuture<byte[]> enqueueAsFuture(CallFile call) {
+    return enqueueAsFuture(call, this::enqueue);
+  }
+
+  /**
+   * Enqueues a webhook response call and returns a {@link CompletableFuture}.
+   */
+  public CompletableFuture<PdfGateWebhookResponse> enqueueAsFuture(CallWebhook call) {
+    return enqueueAsFuture(call, this::enqueue);
+  }
+
+  /**
+   * Enqueues an empty (no content) response call and returns a {@link CompletableFuture}.
+   */
+  public CompletableFuture<Void> enqueueAsFuture(CallVoid call) {
     return enqueueAsFuture(call, this::enqueue);
   }
 

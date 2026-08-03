@@ -1,6 +1,6 @@
 # PDFGate's official Java SDK
 
-[![Maven Central](https://img.shields.io/badge/maven--central-v31.3.0-blue)](https://mvnrepository.com/artifact/com.pdfgate/pdfgate)
+[![Maven Central](https://img.shields.io/badge/maven--central-v1.0.0-blue)](https://mvnrepository.com/artifact/com.pdfgate/pdfgate)
 [![JavaDoc](http://img.shields.io/badge/javadoc-reference-blue.svg)](https://pdfgate.github.io/pdfgate-sdk-java)
 [![Build Status](https://github.com/pdfgate/pdfgate-sdk-java/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pdfgate/pdfgate-sdk-java/actions?query=branch%3Amain)
 
@@ -47,7 +47,7 @@ We support LTS versions of the JDK. Currently, that's Java versions:
 Add this dependency to your project's build file:
 
 ```groovy
-implementation "com.pdfgate:pdfgate:0.1.0"
+implementation "com.pdfgate:pdfgate:1.0.0"
 ```
 
 ### Maven users
@@ -59,7 +59,7 @@ Add this dependency to your project's POM:
 <dependency>
     <groupId>com.pdfgate</groupId>
     <artifactId>pdfgate</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -70,8 +70,8 @@ If you are not using Gradle or Maven, you will need to manually install the foll
 1. The PDFGate JAR:
 
 - Download the latest release version
-  from [Maven Central](https://repo1.maven.org/maven2/com/pdfgate/pdfgate/0.1.0/pdfgate-0.1.0.jar)
-- Current release version: 0.1.0
+  from [Maven Central](https://repo1.maven.org/maven2/com/pdfgate/pdfgate/1.0.0/pdfgate-1.0.0.jar)
+- Current release version: 1.0.0
 
 2. Google Gson:
 
@@ -185,6 +185,12 @@ Envelope operations such as `createEnvelope`, `getEnvelope`, and `sendEnvelope` 
 `PDFGateEnvelope`, which includes the envelope `id`, envelope status, per-document recipient state,
 timestamps, and optional metadata.
 
+`deleteDocument` and `deleteWebhook` return no content. Webhook management methods
+`createWebhook` and `getWebhook` return a `PdfGateWebhookResponse`.
+
+Every method has an async counterpart returning a `CompletableFuture` (e.g. `addFormFieldsAsync`,
+`deleteDocumentAsync`, `createWebhookAsync`) and a `...Call` builder for custom execution.
+
 # Examples
 
 ## Generate PDF
@@ -245,10 +251,75 @@ PdfGateDocument uploadedDocument = client.uploadFile(uploadParams);
 ```java
 FlattenPdfParams flattenParams = FlattenPdfParams.builder()
     .documentId(documentId)
+    // Optional: flatten only these fields and leave the rest interactive.
+    // Omit fieldNames to flatten the whole document.
+    .fieldNames(List.of("signature", "date"))
     .build();
 
 PdfGateDocument flattenedDocument = client.flattenPdf(flattenParams);
 ```
+
+## Add form fields to a PDF
+
+```java
+AddFormFieldsParams params = AddFormFieldsParams.builder()
+    .documentId(documentId)
+    // Customize placeholder fields detected in the PDF, keyed by field name.
+    .fieldOverrides(Map.of(
+        "signature", FieldOverride.builder().role("signer").optional(false).build()))
+    // Or place fields at explicit positions on a given page.
+    .fields(List.of(
+        ManualFormField.builder()
+            .name("signed_on")
+            .type(DocumentFieldType.DATE)
+            .page(1)
+            .x(100.0)
+            .y(650.0)
+            .width(160)
+            .height(24)
+            .build()))
+    .build();
+
+PdfGateDocument document = client.addFormFields(params);
+```
+
+## Delete a stored document
+
+```java
+client.deleteDocument(DeleteDocumentParams.builder()
+    .documentId(documentId)
+    .build());
+```
+
+A document referenced by a draft or in-progress envelope cannot be deleted until those envelopes are
+completed or expired.
+
+## Manage webhooks
+
+```java
+// Create a webhook. The returned secret is shown only once — store it now.
+PdfGateWebhookResponse webhook = client.createWebhook(CreateWebhookParams.builder()
+    .url("https://example.com/pdfgate-callback")
+    .eventTypes(List.of(
+        WebhookEventType.ENVELOPE_COMPLETED,
+        WebhookEventType.ENVELOPE_SENT))
+    .description("Production signing events")
+    .build());
+
+// Retrieve a webhook (the secret is not returned here).
+PdfGateWebhookResponse fetched = client.getWebhook(GetWebhookParams.builder()
+    .id(webhook.getId())
+    .build());
+
+// Delete a webhook.
+client.deleteWebhook(DeleteWebhookParams.builder()
+    .id(webhook.getId())
+    .build());
+```
+
+The subscribable events are exposed via `WebhookEventType`: `ENVELOPE_SENT`, `ENVELOPE_COMPLETED`,
+`ENVELOPE_EXPIRED`, and `ENVELOPE_DOCUMENT_COMPLETED`. The webhook URL must be publicly accessible
+(localhost is not supported).
 
 ## Compress a PDF
 
@@ -269,6 +340,24 @@ WatermarkPdfParams watermarkParams = WatermarkPdfParams.builder()
     .documentId(documentId)
     .type(WatermarkPdfParams.WatermarkType.IMAGE)
     .watermark(new FileParam("watermark.jpg", watermarkImage, "image/jpeg"))
+    .build();
+
+PdfGateDocument watermarkedPdf = client.watermarkPdf(watermarkParams);
+```
+
+For a text watermark you can upload a custom font file (TTF/OTF), which overrides the built-in
+`font`:
+
+```java
+byte[] font = Files.readAllBytes(Paths.get("custom.ttf"));
+
+WatermarkPdfParams watermarkParams = WatermarkPdfParams.builder()
+    .documentId(documentId)
+    .type(WatermarkPdfParams.WatermarkType.TEXT)
+    .text("Confidential")
+    .fontFile(new FileParam("custom.ttf", font, "font/ttf"))
+    .rotate(30.0)
+    .opacity(0.3)
     .build();
 
 PdfGateDocument watermarkedPdf = client.watermarkPdf(watermarkParams);

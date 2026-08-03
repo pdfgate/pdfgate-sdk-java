@@ -79,6 +79,11 @@ final class PdfGateCallBuilder {
       bodyBuilder.addFormDataPart("documentId", documentId);
     }
 
+    java.util.List<String> fieldNames = params.getFieldNames();
+    if (fieldNames != null && !fieldNames.isEmpty()) {
+      bodyBuilder.addFormDataPart("fieldNames", PdfGateJson.gson().toJson(fieldNames));
+    }
+
     Request request = new Request.Builder()
         .url(urlBuilder.flattenPdf())
         .header("Authorization", "Bearer " + apiKey)
@@ -86,6 +91,80 @@ final class PdfGateCallBuilder {
         .build();
 
     OkHttpClient client = clientWithTimeout(config.getFlattenPdfTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for adding form fields to a PDF.
+   */
+  Call buildAddFormFieldsCall(AddFormFieldsParams params) {
+    validateAddFormFieldsParams(params);
+    String jsonBody = PdfGateJson.gson().toJson(params);
+    RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+    Request request = authorizedRequestFor(urlBuilder.addFormFields())
+        .post(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getFlattenPdfTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for deleting a stored document.
+   */
+  Call buildDeleteDocumentCall(DeleteDocumentParams params) {
+    validateDeleteDocumentParams(params);
+    Request request = authorizedRequestFor(urlBuilder.getDocument(params.getDocumentId()))
+        .delete()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for creating a webhook.
+   */
+  Call buildCreateWebhookCall(CreateWebhookParams params) {
+    validateCreateWebhookParams(params);
+    String jsonBody = PdfGateJson.gson().toJson(params);
+    RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+    Request request = authorizedRequestFor(urlBuilder.webhook())
+        .post(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for retrieving a webhook.
+   */
+  Call buildGetWebhookCall(GetWebhookParams params) {
+    validateGetWebhookParams(params);
+    Request request = authorizedRequestFor(urlBuilder.webhook(params.getId()))
+        .get()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for deleting a webhook.
+   */
+  Call buildDeleteWebhookCall(DeleteWebhookParams params) {
+    validateDeleteWebhookParams(params);
+    Request request = authorizedRequestFor(urlBuilder.webhook(params.getId()))
+        .delete()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
 
     return client.newCall(request);
   }
@@ -129,6 +208,16 @@ final class PdfGateCallBuilder {
             RequestBody.create(watermark.getData(), mediaType)
         );
       }
+    }
+
+    FileParam fontFile = params.getFontFile();
+    if (fontFile != null) {
+      MediaType fontMediaType = resolveFileMediaType(fontFile);
+      bodyBuilder.addFormDataPart(
+          "fontFile",
+          fontFile.getName(),
+          RequestBody.create(fontFile.getData(), fontMediaType)
+      );
     }
 
     Request request = new Request.Builder()
@@ -260,7 +349,6 @@ final class PdfGateCallBuilder {
     validateExtractPdfFormDataParams(params);
     MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
         .setType(MultipartBody.FORM);
-    bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
 
     String documentId = params.getDocumentId();
     if (!Strings.isBlank(documentId)) {
@@ -341,7 +429,6 @@ final class PdfGateCallBuilder {
     if (file != null) {
       MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
           .setType(MultipartBody.FORM);
-      bodyBuilder.addFormDataPart("jsonResponse", Boolean.TRUE.toString());
       addCommonFields(bodyBuilder, params.getPreSignedUrlExpiresIn(),
           params.getMetadata());
 
@@ -601,6 +688,73 @@ final class PdfGateCallBuilder {
   }
 
   /**
+   * Validates add form fields request parameters.
+   */
+  private void validateAddFormFieldsParams(AddFormFieldsParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (!params.isJsonResponse()) {
+      throw new IllegalArgumentException("jsonResponse must be true.");
+    }
+    String documentId = params.getDocumentId();
+    if (Strings.isBlank(documentId)) {
+      throw new IllegalArgumentException("documentId must be provided.");
+    }
+  }
+
+  /**
+   * Validates delete document request parameters.
+   */
+  private void validateDeleteDocumentParams(DeleteDocumentParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getDocumentId())) {
+      throw new IllegalArgumentException("documentId must be provided.");
+    }
+  }
+
+  /**
+   * Validates create webhook request parameters.
+   */
+  private void validateCreateWebhookParams(CreateWebhookParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getUrl())) {
+      throw new IllegalArgumentException("url must be provided.");
+    }
+    if (params.getEventTypes() == null || params.getEventTypes().isEmpty()) {
+      throw new IllegalArgumentException("eventTypes must be provided.");
+    }
+  }
+
+  /**
+   * Validates get webhook request parameters.
+   */
+  private void validateGetWebhookParams(GetWebhookParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates delete webhook request parameters.
+   */
+  private void validateDeleteWebhookParams(DeleteWebhookParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
    * Validates extract PDF form data request parameters.
    */
   private void validateExtractPdfFormDataParams(ExtractPdfFormDataParams params) {
@@ -711,7 +865,6 @@ final class PdfGateCallBuilder {
     private final String url;
     private final Object metadata;
     private final Long preSignedUrlExpiresIn;
-    private final Boolean jsonResponse = true;
 
     private UploadFileJsonPayload(String url, Object metadata, Long preSignedUrlExpiresIn) {
       this.url = url;

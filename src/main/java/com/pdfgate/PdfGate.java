@@ -525,6 +525,186 @@ public final class PdfGate {
   }
 
   /**
+   * Adds interactive form fields to a PDF and returns a JSON document response.
+   *
+   * <p>This SDK currently supports adding fields by {@code documentId} only. To upload a file
+   * directly, use {@link #uploadFile(UploadFileParams)} first and pass the resulting
+   * document ID.
+   *
+   * @param params parameters for the add form fields request.
+   * @return the resulting document metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateDocument addFormFields(AddFormFieldsParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(addFormFieldsCall(params));
+  }
+
+  /**
+   * Adds interactive form fields to a PDF asynchronously and returns a JSON document response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the add form fields request.
+   * @return a future that completes with the resulting document metadata.
+   */
+  public CompletableFuture<PdfGateDocument> addFormFieldsAsync(AddFormFieldsParams params) {
+    return enqueuer.enqueueAsFuture(addFormFieldsCall(params));
+  }
+
+  /**
+   * Builds a call that expects a JSON document response.
+   *
+   * @param params parameters for the add form fields request.
+   * @return a call that yields a {@link PdfGateDocument} response.
+   */
+  public CallJson addFormFieldsCall(AddFormFieldsParams params) {
+    return new PdfGateJsonCall(callBuilder.buildAddFormFieldsCall(params));
+  }
+
+  /**
+   * Permanently deletes a stored document.
+   *
+   * <p>A document referenced by a draft or in-progress envelope cannot be deleted until those
+   * envelopes are completed or expired.
+   *
+   * @param params parameters for the delete document request.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public void deleteDocument(DeleteDocumentParams params)
+      throws IOException {
+    PdfGateCallExecutor.execute(deleteDocumentCall(params));
+  }
+
+  /**
+   * Permanently deletes a stored document asynchronously.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the delete document request.
+   * @return a future that completes when the document is deleted.
+   */
+  public CompletableFuture<Void> deleteDocumentAsync(DeleteDocumentParams params) {
+    return enqueuer.enqueueAsFuture(deleteDocumentCall(params));
+  }
+
+  /**
+   * Builds a call that expects an empty (no content) response.
+   *
+   * @param params parameters for the delete document request.
+   * @return a call that yields no content.
+   */
+  public CallVoid deleteDocumentCall(DeleteDocumentParams params) {
+    return new PdfGateVoidCall(callBuilder.buildDeleteDocumentCall(params));
+  }
+
+  /**
+   * Registers a webhook endpoint and returns the webhook metadata response.
+   *
+   * <p>The response includes a {@code secret} (returned only once, at creation time) used to
+   * verify webhook payloads via {@link PdfGateWebhooks#verifySignature(String, String, byte[])}.
+   *
+   * @param params parameters for the create webhook request.
+   * @return the created webhook metadata, including the signing secret.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateWebhookResponse createWebhook(CreateWebhookParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(createWebhookCall(params));
+  }
+
+  /**
+   * Registers a webhook endpoint asynchronously and returns the webhook metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the create webhook request.
+   * @return a future that completes with the created webhook metadata.
+   */
+  public CompletableFuture<PdfGateWebhookResponse> createWebhookAsync(CreateWebhookParams params) {
+    return enqueuer.enqueueAsFuture(createWebhookCall(params));
+  }
+
+  /**
+   * Builds a call that expects a webhook JSON response.
+   *
+   * @param params parameters for the create webhook request.
+   * @return a call that yields a {@link PdfGateWebhookResponse} response.
+   */
+  public CallWebhook createWebhookCall(CreateWebhookParams params) {
+    return new PdfGateWebhookCall(callBuilder.buildCreateWebhookCall(params));
+  }
+
+  /**
+   * Retrieves a webhook and returns the webhook metadata response.
+   *
+   * <p>The {@code secret} is not returned by this endpoint (only at creation time).
+   *
+   * @param params parameters for the get webhook request.
+   * @return the webhook metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateWebhookResponse getWebhook(GetWebhookParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(getWebhookCall(params));
+  }
+
+  /**
+   * Retrieves a webhook asynchronously and returns the webhook metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the get webhook request.
+   * @return a future that completes with the webhook metadata.
+   */
+  public CompletableFuture<PdfGateWebhookResponse> getWebhookAsync(GetWebhookParams params) {
+    return enqueuer.enqueueAsFuture(getWebhookCall(params));
+  }
+
+  /**
+   * Builds a call that expects a webhook JSON response.
+   *
+   * @param params parameters for the get webhook request.
+   * @return a call that yields a {@link PdfGateWebhookResponse} response.
+   */
+  public CallWebhook getWebhookCall(GetWebhookParams params) {
+    return new PdfGateWebhookCall(callBuilder.buildGetWebhookCall(params));
+  }
+
+  /**
+   * Deletes a webhook.
+   *
+   * @param params parameters for the delete webhook request.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public void deleteWebhook(DeleteWebhookParams params)
+      throws IOException {
+    PdfGateCallExecutor.execute(deleteWebhookCall(params));
+  }
+
+  /**
+   * Deletes a webhook asynchronously.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the delete webhook request.
+   * @return a future that completes when the webhook is deleted.
+   */
+  public CompletableFuture<Void> deleteWebhookAsync(DeleteWebhookParams params) {
+    return enqueuer.enqueueAsFuture(deleteWebhookCall(params));
+  }
+
+  /**
+   * Builds a call that expects an empty (no content) response.
+   *
+   * @param params parameters for the delete webhook request.
+   * @return a call that yields no content.
+   */
+  public CallVoid deleteWebhookCall(DeleteWebhookParams params) {
+    return new PdfGateVoidCall(callBuilder.buildDeleteWebhookCall(params));
+  }
+
+  /**
    * Enqueues a JSON response call and maps the response to {@link PdfGateDocument}.
    *
    * @param call     the call to enqueue.
@@ -561,6 +741,26 @@ public final class PdfGate {
    * @param callback the callback for the response.
    */
   public void enqueue(CallEnvelope call, PdfGateCallback<PDFGateEnvelope> callback) {
+    enqueuer.enqueue(call, callback);
+  }
+
+  /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateWebhookResponse}.
+   *
+   * @param call     the call to enqueue.
+   * @param callback the callback for the response.
+   */
+  public void enqueue(CallWebhook call, PdfGateCallback<PdfGateWebhookResponse> callback) {
+    enqueuer.enqueue(call, callback);
+  }
+
+  /**
+   * Enqueues an empty (no content) response call.
+   *
+   * @param call     the call to enqueue.
+   * @param callback the callback for the response.
+   */
+  public void enqueue(CallVoid call, PdfGateCallback<Void> callback) {
     enqueuer.enqueue(call, callback);
   }
 

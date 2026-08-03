@@ -333,4 +333,96 @@ public class PdfGateAcceptanceTest {
         "document type should be compressed");
   }
 
+  @Test
+  public void flattenPdfWithFieldNames() throws Exception {
+    FlattenPdfParams params = FlattenPdfParams.builder()
+        .documentId(documentIdWithForm)
+        .fieldNames(Collections.singletonList("first_name"))
+        .build();
+
+    PdfGateDocument document = client.flattenPdf(params);
+    Assertions.assertNotNull(document.getId(), "document id should be present");
+    Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(),
+        "document status should be completed");
+    Assertions.assertEquals(PdfGateDocument.DocumentType.FLATTENED, document.getType(),
+        "document type should be flattened");
+  }
+
+  @Test
+  public void addFormFields() throws Exception {
+    AddFormFieldsParams params = AddFormFieldsParams.builder()
+        .documentId(documentId)
+        .fields(Collections.singletonList(
+            ManualFormField.builder()
+                .name("full_name")
+                .type(DocumentFieldType.TEXT)
+                .page(1)
+                .x(50.0)
+                .y(500.0)
+                .width(200)
+                .height(24)
+                .build()
+        ))
+        .build();
+
+    PdfGateDocument document = client.addFormFields(params);
+    Assertions.assertNotNull(document.getId(), "document id should be present");
+    Assertions.assertNotEquals(documentId, document.getId(), "document id should not match source");
+    Assertions.assertEquals(PdfGateDocument.DocumentStatus.COMPLETED, document.getStatus(),
+        "document status should be completed");
+    Assertions.assertEquals(PdfGateDocument.DocumentType.DOCUMENT_FIELDS_ADDED, document.getType(),
+        "document type should be document_fields_added");
+  }
+
+  @Test
+  public void deleteDocument() throws Exception {
+    PdfGateDocument throwaway = createDocument(
+        "<html><body><h1>Delete me</h1></body></html>");
+
+    client.deleteDocument(DeleteDocumentParams.builder()
+        .documentId(throwaway.getId())
+        .build());
+
+    Assertions.assertThrows(PdfGateException.class, () ->
+        client.getDocument(GetDocumentParams.builder()
+            .documentId(throwaway.getId())
+            .build()),
+        "deleted document should no longer be retrievable");
+  }
+
+  @Test
+  public void webhookLifecycle() throws Exception {
+    String url = "https://example.com/pdfgate-hook-" + UUID.randomUUID();
+
+    PdfGateWebhookResponse created = client.createWebhook(CreateWebhookParams.builder()
+        .url(url)
+        .eventTypes(java.util.Arrays.asList(
+            WebhookEventType.ENVELOPE_COMPLETED,
+            WebhookEventType.ENVELOPE_SENT
+        ))
+        .description("Java SDK acceptance test")
+        .build());
+
+    Assertions.assertNotNull(created.getId(), "webhook id should be present");
+    Assertions.assertEquals(url, created.getUrl(), "webhook url should match");
+    Assertions.assertEquals(WebhookStatus.ACTIVE, created.getStatus(), "webhook should be active");
+    Assertions.assertTrue(created.getSecret().isPresent(),
+        "secret should be returned at creation");
+
+    try {
+      PdfGateWebhookResponse fetched = client.getWebhook(GetWebhookParams.builder()
+          .id(created.getId())
+          .build());
+      Assertions.assertEquals(created.getId(), fetched.getId(), "fetched id should match");
+      Assertions.assertFalse(fetched.getSecret().isPresent(),
+          "secret should not be returned outside of creation");
+    } finally {
+      client.deleteWebhook(DeleteWebhookParams.builder().id(created.getId()).build());
+    }
+
+    Assertions.assertThrows(PdfGateException.class, () ->
+        client.getWebhook(GetWebhookParams.builder().id(created.getId()).build()),
+        "deleted webhook should no longer be retrievable");
+  }
+
 }

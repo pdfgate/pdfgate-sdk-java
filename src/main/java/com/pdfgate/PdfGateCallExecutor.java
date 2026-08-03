@@ -50,4 +50,24 @@ final class PdfGateCallExecutor {
       throw PdfGateException.fromException(e);
     }
   }
+
+  static PdfGateWebhookResponse execute(CallWebhook call) throws PdfGateException {
+    try (Response response = call.execute()) {
+      return PdfGateResponseParser.parseWebhook(response);
+    } catch (PdfGateException e) {
+      throw e;
+    } catch (IOException e) {
+      throw PdfGateException.fromException(e);
+    }
+  }
+
+  static void execute(CallVoid call) throws PdfGateException {
+    try (Response response = call.execute()) {
+      PdfGateResponseParser.ensureSuccess(response);
+    } catch (PdfGateException e) {
+      throw e;
+    } catch (IOException e) {
+      throw PdfGateException.fromException(e);
+    }
+  }
 }

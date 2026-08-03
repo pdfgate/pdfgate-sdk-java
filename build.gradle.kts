@@ -8,8 +8,11 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.11.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // `api` (not `implementation`): gson and okhttp types appear in the SDK's public API
+    // (extractPdfFormData returns com.google.gson.JsonObject; the Call*/enqueue async API
+    // exposes okhttp3.Call), so consumers need them on their compile classpath.
+    api("com.google.code.gson:gson:2.11.0")
+    api("com.squareup.okhttp3:okhttp:4.12.0")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("org.apache.pdfbox:pdfbox:2.0.30")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")

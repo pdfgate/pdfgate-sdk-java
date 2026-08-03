@@ -12,6 +12,11 @@ public enum EnvelopeDocumentStatus {
   @SerializedName("pending")
   PENDING,
   /**
+   * The document has expired.
+   */
+  @SerializedName("expired")
+  EXPIRED,
+  /**
    * The document has been sent for signing.
    */
   @SerializedName("sent_for_signing")

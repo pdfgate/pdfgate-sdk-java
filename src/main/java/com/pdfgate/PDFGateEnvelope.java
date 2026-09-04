@@ -14,8 +14,11 @@ public final class PDFGateEnvelope {
   private EnvelopeStatus status;
   private List<EnvelopeDocumentResponse> documents;
   private Instant createdAt;
+  private Instant expiresAt;
   private Instant completedAt;
   private Instant expiredAt;
+  private Instant voidedAt;
+  private String voidReason;
   private Map<String, Object> metadata;
 
   /**
@@ -79,6 +82,33 @@ public final class PDFGateEnvelope {
   }
 
   /**
+   * Returns when the envelope will expire if it is not completed, if present.
+   *
+   * @return when the envelope will expire, if present.
+   */
+  public Optional<Instant> getExpiresAt() {
+    return Optional.ofNullable(expiresAt);
+  }
+
+  /**
+   * Returns when the envelope was voided, if present.
+   *
+   * @return when the envelope was voided, if present.
+   */
+  public Optional<Instant> getVoidedAt() {
+    return Optional.ofNullable(voidedAt);
+  }
+
+  /**
+   * Returns the reason provided when the envelope was voided, if present.
+   *
+   * @return the void reason, if present.
+   */
+  public Optional<String> getVoidReason() {
+    return Optional.ofNullable(voidReason);
+  }
+
+  /**
    * Returns metadata attached to the envelope, if present.
    *
    * @return metadata attached to the envelope, if present.
@@ -100,13 +130,17 @@ public final class PDFGateEnvelope {
         && status == that.status
         && Objects.equals(documents, that.documents)
         && Objects.equals(createdAt, that.createdAt)
+        && Objects.equals(expiresAt, that.expiresAt)
         && Objects.equals(completedAt, that.completedAt)
         && Objects.equals(expiredAt, that.expiredAt)
+        && Objects.equals(voidedAt, that.voidedAt)
+        && Objects.equals(voidReason, that.voidReason)
         && Objects.equals(metadata, that.metadata);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, status, documents, createdAt, completedAt, expiredAt, metadata);
+    return Objects.hash(id, status, documents, createdAt, expiresAt, completedAt, expiredAt,
+        voidedAt, voidReason, metadata);
   }
 }

@@ -17,6 +17,11 @@ public enum EnvelopeDocumentStatus {
   @SerializedName("expired")
   EXPIRED,
   /**
+   * The document was voided before all recipients signed.
+   */
+  @SerializedName("voided")
+  VOIDED,
+  /**
    * The document has been sent for signing.
    */
   @SerializedName("sent_for_signing")

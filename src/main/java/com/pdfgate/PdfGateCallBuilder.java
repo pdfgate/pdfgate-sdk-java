@@ -329,6 +329,39 @@ final class PdfGateCallBuilder {
   }
 
   /**
+   * Builds the call for voiding an envelope.
+   */
+  Call buildVoidEnvelopeCall(VoidEnvelopeParams params) {
+    validateVoidEnvelopeParams(params);
+    String jsonBody = Strings.isBlank(params.getReason())
+        ? "{}"
+        : PdfGateJson.gson().toJson(
+            java.util.Collections.singletonMap("reason", params.getReason()));
+    RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+    Request request = authorizedRequestFor(urlBuilder.voidEnvelope(params.getId()))
+        .post(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for deleting an envelope.
+   */
+  Call buildDeleteEnvelopeCall(DeleteEnvelopeParams params) {
+    validateDeleteEnvelopeParams(params);
+    Request request = authorizedRequestFor(urlBuilder.deleteEnvelope(params.getId()))
+        .delete()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
    * Builds the call for retrieving an envelope.
    */
   Call buildGetEnvelopeCall(GetEnvelopeParams params) {
@@ -780,6 +813,30 @@ final class PdfGateCallBuilder {
    * Validates send envelope request parameters.
    */
   private void validateSendEnvelopeParams(SendEnvelopeParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates void envelope request parameters.
+   */
+  private void validateVoidEnvelopeParams(VoidEnvelopeParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates delete envelope request parameters.
+   */
+  private void validateDeleteEnvelopeParams(DeleteEnvelopeParams params) {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }

@@ -17,6 +17,11 @@ public enum DocumentRecipientStatus {
   @SerializedName("expired")
   EXPIRED,
   /**
+   * The recipient was voided before signing.
+   */
+  @SerializedName("voided")
+  VOIDED,
+  /**
    * The recipient has signed.
    */
   @SerializedName("signed")

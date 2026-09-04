@@ -373,6 +373,86 @@ public final class PdfGate {
   }
 
   /**
+   * Voids (cancels) an envelope and returns the updated envelope metadata response.
+   *
+   * <p>Voiding is only possible while the envelope is in {@code created} or
+   * {@code in_progress} status. Recipients who have not signed yet are notified by
+   * email and their signing links stop working; documents already signed by all
+   * recipients are not affected. The optional reason is visible to recipients.
+   * This action cannot be undone.
+   *
+   * @param params parameters for the void envelope request.
+   * @return the updated envelope metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PDFGateEnvelope voidEnvelope(VoidEnvelopeParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(voidEnvelopeCall(params));
+  }
+
+  /**
+   * Voids (cancels) an envelope asynchronously and returns the updated envelope
+   * metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the void envelope request.
+   * @return a future that completes with the updated envelope metadata.
+   */
+  public CompletableFuture<PDFGateEnvelope> voidEnvelopeAsync(VoidEnvelopeParams params) {
+    return enqueuer.enqueueAsFuture(voidEnvelopeCall(params));
+  }
+
+  /**
+   * Builds a call that expects an envelope JSON response.
+   *
+   * @param params parameters for the void envelope request.
+   * @return a call that yields a {@link PDFGateEnvelope} response.
+   */
+  public CallEnvelope voidEnvelopeCall(VoidEnvelopeParams params) {
+    return new PdfGateEnvelopeCall(callBuilder.buildVoidEnvelopeCall(params));
+  }
+
+  /**
+   * Permanently deletes an envelope and the files it produced.
+   *
+   * <p>The signed documents and audit logs are removed from storage, recipient data
+   * is anonymized, and recipients lose access. Source documents are not deleted.
+   * Only envelopes in {@code draft}, {@code completed}, {@code expired}, or
+   * {@code voided} status can be deleted; void an active envelope first. This
+   * action cannot be undone.
+   *
+   * @param params parameters for the delete envelope request.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public void deleteEnvelope(DeleteEnvelopeParams params)
+      throws IOException {
+    PdfGateCallExecutor.execute(deleteEnvelopeCall(params));
+  }
+
+  /**
+   * Permanently deletes an envelope asynchronously.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the delete envelope request.
+   * @return a future that completes when the envelope has been deleted.
+   */
+  public CompletableFuture<Void> deleteEnvelopeAsync(DeleteEnvelopeParams params) {
+    return enqueuer.enqueueAsFuture(deleteEnvelopeCall(params));
+  }
+
+  /**
+   * Builds a call that expects an empty (no content) response.
+   *
+   * @param params parameters for the delete envelope request.
+   * @return a call that yields no content.
+   */
+  public CallVoid deleteEnvelopeCall(DeleteEnvelopeParams params) {
+    return new PdfGateVoidCall(callBuilder.buildDeleteEnvelopeCall(params));
+  }
+
+  /**
    * Extracts PDF form field data and returns the JSON response.
    *
    * <p>This SDK currently supports extraction by {@code documentId} only. To upload a file

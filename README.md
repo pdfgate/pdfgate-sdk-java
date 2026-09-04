@@ -181,11 +181,11 @@ Most document-processing endpoints return a `PdfGateDocument` containing metadat
 and optional `fileUrl` when `preSignedUrlExpiresIn` is provided. To download the file bytes, call
 `getFile` with the document id.
 
-Envelope operations such as `createEnvelope`, `getEnvelope`, and `sendEnvelope` return a
-`PDFGateEnvelope`, which includes the envelope `id`, envelope status, per-document recipient state,
-timestamps, and optional metadata.
+Envelope operations such as `createEnvelope`, `getEnvelope`, `sendEnvelope`, and `voidEnvelope`
+return a `PDFGateEnvelope`, which includes the envelope `id`, envelope status, per-document
+recipient state, timestamps, and optional metadata.
 
-`deleteDocument` and `deleteWebhook` return no content. Webhook management methods
+`deleteDocument`, `deleteEnvelope`, and `deleteWebhook` return no content. Webhook management methods
 `createWebhook` and `getWebhook` return a `PdfGateWebhookResponse`.
 
 Every method has an async counterpart returning a `CompletableFuture` (e.g. `addFormFieldsAsync`,
@@ -416,6 +416,32 @@ SendEnvelopeParams params = SendEnvelopeParams.builder()
     .build();
 
 PDFGateEnvelope envelope = client.sendEnvelope(params);
+```
+
+## Void an envelope
+
+Cancel an envelope in `created` or `in_progress` status. Recipients who have not signed are
+notified by email and their signing links stop working; documents already signed by all
+recipients are not affected. The optional reason is visible to recipients.
+
+```java
+PDFGateEnvelope voided = client.voidEnvelope(VoidEnvelopeParams.builder()
+    .id(envelopeId)
+    .reason("Contract terms changed") // optional, visible to recipients
+    .build());
+```
+
+## Delete an envelope
+
+Permanently delete an envelope and the files it produced (signed documents and audit logs).
+Recipient data is anonymized and recipients lose access; source documents are not deleted. Only
+envelopes in `draft`, `completed`, `expired`, or `voided` status can be deleted — void an active
+envelope first.
+
+```java
+client.deleteEnvelope(DeleteEnvelopeParams.builder()
+    .id(envelopeId)
+    .build());
 ```
 
 ## Verify a webhook signature

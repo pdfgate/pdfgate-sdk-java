@@ -9,6 +9,7 @@ public final class CreateEnvelopeParams {
   private final List<EnvelopeDocument> documents;
   private final String requesterName;
   private final Object metadata;
+  private final Integer expiresInDays;
 
   /**
    * Initializes create envelope parameters from the builder.
@@ -19,6 +20,7 @@ public final class CreateEnvelopeParams {
     this.documents = builder.documents;
     this.requesterName = builder.requesterName;
     this.metadata = builder.metadata;
+    this.expiresInDays = builder.expiresInDays;
   }
 
   /**
@@ -58,12 +60,22 @@ public final class CreateEnvelopeParams {
   }
 
   /**
+   * Returns days until the envelope and its signing links expire, if present.
+   *
+   * @return days until the envelope expires, if present.
+   */
+  public Integer getExpiresInDays() {
+    return expiresInDays;
+  }
+
+  /**
    * Builder for {@link CreateEnvelopeParams}.
    */
   public static final class Builder {
     private List<EnvelopeDocument> documents;
     private String requesterName;
     private Object metadata;
+    private Integer expiresInDays;
 
     private Builder() {
     }
@@ -98,6 +110,19 @@ public final class CreateEnvelopeParams {
      */
     public Builder metadata(Object metadata) {
       this.metadata = metadata;
+      return this;
+    }
+
+    /**
+     * Sets how many days until the envelope and its signing links expire,
+     * counted from creation (min 1, max 90). Defaults to the account's
+     * envelope expiration setting when not set.
+     *
+     * @param expiresInDays days until the envelope expires.
+     * @return this builder.
+     */
+    public Builder expiresInDays(Integer expiresInDays) {
+      this.expiresInDays = expiresInDays;
       return this;
     }
 

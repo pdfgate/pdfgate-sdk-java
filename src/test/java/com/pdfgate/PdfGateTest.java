@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -1189,6 +1190,88 @@ public class PdfGateTest {
       Assertions.assertEquals("wh_123", result.getId(), "webhook id should be parsed");
       Assertions.assertFalse(result.getSecret().isPresent(),
           "secret should not be returned outside of creation");
+    }
+  }
+
+  @Test
+  public void voidEnvelopeSendsReasonAndParsesVoidedResponse() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "voided",
+        "documents", java.util.Collections.emptyList(),
+        "createdAt", "2024-02-13T15:56:12.607Z",
+        "voidedAt", "2024-02-20T09:12:45.101Z",
+        "voidReason", "Contract terms changed"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PDFGateEnvelope result = pdfGateClient.voidEnvelope(VoidEnvelopeParams.builder()
+          .id("env_123")
+          .reason("Contract terms changed")
+          .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("POST", request.getMethod(), "method should be POST");
+      Assertions.assertEquals("/envelope/env_123/void", request.getPath(),
+          "path should target the envelope void endpoint");
+      JsonObject requestJson =
+          PdfGateJson.gson().fromJson(request.getBody().readUtf8(), JsonObject.class);
+      Assertions.assertEquals("Contract terms changed",
+          requestJson.get("reason").getAsString(), "reason should be forwarded");
+      Assertions.assertEquals(EnvelopeStatus.VOIDED, result.getStatus(),
+          "status should parse as voided");
+      Assertions.assertEquals(Optional.of("Contract terms changed"), result.getVoidReason(),
+          "void reason should be parsed");
+      Assertions.assertTrue(result.getVoidedAt().isPresent(),
+          "voidedAt should be parsed");
+    }
+  }
+
+  @Test
+  public void voidEnvelopeSendsEmptyBodyWithoutReason() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "voided",
+        "documents", java.util.Collections.emptyList(),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.voidEnvelope(VoidEnvelopeParams.builder().id("env_123").build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("{}", request.getBody().readUtf8(),
+          "body should be empty JSON without a reason");
+    }
+  }
+
+  @Test
+  public void deleteEnvelopeSendsDeleteRequest() throws Exception {
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse().setResponseCode(200));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.deleteEnvelope(DeleteEnvelopeParams.builder().id("env_123").build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("DELETE", request.getMethod(), "method should be DELETE");
+      Assertions.assertEquals("/envelope/env_123", request.getPath(),
+          "path should target the envelope");
     }
   }
 

@@ -425,4 +425,56 @@ public class PdfGateAcceptanceTest {
         "deleted webhook should no longer be retrievable");
   }
 
+  @Test
+  public void voidAndDeleteEnvelopeCompletesLifecycle() throws Exception {
+    // Own envelope: voiding a "created" (never sent) envelope sends no
+    // recipient emails, so this is safe to run repeatedly. The sandbox allows
+    // max 2 concurrent requests on the envelope endpoint; pause briefly so the
+    // shared envelope fixture requests drain first.
+    Thread.sleep(3000);
+
+    CreateEnvelopeParams params = CreateEnvelopeParams.builder()
+        .requesterName("John Doe")
+        .documents(Collections.singletonList(
+            EnvelopeDocument.builder()
+                .sourceDocumentId(envelopeSourceDocumentId)
+                .name("Void Delete Agreement")
+                .recipients(Collections.singletonList(
+                    EnvelopeRecipient.builder()
+                        .email("anna@example.com")
+                        .name("Anna Smith")
+                        .build()
+                ))
+                .build()
+        ))
+        .expiresInDays(10)
+        .build();
+
+    PDFGateEnvelope created = client.createEnvelope(params);
+    Assertions.assertTrue(created.getExpiresAt().isPresent(),
+        "expiresAt should be present");
+
+    PDFGateEnvelope voided = client.voidEnvelope(VoidEnvelopeParams.builder()
+        .id(created.getId())
+        .reason("Acceptance test void")
+        .build());
+
+    Assertions.assertEquals(EnvelopeStatus.VOIDED, voided.getStatus(),
+        "envelope status should be voided");
+    Assertions.assertTrue(voided.getVoidedAt().isPresent(),
+        "voidedAt should be present");
+    Assertions.assertEquals(java.util.Optional.of("Acceptance test void"),
+        voided.getVoidReason(), "void reason should be echoed");
+
+    Assertions.assertThrows(PdfGateException.class, () ->
+        client.voidEnvelope(VoidEnvelopeParams.builder().id(created.getId()).build()),
+        "voiding an already voided envelope should throw");
+
+    client.deleteEnvelope(DeleteEnvelopeParams.builder().id(created.getId()).build());
+
+    Assertions.assertThrows(PdfGateException.class, () ->
+        client.getEnvelope(GetEnvelopeParams.builder().id(created.getId()).build()),
+        "deleted envelope should no longer be retrievable");
+  }
+
 }

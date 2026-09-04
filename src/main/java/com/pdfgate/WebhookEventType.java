@@ -22,6 +22,21 @@ public enum WebhookEventType {
   @SerializedName("envelope.expired")
   ENVELOPE_EXPIRED,
   /**
+   * An envelope was voided (cancelled) by the sender.
+   */
+  @SerializedName("envelope.voided")
+  ENVELOPE_VOIDED,
+  /**
+   * An envelope was permanently deleted by the sender.
+   */
+  @SerializedName("envelope.deleted")
+  ENVELOPE_DELETED,
+  /**
+   * A recipient signed a document within an envelope.
+   */
+  @SerializedName("envelope.recipient.signed")
+  ENVELOPE_RECIPIENT_SIGNED,
+  /**
    * A document within an envelope was completed.
    */
   @SerializedName("envelope.document.completed")

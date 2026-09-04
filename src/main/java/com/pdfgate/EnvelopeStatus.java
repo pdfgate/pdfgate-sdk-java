@@ -30,5 +30,10 @@ public enum EnvelopeStatus {
    * The envelope has expired.
    */
   @SerializedName("expired")
-  EXPIRED
+  EXPIRED,
+  /**
+   * The envelope was voided (cancelled) by the sender.
+   */
+  @SerializedName("voided")
+  VOIDED
 }

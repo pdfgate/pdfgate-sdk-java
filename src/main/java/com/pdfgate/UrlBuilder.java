@@ -72,6 +72,14 @@ final class UrlBuilder {
     return baseUrl + "/envelope/" + id;
   }
 
+  String voidEnvelope(String id) {
+    return baseUrl + "/envelope/" + id + "/void";
+  }
+
+  String deleteEnvelope(String id) {
+    return baseUrl + "/envelope/" + id;
+  }
+
   String getDocument(String documentId) {
     return baseUrl + "/document/" + documentId;
   }

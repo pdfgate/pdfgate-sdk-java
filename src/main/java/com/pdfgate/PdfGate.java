@@ -273,6 +273,11 @@ public final class PdfGate {
   /**
    * Creates an envelope and returns the envelope metadata response.
    *
+   * <p>Each recipient is given either as {@code email} and {@code name} or as the
+   * {@code recipientId} of a stored recipient. Embedded recipients receive no email
+   * and get their signing links via {@link #createEmbedLink(CreateEmbedLinkParams)}
+   * after the envelope is sent.
+   *
    * @param params parameters for the create envelope request.
    * @return the created envelope metadata.
    * @throws PdfGateException when the request fails or the API returns a non-2xx response.
@@ -306,6 +311,10 @@ public final class PdfGate {
 
   /**
    * Sends an envelope and returns the updated envelope metadata response.
+   *
+   * <p>Recipients added with {@code email} and {@code name} or with a {@code recipientId}
+   * are emailed their signing links. Embedded recipients receive no email; create their
+   * signing links via {@link #createEmbedLink(CreateEmbedLinkParams)} after sending.
    *
    * @param params parameters for the send envelope request.
    * @return the updated envelope metadata.
@@ -450,6 +459,198 @@ public final class PdfGate {
    */
   public CallVoid deleteEnvelopeCall(DeleteEnvelopeParams params) {
     return new PdfGateVoidCall(callBuilder.buildDeleteEnvelopeCall(params));
+  }
+
+  /**
+   * Creates an embedded signing link for an embedded recipient and returns the
+   * embed link response.
+   *
+   * <p>The envelope must be in {@code in_progress} status. The link expires 10
+   * minutes after creation, so create it when the signer is ready to sign — one
+   * link per signing session. When the session ends, the iframe redirects to
+   * {@code returnUrl} with {@code event} ({@code signing_complete}, {@code voided},
+   * {@code expired}, or {@code not_found}), {@code envelopeId}, {@code documentId},
+   * and {@code recipientId} appended as query parameters; existing query parameters
+   * on {@code returnUrl} are preserved.
+   *
+   * @param params parameters for the create embed link request.
+   * @return the embed link response.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateEmbedLinkResponse createEmbedLink(CreateEmbedLinkParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(createEmbedLinkCall(params));
+  }
+
+  /**
+   * Creates an embedded signing link asynchronously and returns the embed link response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the create embed link request.
+   * @return a future that completes with the embed link response.
+   */
+  public CompletableFuture<PdfGateEmbedLinkResponse> createEmbedLinkAsync(
+      CreateEmbedLinkParams params) {
+    return enqueuer.enqueueAsFuture(createEmbedLinkCall(params));
+  }
+
+  /**
+   * Builds a call that expects an embed link JSON response.
+   *
+   * @param params parameters for the create embed link request.
+   * @return a call that yields a {@link PdfGateEmbedLinkResponse} response.
+   */
+  public CallEmbedLink createEmbedLinkCall(CreateEmbedLinkParams params) {
+    return new PdfGateEmbedLinkCall(callBuilder.buildCreateEmbedLinkCall(params));
+  }
+
+  /**
+   * Creates a stored recipient and returns the recipient metadata response.
+   *
+   * <p>The email is stored lowercased and cannot be changed after creation. Emails
+   * are not unique: every call creates a new recipient.
+   *
+   * @param params parameters for the create recipient request.
+   * @return the created recipient metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateRecipientResponse createRecipient(CreateRecipientParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(createRecipientCall(params));
+  }
+
+  /**
+   * Creates a stored recipient asynchronously and returns the recipient metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the create recipient request.
+   * @return a future that completes with the created recipient metadata.
+   */
+  public CompletableFuture<PdfGateRecipientResponse> createRecipientAsync(
+      CreateRecipientParams params) {
+    return enqueuer.enqueueAsFuture(createRecipientCall(params));
+  }
+
+  /**
+   * Builds a call that expects a recipient JSON response.
+   *
+   * @param params parameters for the create recipient request.
+   * @return a call that yields a {@link PdfGateRecipientResponse} response.
+   */
+  public CallRecipient createRecipientCall(CreateRecipientParams params) {
+    return new PdfGateRecipientCall(callBuilder.buildCreateRecipientCall(params));
+  }
+
+  /**
+   * Lists stored recipients with the given email and returns the recipient list response.
+   *
+   * <p>The lookup is case-insensitive and returns matching recipients oldest first.
+   *
+   * @param params parameters for the list recipients request.
+   * @return the recipient list response.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateRecipientListResponse listRecipients(ListRecipientsParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(listRecipientsCall(params));
+  }
+
+  /**
+   * Lists stored recipients asynchronously and returns the recipient list response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the list recipients request.
+   * @return a future that completes with the recipient list response.
+   */
+  public CompletableFuture<PdfGateRecipientListResponse> listRecipientsAsync(
+      ListRecipientsParams params) {
+    return enqueuer.enqueueAsFuture(listRecipientsCall(params));
+  }
+
+  /**
+   * Builds a call that expects a recipient list JSON response.
+   *
+   * @param params parameters for the list recipients request.
+   * @return a call that yields a {@link PdfGateRecipientListResponse} response.
+   */
+  public CallRecipientList listRecipientsCall(ListRecipientsParams params) {
+    return new PdfGateRecipientListCall(callBuilder.buildListRecipientsCall(params));
+  }
+
+  /**
+   * Retrieves a stored recipient and returns the recipient metadata response.
+   *
+   * @param params parameters for the get recipient request.
+   * @return the recipient metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateRecipientResponse getRecipient(GetRecipientParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(getRecipientCall(params));
+  }
+
+  /**
+   * Retrieves a stored recipient asynchronously and returns the recipient metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the get recipient request.
+   * @return a future that completes with the recipient metadata.
+   */
+  public CompletableFuture<PdfGateRecipientResponse> getRecipientAsync(GetRecipientParams params) {
+    return enqueuer.enqueueAsFuture(getRecipientCall(params));
+  }
+
+  /**
+   * Builds a call that expects a recipient JSON response.
+   *
+   * @param params parameters for the get recipient request.
+   * @return a call that yields a {@link PdfGateRecipientResponse} response.
+   */
+  public CallRecipient getRecipientCall(GetRecipientParams params) {
+    return new PdfGateRecipientCall(callBuilder.buildGetRecipientCall(params));
+  }
+
+  /**
+   * Updates a stored recipient and returns the updated recipient metadata response.
+   *
+   * <p>Only the name and metadata can be changed; the email is immutable. Existing
+   * envelopes are not affected: they keep the recipient name they were created with.
+   *
+   * @param params parameters for the update recipient request.
+   * @return the updated recipient metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateRecipientResponse updateRecipient(UpdateRecipientParams params)
+      throws IOException {
+    return PdfGateCallExecutor.execute(updateRecipientCall(params));
+  }
+
+  /**
+   * Updates a stored recipient asynchronously and returns the updated recipient
+   * metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the update recipient request.
+   * @return a future that completes with the updated recipient metadata.
+   */
+  public CompletableFuture<PdfGateRecipientResponse> updateRecipientAsync(
+      UpdateRecipientParams params) {
+    return enqueuer.enqueueAsFuture(updateRecipientCall(params));
+  }
+
+  /**
+   * Builds a call that expects a recipient JSON response.
+   *
+   * @param params parameters for the update recipient request.
+   * @return a call that yields a {@link PdfGateRecipientResponse} response.
+   */
+  public CallRecipient updateRecipientCall(UpdateRecipientParams params) {
+    return new PdfGateRecipientCall(callBuilder.buildUpdateRecipientCall(params));
   }
 
   /**
@@ -831,6 +1032,37 @@ public final class PdfGate {
    * @param callback the callback for the response.
    */
   public void enqueue(CallWebhook call, PdfGateCallback<PdfGateWebhookResponse> callback) {
+    enqueuer.enqueue(call, callback);
+  }
+
+  /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateEmbedLinkResponse}.
+   *
+   * @param call     the call to enqueue.
+   * @param callback the callback for the response.
+   */
+  public void enqueue(CallEmbedLink call, PdfGateCallback<PdfGateEmbedLinkResponse> callback) {
+    enqueuer.enqueue(call, callback);
+  }
+
+  /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateRecipientResponse}.
+   *
+   * @param call     the call to enqueue.
+   * @param callback the callback for the response.
+   */
+  public void enqueue(CallRecipient call, PdfGateCallback<PdfGateRecipientResponse> callback) {
+    enqueuer.enqueue(call, callback);
+  }
+
+  /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateRecipientListResponse}.
+   *
+   * @param call     the call to enqueue.
+   * @param callback the callback for the response.
+   */
+  public void enqueue(CallRecipientList call,
+                      PdfGateCallback<PdfGateRecipientListResponse> callback) {
     enqueuer.enqueue(call, callback);
   }
 

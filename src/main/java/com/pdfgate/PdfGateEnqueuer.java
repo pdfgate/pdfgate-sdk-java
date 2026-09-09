@@ -46,6 +46,28 @@ final class PdfGateEnqueuer {
   }
 
   /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateEmbedLinkResponse}.
+   */
+  public void enqueue(CallEmbedLink call, PdfGateCallback<PdfGateEmbedLinkResponse> callback) {
+    call.enqueue(new PdfGateEmbedLinkResponseParserCallback(callback));
+  }
+
+  /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateRecipientResponse}.
+   */
+  public void enqueue(CallRecipient call, PdfGateCallback<PdfGateRecipientResponse> callback) {
+    call.enqueue(new PdfGateRecipientResponseParserCallback(callback));
+  }
+
+  /**
+   * Enqueues a JSON response call and maps the response to {@link PdfGateRecipientListResponse}.
+   */
+  public void enqueue(CallRecipientList call,
+                      PdfGateCallback<PdfGateRecipientListResponse> callback) {
+    call.enqueue(new PdfGateRecipientListResponseParserCallback(callback));
+  }
+
+  /**
    * Enqueues an empty (no content) response call.
    */
   public void enqueue(CallVoid call, PdfGateCallback<Void> callback) {
@@ -84,6 +106,27 @@ final class PdfGateEnqueuer {
    * Enqueues a webhook response call and returns a {@link CompletableFuture}.
    */
   public CompletableFuture<PdfGateWebhookResponse> enqueueAsFuture(CallWebhook call) {
+    return enqueueAsFuture(call, this::enqueue);
+  }
+
+  /**
+   * Enqueues an embed link response call and returns a {@link CompletableFuture}.
+   */
+  public CompletableFuture<PdfGateEmbedLinkResponse> enqueueAsFuture(CallEmbedLink call) {
+    return enqueueAsFuture(call, this::enqueue);
+  }
+
+  /**
+   * Enqueues a recipient response call and returns a {@link CompletableFuture}.
+   */
+  public CompletableFuture<PdfGateRecipientResponse> enqueueAsFuture(CallRecipient call) {
+    return enqueueAsFuture(call, this::enqueue);
+  }
+
+  /**
+   * Enqueues a recipient list response call and returns a {@link CompletableFuture}.
+   */
+  public CompletableFuture<PdfGateRecipientListResponse> enqueueAsFuture(CallRecipientList call) {
     return enqueueAsFuture(call, this::enqueue);
   }
 

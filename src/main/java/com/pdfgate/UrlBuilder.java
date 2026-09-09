@@ -80,6 +80,22 @@ final class UrlBuilder {
     return baseUrl + "/envelope/" + id;
   }
 
+  String createEmbedLink(String id) {
+    return baseUrl + "/envelope/" + id + "/embed-link";
+  }
+
+  String recipient() {
+    return baseUrl + "/recipient";
+  }
+
+  String recipient(String id) {
+    return baseUrl + "/recipient/" + id;
+  }
+
+  String recipients() {
+    return baseUrl + "/recipients";
+  }
+
   String getDocument(String documentId) {
     return baseUrl + "/document/" + documentId;
   }

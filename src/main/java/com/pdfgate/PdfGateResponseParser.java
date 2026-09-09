@@ -21,6 +21,18 @@ final class PdfGateResponseParser {
     return parseJson(response, PdfGateWebhookResponse.class);
   }
 
+  static PdfGateEmbedLinkResponse parseEmbedLink(Response response) throws IOException {
+    return parseJson(response, PdfGateEmbedLinkResponse.class);
+  }
+
+  static PdfGateRecipientResponse parseRecipient(Response response) throws IOException {
+    return parseJson(response, PdfGateRecipientResponse.class);
+  }
+
+  static PdfGateRecipientListResponse parseRecipientList(Response response) throws IOException {
+    return parseJson(response, PdfGateRecipientListResponse.class);
+  }
+
   /**
    * Parses a JSON response into a {@link JsonObject}.
    */

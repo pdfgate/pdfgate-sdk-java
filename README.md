@@ -11,6 +11,8 @@ PDFGate lets you generate, process, and secure PDFs via a simple API:
 - Create signing envelopes
 - Get signing envelopes
 - Send signing envelopes
+- Embedded signing inside your own application
+- Manage stored recipients
 - Flatten, compress, watermark, protect PDFs
 - Extract PDF form data
 - Upload PDF files
@@ -184,6 +186,11 @@ and optional `fileUrl` when `preSignedUrlExpiresIn` is provided. To download the
 Envelope operations such as `createEnvelope`, `getEnvelope`, `sendEnvelope`, and `voidEnvelope`
 return a `PDFGateEnvelope`, which includes the envelope `id`, envelope status, per-document
 recipient state, timestamps, and optional metadata.
+
+`createEmbedLink` returns a `PdfGateEmbedLinkResponse` with the embedded signing `url` and its
+`expiresAt` timestamp. Recipient directory methods `createRecipient`, `getRecipient`, and
+`updateRecipient` return a `PdfGateRecipientResponse`; `listRecipients` returns a
+`PdfGateRecipientListResponse` wrapping the matching recipients.
 
 `deleteDocument`, `deleteEnvelope`, and `deleteWebhook` return no content. Webhook management methods
 `createWebhook` and `getWebhook` return a `PdfGateWebhookResponse`.
@@ -442,6 +449,100 @@ envelope first.
 client.deleteEnvelope(DeleteEnvelopeParams.builder()
     .id(envelopeId)
     .build());
+```
+
+## Embedded signing
+
+Embedded recipients sign inside your own application through an embed link and receive no emails
+from PDFGate. Mark the recipient as `embedded` when creating the envelope, send the envelope, then
+create an embed link when the signer is ready.
+
+Each recipient is given either as `email` and `name` or as the `recipientId` of a stored recipient
+(see [Manage recipients](#manage-recipients)) — never both.
+
+```java
+// 1. Create an envelope with an embedded recipient.
+CreateEnvelopeParams createParams = CreateEnvelopeParams.builder()
+    .requesterName("John Doe")
+    .documents(Collections.singletonList(
+        EnvelopeDocument.builder()
+            .sourceDocumentId(documentId)
+            .name("Employment Agreement")
+            .recipients(Collections.singletonList(
+                EnvelopeRecipient.builder()
+                    .email("anna@example.com")
+                    .name("Anna Smith")
+                    .embedded(true) // no emails; signing happens in your app
+                    .build()
+            ))
+            .build()
+    ))
+    .build();
+
+PDFGateEnvelope envelope = client.createEnvelope(createParams);
+
+// 2. Send the envelope. Embedded recipients are not emailed.
+client.sendEnvelope(SendEnvelopeParams.builder()
+    .id(envelope.getId())
+    .build());
+
+// 3. Create an embed link when the signer is ready. The envelope must be
+// in_progress, and the link expires after 10 minutes — one link per signing session.
+EnvelopeDocumentResponse document = envelope.getDocuments().get(0);
+EnvelopeRecipientResponse recipient = document.getRecipients().get(0);
+
+PdfGateEmbedLinkResponse embedLink = client.createEmbedLink(CreateEmbedLinkParams.builder()
+    .id(envelope.getId())
+    .documentId(document.getSourceDocumentId())
+    .recipientId(recipient.getRecipientId().get())
+    .returnUrl("https://example.com/signing-done?session=abc")
+    .build());
+
+// 4. Load embedLink.getUrl() in an iframe in your application.
+```
+
+When the signing session ends, the iframe redirects to `returnUrl` with `event`
+(`signing_complete`, `voided`, `expired`, or `not_found`), `envelopeId`, `documentId`, and
+`recipientId` appended as query parameters. Existing query parameters on `returnUrl` are preserved.
+
+## Manage recipients
+
+Store recipients once and reuse them across envelopes by passing their `recipientId` instead of
+`email` and `name`. Emails are not unique — every `createRecipient` call creates a new recipient —
+and the email is stored lowercased and cannot be changed afterwards.
+
+```java
+// Create a stored recipient.
+PdfGateRecipientResponse recipient = client.createRecipient(CreateRecipientParams.builder()
+    .email("anna@example.com")
+    .name("Anna Smith")
+    .metadata(Collections.singletonMap("customerId", "cus_123"))
+    .build());
+
+// List stored recipients by email (case-insensitive, oldest first).
+PdfGateRecipientListResponse recipients = client.listRecipients(ListRecipientsParams.builder()
+    .email("anna@example.com")
+    .build());
+
+// Retrieve a stored recipient.
+PdfGateRecipientResponse fetched = client.getRecipient(GetRecipientParams.builder()
+    .id(recipient.getId())
+    .build());
+
+// Update a stored recipient (email is immutable). Existing envelopes are not
+// affected: they keep the recipient name they were created with.
+PdfGateRecipientResponse updated = client.updateRecipient(UpdateRecipientParams.builder()
+    .id(recipient.getId())
+    .name("Anna Smith-Jones")
+    .build());
+```
+
+To use a stored recipient in an envelope, pass its id instead of `email` and `name`:
+
+```java
+EnvelopeRecipient.builder()
+    .recipientId(recipient.getId())
+    .build();
 ```
 
 ## Verify a webhook signature

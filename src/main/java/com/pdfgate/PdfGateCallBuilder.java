@@ -362,6 +362,98 @@ final class PdfGateCallBuilder {
   }
 
   /**
+   * Builds the call for creating an embedded signing link.
+   */
+  Call buildCreateEmbedLinkCall(CreateEmbedLinkParams params) {
+    validateCreateEmbedLinkParams(params);
+    CreateEmbedLinkJsonPayload payload = new CreateEmbedLinkJsonPayload(
+        params.getDocumentId(),
+        params.getRecipientId(),
+        params.getReturnUrl()
+    );
+    String jsonBody = PdfGateJson.gson().toJson(payload);
+    RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+    Request request = authorizedRequestFor(urlBuilder.createEmbedLink(params.getId()))
+        .post(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for creating a stored recipient.
+   */
+  Call buildCreateRecipientCall(CreateRecipientParams params) {
+    validateCreateRecipientParams(params);
+    String jsonBody = PdfGateJson.gson().toJson(params);
+    RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+    Request request = authorizedRequestFor(urlBuilder.recipient())
+        .post(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for listing stored recipients by email.
+   */
+  Call buildListRecipientsCall(ListRecipientsParams params) {
+    validateListRecipientsParams(params);
+    String requestUrl = urlBuilder.recipients();
+    HttpUrl url = HttpUrl.parse(requestUrl);
+    if (url == null) {
+      throw new IllegalArgumentException("Failed to build recipients URL.");
+    }
+    Request request = new Request.Builder()
+        .url(url.newBuilder().addQueryParameter("email", params.getEmail()).build())
+        .header("Authorization", "Bearer " + apiKey)
+        .get()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for retrieving a stored recipient.
+   */
+  Call buildGetRecipientCall(GetRecipientParams params) {
+    validateGetRecipientParams(params);
+    Request request = authorizedRequestFor(urlBuilder.recipient(params.getId()))
+        .get()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for updating a stored recipient.
+   */
+  Call buildUpdateRecipientCall(UpdateRecipientParams params) {
+    validateUpdateRecipientParams(params);
+    UpdateRecipientJsonPayload payload = new UpdateRecipientJsonPayload(
+        params.getName(),
+        params.getMetadata()
+    );
+    String jsonBody = PdfGateJson.gson().toJson(payload);
+    RequestBody body = RequestBody.create(jsonBody, JSON_MEDIA_TYPE);
+    Request request = authorizedRequestFor(urlBuilder.recipient(params.getId()))
+        .patch(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
    * Builds the call for retrieving an envelope.
    */
   Call buildGetEnvelopeCall(GetEnvelopeParams params) {
@@ -846,6 +938,75 @@ final class PdfGateCallBuilder {
   }
 
   /**
+   * Validates create embed link request parameters.
+   */
+  private void validateCreateEmbedLinkParams(CreateEmbedLinkParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+    if (Strings.isBlank(params.getDocumentId())) {
+      throw new IllegalArgumentException("documentId must be provided.");
+    }
+    if (Strings.isBlank(params.getRecipientId())) {
+      throw new IllegalArgumentException("recipientId must be provided.");
+    }
+    if (Strings.isBlank(params.getReturnUrl())) {
+      throw new IllegalArgumentException("returnUrl must be provided.");
+    }
+  }
+
+  /**
+   * Validates create recipient request parameters.
+   */
+  private void validateCreateRecipientParams(CreateRecipientParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getEmail())) {
+      throw new IllegalArgumentException("email must be provided.");
+    }
+  }
+
+  /**
+   * Validates list recipients request parameters.
+   */
+  private void validateListRecipientsParams(ListRecipientsParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getEmail())) {
+      throw new IllegalArgumentException("email must be provided.");
+    }
+  }
+
+  /**
+   * Validates get recipient request parameters.
+   */
+  private void validateGetRecipientParams(GetRecipientParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates update recipient request parameters.
+   */
+  private void validateUpdateRecipientParams(UpdateRecipientParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
    * Validates get envelope request parameters.
    */
   private void validateGetEnvelopeParams(GetEnvelopeParams params) {
@@ -915,6 +1076,28 @@ final class PdfGateCallBuilder {
           ? (String) metadata
           : PdfGateJson.gson().toJson(metadata);
       bodyBuilder.addFormDataPart("metadata", metadataValue);
+    }
+  }
+
+  private static final class CreateEmbedLinkJsonPayload {
+    private final String documentId;
+    private final String recipientId;
+    private final String returnUrl;
+
+    private CreateEmbedLinkJsonPayload(String documentId, String recipientId, String returnUrl) {
+      this.documentId = documentId;
+      this.recipientId = recipientId;
+      this.returnUrl = returnUrl;
+    }
+  }
+
+  private static final class UpdateRecipientJsonPayload {
+    private final String name;
+    private final Object metadata;
+
+    private UpdateRecipientJsonPayload(String name, Object metadata) {
+      this.name = name;
+      this.metadata = metadata;
     }
   }
 

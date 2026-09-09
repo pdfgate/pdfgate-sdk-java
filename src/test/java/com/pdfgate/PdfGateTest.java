@@ -1290,4 +1290,245 @@ public class PdfGateTest {
           "path should target the webhook");
     }
   }
+
+  @Test
+  public void createEnvelopeSerializesStoredAndEmbeddedRecipients() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "created",
+        "documents", java.util.Collections.emptyList(),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.createEnvelope(CreateEnvelopeParams.builder()
+          .documents(java.util.Collections.singletonList(
+              EnvelopeDocument.builder()
+                  .sourceDocumentId("doc_123")
+                  .recipients(java.util.Collections.singletonList(
+                      EnvelopeRecipient.builder()
+                          .recipientId("rec_123")
+                          .embedded(true)
+                          .build()))
+                  .build()))
+          .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      JsonObject requestJson =
+          PdfGateJson.gson().fromJson(request.getBody().readUtf8(), JsonObject.class);
+      JsonObject requestRecipient = requestJson.getAsJsonArray("documents").get(0)
+          .getAsJsonObject()
+          .getAsJsonArray("recipients")
+          .get(0)
+          .getAsJsonObject();
+      Assertions.assertEquals("rec_123", requestRecipient.get("recipientId").getAsString(),
+          "recipientId should be forwarded");
+      Assertions.assertTrue(requestRecipient.get("embedded").getAsBoolean(),
+          "embedded should be forwarded");
+      Assertions.assertFalse(requestRecipient.has("email"),
+          "unset email should be omitted from the request");
+      Assertions.assertFalse(requestRecipient.has("name"),
+          "unset name should be omitted from the request");
+    }
+  }
+
+  @Test
+  public void createEmbedLinkSendsBodyAndParsesResponse() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "url", "https://sign.pdfgate.com/embed/abc",
+        "expiresAt", "2024-02-13T16:06:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateEmbedLinkResponse result = pdfGateClient.createEmbedLink(
+          CreateEmbedLinkParams.builder()
+              .id("env_123")
+              .documentId("doc_123")
+              .recipientId("rec_123")
+              .returnUrl("https://example.com/done?session=abc")
+              .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("POST", request.getMethod(), "method should be POST");
+      Assertions.assertEquals("/envelope/env_123/embed-link", request.getPath(),
+          "path should target the envelope embed link endpoint");
+      JsonObject requestJson =
+          PdfGateJson.gson().fromJson(request.getBody().readUtf8(), JsonObject.class);
+      Assertions.assertEquals("doc_123", requestJson.get("documentId").getAsString(),
+          "documentId should be forwarded");
+      Assertions.assertEquals("rec_123", requestJson.get("recipientId").getAsString(),
+          "recipientId should be forwarded");
+      Assertions.assertEquals("https://example.com/done?session=abc",
+          requestJson.get("returnUrl").getAsString(), "returnUrl should be forwarded");
+      Assertions.assertEquals("https://sign.pdfgate.com/embed/abc", result.getUrl(),
+          "embed link url should be parsed");
+      Assertions.assertEquals(Instant.parse("2024-02-13T16:06:12.607Z"), result.getExpiresAt(),
+          "expiresAt should be parsed");
+    }
+  }
+
+  @Test
+  public void createRecipientSendsBodyAndParsesResponse() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "rec_123",
+        "email", "anna@example.com",
+        "name", "Anna Smith",
+        "metadata", mapOf("customerId", "cus_123"),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientResponse result = pdfGateClient.createRecipient(
+          CreateRecipientParams.builder()
+              .email("Anna@Example.com")
+              .name("Anna Smith")
+              .metadata(mapOf("customerId", "cus_123"))
+              .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("POST", request.getMethod(), "method should be POST");
+      Assertions.assertEquals("/recipient", request.getPath(),
+          "path should target the recipient endpoint");
+      JsonObject requestJson =
+          PdfGateJson.gson().fromJson(request.getBody().readUtf8(), JsonObject.class);
+      Assertions.assertEquals("Anna@Example.com", requestJson.get("email").getAsString(),
+          "email should be forwarded");
+      Assertions.assertEquals("Anna Smith", requestJson.get("name").getAsString(),
+          "name should be forwarded");
+      Assertions.assertEquals("rec_123", result.getId(), "recipient id should be parsed");
+      Assertions.assertEquals("anna@example.com", result.getEmail(),
+          "email should be parsed lowercased as stored");
+      Assertions.assertEquals(Optional.of("Anna Smith"), result.getName(),
+          "name should be parsed");
+      Assertions.assertTrue(result.getCreatedAt().isPresent(), "createdAt should be parsed");
+      Assertions.assertFalse(result.getLastUsedAt().isPresent(),
+          "lastUsedAt should be absent for a new recipient");
+    }
+  }
+
+  @Test
+  public void listRecipientsEncodesEmailAndParsesWrapper() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "recipients", java.util.Collections.singletonList(mapOf(
+            "id", "rec_123",
+            "email", "anna+test@example.com",
+            "createdAt", "2024-02-13T15:56:12.607Z"
+        ))
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientListResponse result = pdfGateClient.listRecipients(
+          ListRecipientsParams.builder()
+              .email("Anna+Test@Example.com")
+              .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("GET", request.getMethod(), "method should be GET");
+      Assertions.assertEquals("/recipients", request.getRequestUrl().encodedPath(),
+          "path should target the recipients endpoint");
+      Assertions.assertEquals("Anna+Test@Example.com",
+          request.getRequestUrl().queryParameter("email"),
+          "email should be sent URL-encoded as a query parameter");
+      Assertions.assertEquals(1, result.getRecipients().size(),
+          "recipients wrapper should be parsed");
+      Assertions.assertEquals("rec_123", result.getRecipients().get(0).getId(),
+          "recipient id should be parsed");
+    }
+  }
+
+  @Test
+  public void getRecipientSendsGetRequest() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "rec_123",
+        "email", "anna@example.com"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientResponse result = pdfGateClient.getRecipient(GetRecipientParams.builder()
+          .id("rec_123")
+          .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("GET", request.getMethod(), "method should be GET");
+      Assertions.assertEquals("/recipient/rec_123", request.getPath(),
+          "path should target the recipient");
+      Assertions.assertEquals("rec_123", result.getId(), "recipient id should be parsed");
+    }
+  }
+
+  @Test
+  public void updateRecipientSendsPatchRequest() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "rec_123",
+        "email", "anna@example.com",
+        "name", "Anna Smith-Jones",
+        "updatedAt", "2024-02-20T09:12:45.101Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientResponse result = pdfGateClient.updateRecipient(
+          UpdateRecipientParams.builder()
+              .id("rec_123")
+              .name("Anna Smith-Jones")
+              .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("PATCH", request.getMethod(), "method should be PATCH");
+      Assertions.assertEquals("/recipient/rec_123", request.getPath(),
+          "path should target the recipient");
+      JsonObject requestJson =
+          PdfGateJson.gson().fromJson(request.getBody().readUtf8(), JsonObject.class);
+      Assertions.assertEquals("Anna Smith-Jones", requestJson.get("name").getAsString(),
+          "name should be forwarded");
+      Assertions.assertFalse(requestJson.has("id"),
+          "id should not be sent in the request body");
+      Assertions.assertFalse(requestJson.has("email"),
+          "email should not be sent in the request body");
+      Assertions.assertEquals(Optional.of("Anna Smith-Jones"), result.getName(),
+          "updated name should be parsed");
+      Assertions.assertTrue(result.getUpdatedAt().isPresent(), "updatedAt should be parsed");
+    }
+  }
 }

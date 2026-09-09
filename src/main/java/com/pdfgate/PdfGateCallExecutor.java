@@ -61,6 +61,36 @@ final class PdfGateCallExecutor {
     }
   }
 
+  static PdfGateEmbedLinkResponse execute(CallEmbedLink call) throws PdfGateException {
+    try (Response response = call.execute()) {
+      return PdfGateResponseParser.parseEmbedLink(response);
+    } catch (PdfGateException e) {
+      throw e;
+    } catch (IOException e) {
+      throw PdfGateException.fromException(e);
+    }
+  }
+
+  static PdfGateRecipientResponse execute(CallRecipient call) throws PdfGateException {
+    try (Response response = call.execute()) {
+      return PdfGateResponseParser.parseRecipient(response);
+    } catch (PdfGateException e) {
+      throw e;
+    } catch (IOException e) {
+      throw PdfGateException.fromException(e);
+    }
+  }
+
+  static PdfGateRecipientListResponse execute(CallRecipientList call) throws PdfGateException {
+    try (Response response = call.execute()) {
+      return PdfGateResponseParser.parseRecipientList(response);
+    } catch (PdfGateException e) {
+      throw e;
+    } catch (IOException e) {
+      throw PdfGateException.fromException(e);
+    }
+  }
+
   static void execute(CallVoid call) throws PdfGateException {
     try (Response response = call.execute()) {
       PdfGateResponseParser.ensureSuccess(response);

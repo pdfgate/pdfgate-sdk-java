@@ -10,6 +10,8 @@ import java.util.Optional;
  */
 public final class EnvelopeRecipientResponse {
   private String email;
+  private String recipientId;
+  private boolean embedded;
   private DocumentRecipientStatus status;
   private Instant signedAt;
   private Instant viewedAt;
@@ -30,6 +32,25 @@ public final class EnvelopeRecipientResponse {
    */
   public String getEmail() {
     return email;
+  }
+
+  /**
+   * Returns the id of the stored recipient, if present.
+   *
+   * @return the id of the stored recipient, if present.
+   */
+  public Optional<String> getRecipientId() {
+    return Optional.ofNullable(recipientId);
+  }
+
+  /**
+   * Returns whether the recipient signs through embedded signing. Embedded
+   * recipients receive no emails and have no signing link.
+   *
+   * @return whether the recipient signs through embedded signing.
+   */
+  public boolean isEmbedded() {
+    return embedded;
   }
 
   /**
@@ -100,6 +121,8 @@ public final class EnvelopeRecipientResponse {
     }
     EnvelopeRecipientResponse that = (EnvelopeRecipientResponse) o;
     return Objects.equals(email, that.email)
+        && Objects.equals(recipientId, that.recipientId)
+        && embedded == that.embedded
         && status == that.status
         && Objects.equals(signedAt, that.signedAt)
         && Objects.equals(viewedAt, that.viewedAt)
@@ -110,6 +133,7 @@ public final class EnvelopeRecipientResponse {
 
   @Override
   public int hashCode() {
-    return Objects.hash(email, status, signedAt, viewedAt, fields, signingLink, previewLink);
+    return Objects.hash(email, recipientId, embedded, status, signedAt, viewedAt, fields,
+        signingLink, previewLink);
   }
 }

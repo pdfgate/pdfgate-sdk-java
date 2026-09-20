@@ -315,6 +315,8 @@ public final class PdfGate {
    * <p>Recipients added with {@code email} and {@code name} or with a {@code recipientId}
    * are emailed their signing links. Embedded recipients receive no email; create their
    * signing links via {@link #createEmbedLink(CreateEmbedLinkParams)} after sending.
+   * On documents with a {@code signingOrder} only the first recipients are emailed;
+   * later recipients are activated as earlier ones sign.
    *
    * @param params parameters for the send envelope request.
    * @return the updated envelope metadata.
@@ -472,6 +474,10 @@ public final class PdfGate {
    * {@code expired}, or {@code not_found}), {@code envelopeId}, {@code documentId},
    * and {@code recipientId} appended as query parameters; existing query parameters
    * on {@code returnUrl} are preserved.
+   *
+   * <p>On documents with a {@code signingOrder} the link can only be created once it
+   * is the recipient's turn — the API returns an error before that. The
+   * {@code envelope.recipient.activated} webhook event signals that moment.
    *
    * @param params parameters for the create embed link request.
    * @return the embed link response.

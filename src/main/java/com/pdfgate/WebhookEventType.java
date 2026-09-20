@@ -37,6 +37,15 @@ public enum WebhookEventType {
   @SerializedName("envelope.recipient.signed")
   ENVELOPE_RECIPIENT_SIGNED,
   /**
+   * It became a recipient's turn to sign on a document with a signing order.
+   *
+   * <p>The flat payload contains {@code sourceDocumentId}, {@code recipientId}, and
+   * {@code activatedAt}. Fires for every recipient, including those activated when
+   * the envelope is sent.
+   */
+  @SerializedName("envelope.recipient.activated")
+  ENVELOPE_RECIPIENT_ACTIVATED,
+  /**
    * A document within an envelope was completed.
    */
   @SerializedName("envelope.document.completed")

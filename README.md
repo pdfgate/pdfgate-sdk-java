@@ -325,8 +325,9 @@ client.deleteWebhook(DeleteWebhookParams.builder()
 ```
 
 The subscribable events are exposed via `WebhookEventType`: `ENVELOPE_SENT`, `ENVELOPE_COMPLETED`,
-`ENVELOPE_EXPIRED`, and `ENVELOPE_DOCUMENT_COMPLETED`. The webhook URL must be publicly accessible
-(localhost is not supported).
+`ENVELOPE_EXPIRED`, `ENVELOPE_DOCUMENT_COMPLETED`, and `ENVELOPE_RECIPIENT_ACTIVATED` (it became a
+recipient's turn to sign on a document with a signing order). The webhook URL must be publicly
+accessible (localhost is not supported).
 
 ## Compress a PDF
 
@@ -391,10 +392,16 @@ CreateEnvelopeParams params = CreateEnvelopeParams.builder()
         EnvelopeDocument.builder()
             .sourceDocumentId(documentId)
             .name("Employment Agreement")
-            .recipients(Collections.singletonList(
+            .recipients(Arrays.asList(
                 EnvelopeRecipient.builder()
                     .email("anna@example.com")
                     .name("Anna Smith")
+                    .signingOrder(1)
+                    .build(),
+                EnvelopeRecipient.builder()
+                    .email("bob@example.com")
+                    .name("Bob Jones")
+                    .signingOrder(2)
                     .build()
             ))
             .build()
@@ -404,6 +411,11 @@ CreateEnvelopeParams params = CreateEnvelopeParams.builder()
 
 PDFGateEnvelope envelope = client.createEnvelope(params);
 ```
+
+`signingOrder` is optional: set it on every recipient of a document (or on none) to make them sign
+one after another, each recipient being emailed their signing link once everyone with a lower value
+has signed; recipients with the same value can sign in parallel, and without it all recipients can
+sign immediately.
 
 ## Get an envelope
 

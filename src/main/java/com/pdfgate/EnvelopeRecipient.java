@@ -14,6 +14,7 @@ public final class EnvelopeRecipient {
   private final String role;
   private final Integer reminderIntervalDays;
   private final Integer reminderAttempts;
+  private final Integer signingOrder;
 
   /**
    * Initializes envelope recipient parameters from the builder.
@@ -28,6 +29,7 @@ public final class EnvelopeRecipient {
     this.role = builder.role;
     this.reminderIntervalDays = builder.reminderIntervalDays;
     this.reminderAttempts = builder.reminderAttempts;
+    this.signingOrder = builder.signingOrder;
   }
 
   /**
@@ -103,6 +105,15 @@ public final class EnvelopeRecipient {
   }
 
   /**
+   * Returns the signing order of the recipient, if present.
+   *
+   * @return the signing order of the recipient, if present.
+   */
+  public Integer getSigningOrder() {
+    return signingOrder;
+  }
+
+  /**
    * Builder for {@link EnvelopeRecipient}.
    */
   public static final class Builder {
@@ -113,6 +124,7 @@ public final class EnvelopeRecipient {
     private String role;
     private Integer reminderIntervalDays;
     private Integer reminderAttempts;
+    private Integer signingOrder;
 
     private Builder() {
     }
@@ -197,6 +209,21 @@ public final class EnvelopeRecipient {
      */
     public Builder reminderAttempts(Integer reminderAttempts) {
       this.reminderAttempts = reminderAttempts;
+      return this;
+    }
+
+    /**
+     * Sets the signing order of the recipient, starting from 1. Recipients sign one
+     * after another in this order and a recipient is activated once everyone with a
+     * lower value has signed. Recipients with the same value can sign in parallel.
+     * Provide it for every recipient of a document or for none. Omitted, all
+     * recipients can sign immediately.
+     *
+     * @param signingOrder signing order of the recipient, starting from 1.
+     * @return this builder.
+     */
+    public Builder signingOrder(Integer signingOrder) {
+      this.signingOrder = signingOrder;
       return this;
     }
 

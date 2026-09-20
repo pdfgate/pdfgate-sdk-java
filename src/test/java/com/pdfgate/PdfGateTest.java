@@ -1340,6 +1340,107 @@ public class PdfGateTest {
   }
 
   @Test
+  public void createEnvelopeSerializesSigningOrderAndOmitsItWhenUnset() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "created",
+        "documents", java.util.Collections.emptyList(),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.createEnvelope(CreateEnvelopeParams.builder()
+          .documents(java.util.Collections.singletonList(
+              EnvelopeDocument.builder()
+                  .sourceDocumentId("doc_123")
+                  .recipients(java.util.Arrays.asList(
+                      EnvelopeRecipient.builder()
+                          .email("anna@example.com")
+                          .name("Anna Smith")
+                          .signingOrder(1)
+                          .build(),
+                      EnvelopeRecipient.builder()
+                          .email("bob@example.com")
+                          .name("Bob Jones")
+                          .build()))
+                  .build()))
+          .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      JsonObject requestJson =
+          PdfGateJson.gson().fromJson(request.getBody().readUtf8(), JsonObject.class);
+      com.google.gson.JsonArray requestRecipients = requestJson.getAsJsonArray("documents")
+          .get(0)
+          .getAsJsonObject()
+          .getAsJsonArray("recipients");
+      Assertions.assertEquals(1,
+          requestRecipients.get(0).getAsJsonObject().get("signingOrder").getAsInt(),
+          "signingOrder should be forwarded");
+      Assertions.assertFalse(requestRecipients.get(1).getAsJsonObject().has("signingOrder"),
+          "unset signingOrder should be omitted from the request");
+    }
+  }
+
+  @Test
+  public void getEnvelopeParsesSigningOrderAndActivatedAt() throws Exception {
+    String activatedAt = "2024-02-13T15:56:12.607Z";
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "in_progress",
+        "documents", java.util.Collections.singletonList(mapOf(
+            "sourceDocumentId", "src_123",
+            "recipients", java.util.Arrays.asList(
+                mapOf(
+                    "email", "anna@example.com",
+                    "status", "pending",
+                    "signingOrder", 1,
+                    "activatedAt", activatedAt,
+                    "fields", java.util.Collections.emptyList()
+                ),
+                mapOf(
+                    "email", "bob@example.com",
+                    "status", "pending",
+                    "fields", java.util.Collections.emptyList()
+                )),
+            "status", "pending"
+        )),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PDFGateEnvelope result = pdfGateClient.getEnvelope(GetEnvelopeParams.builder()
+          .id("env_123")
+          .build());
+
+      EnvelopeRecipientResponse activated = result.getDocuments().get(0).getRecipients().get(0);
+      Assertions.assertEquals(Optional.of(1), activated.getSigningOrder(),
+          "signingOrder should be parsed");
+      Assertions.assertEquals(Optional.of(Instant.parse(activatedAt)),
+          activated.getActivatedAt(), "activatedAt should parse as an instant");
+
+      EnvelopeRecipientResponse pending = result.getDocuments().get(0).getRecipients().get(1);
+      Assertions.assertFalse(pending.getSigningOrder().isPresent(),
+          "absent signingOrder should be an empty optional");
+      Assertions.assertFalse(pending.getActivatedAt().isPresent(),
+          "absent activatedAt should be an empty optional");
+    }
+  }
+
+  @Test
   public void createEmbedLinkSendsBodyAndParsesResponse() throws Exception {
     String body = PdfGateJson.gson().toJson(mapOf(
         "url", "https://sign.pdfgate.com/embed/abc",

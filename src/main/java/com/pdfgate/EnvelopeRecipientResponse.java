@@ -15,6 +15,8 @@ public final class EnvelopeRecipientResponse {
   private DocumentRecipientStatus status;
   private Instant signedAt;
   private Instant viewedAt;
+  private Integer signingOrder;
+  private Instant activatedAt;
   private List<EnvelopeFieldResponse> fields;
   private String signingLink;
   private String previewLink;
@@ -81,6 +83,26 @@ public final class EnvelopeRecipientResponse {
   }
 
   /**
+   * Returns the signing order of the recipient, if present.
+   *
+   * @return the signing order of the recipient, if present.
+   */
+  public Optional<Integer> getSigningOrder() {
+    return Optional.ofNullable(signingOrder);
+  }
+
+  /**
+   * Returns the time it became the recipient's turn to sign, if present.
+   *
+   * <p>Empty until the recipient is activated.
+   *
+   * @return the time it became the recipient's turn to sign, if present.
+   */
+  public Optional<Instant> getActivatedAt() {
+    return Optional.ofNullable(activatedAt);
+  }
+
+  /**
    * Returns the fields assigned to the recipient.
    *
    * @return the fields assigned to the recipient.
@@ -126,6 +148,8 @@ public final class EnvelopeRecipientResponse {
         && status == that.status
         && Objects.equals(signedAt, that.signedAt)
         && Objects.equals(viewedAt, that.viewedAt)
+        && Objects.equals(signingOrder, that.signingOrder)
+        && Objects.equals(activatedAt, that.activatedAt)
         && Objects.equals(fields, that.fields)
         && Objects.equals(signingLink, that.signingLink)
         && Objects.equals(previewLink, that.previewLink);
@@ -133,7 +157,7 @@ public final class EnvelopeRecipientResponse {
 
   @Override
   public int hashCode() {
-    return Objects.hash(email, recipientId, embedded, status, signedAt, viewedAt, fields,
-        signingLink, previewLink);
+    return Objects.hash(email, recipientId, embedded, status, signedAt, viewedAt, signingOrder,
+        activatedAt, fields, signingLink, previewLink);
   }
 }

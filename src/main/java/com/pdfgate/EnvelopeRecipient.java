@@ -15,6 +15,8 @@ public final class EnvelopeRecipient {
   private final Integer reminderIntervalDays;
   private final Integer reminderAttempts;
   private final Integer signingOrder;
+  private final Boolean autoSign;
+  private final Boolean sendSignedCopy;
 
   /**
    * Initializes envelope recipient parameters from the builder.
@@ -30,6 +32,8 @@ public final class EnvelopeRecipient {
     this.reminderIntervalDays = builder.reminderIntervalDays;
     this.reminderAttempts = builder.reminderAttempts;
     this.signingOrder = builder.signingOrder;
+    this.autoSign = builder.autoSign;
+    this.sendSignedCopy = builder.sendSignedCopy;
   }
 
   /**
@@ -114,6 +118,26 @@ public final class EnvelopeRecipient {
   }
 
   /**
+   * Returns whether the recipient is signed automatically with their stored
+   * signature, if present.
+   *
+   * @return whether the recipient is signed automatically, if present.
+   */
+  public Boolean getAutoSign() {
+    return autoSign;
+  }
+
+  /**
+   * Returns whether the recipient is emailed the signed document when the
+   * document completes, if present.
+   *
+   * @return whether the recipient is emailed the signed document, if present.
+   */
+  public Boolean getSendSignedCopy() {
+    return sendSignedCopy;
+  }
+
+  /**
    * Builder for {@link EnvelopeRecipient}.
    */
   public static final class Builder {
@@ -125,6 +149,8 @@ public final class EnvelopeRecipient {
     private Integer reminderIntervalDays;
     private Integer reminderAttempts;
     private Integer signingOrder;
+    private Boolean autoSign;
+    private Boolean sendSignedCopy;
 
     private Builder() {
     }
@@ -224,6 +250,40 @@ public final class EnvelopeRecipient {
      */
     public Builder signingOrder(Integer signingOrder) {
       this.signingOrder = signingOrder;
+      return this;
+    }
+
+    /**
+     * Sets whether the recipient is signed automatically (automatic signing). The
+     * stored signature of the referenced recipient is applied on their behalf when
+     * their turn to sign comes, with no signing session or email. Requires
+     * {@link #recipientId(String)} pointing to a recipient with an active stored
+     * signature (see {@link PdfGate#requestRecipientSignature(RequestRecipientSignatureParams)})
+     * and cannot be combined with {@link #embedded(Boolean)}. Every required field
+     * of the recipient must already have a value before the document is sent,
+     * except signature and auto-filled date fields. If the stored signature is
+     * removed before the turn comes, a signing link is emailed instead. The audit
+     * log records the automatic signature with the enrolment details.
+     *
+     * @param autoSign whether the recipient is signed automatically.
+     * @return this builder.
+     */
+    public Builder autoSign(Boolean autoSign) {
+      this.autoSign = autoSign;
+      return this;
+    }
+
+    /**
+     * Sets whether to email this recipient the signed document when the document
+     * completes. Defaults to {@code true} for recipients who sign through the
+     * emailed signing link and {@code false} for embedded and automatic signing
+     * recipients.
+     *
+     * @param sendSignedCopy whether the recipient is emailed the signed document.
+     * @return this builder.
+     */
+    public Builder sendSignedCopy(Boolean sendSignedCopy) {
+      this.sendSignedCopy = sendSignedCopy;
       return this;
     }
 

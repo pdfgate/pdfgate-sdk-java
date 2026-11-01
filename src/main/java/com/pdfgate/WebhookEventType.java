@@ -49,5 +49,15 @@ public enum WebhookEventType {
    * A document within an envelope was completed.
    */
   @SerializedName("envelope.document.completed")
-  ENVELOPE_DOCUMENT_COMPLETED
+  ENVELOPE_DOCUMENT_COMPLETED,
+  /**
+   * A recipient completed the enrolment of a stored signature (automatic signing).
+   */
+  @SerializedName("recipient.signature.enrolled")
+  RECIPIENT_SIGNATURE_ENROLLED,
+  /**
+   * An active stored signature was removed from a recipient (automatic signing).
+   */
+  @SerializedName("recipient.signature.revoked")
+  RECIPIENT_SIGNATURE_REVOKED
 }

@@ -96,6 +96,14 @@ final class UrlBuilder {
     return baseUrl + "/recipients";
   }
 
+  String requestRecipientSignature(String id) {
+    return baseUrl + "/recipient/" + id + "/signature/request";
+  }
+
+  String recipientSignature(String id) {
+    return baseUrl + "/recipient/" + id + "/signature";
+  }
+
   String getDocument(String documentId) {
     return baseUrl + "/document/" + documentId;
   }

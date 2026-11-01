@@ -660,6 +660,131 @@ public final class PdfGate {
   }
 
   /**
+   * Deletes a stored recipient.
+   *
+   * <p>The record is kept with its personal data removed, so later reads return
+   * 404 and a new envelope to the same address creates a fresh recipient.
+   * Envelopes already sent are not affected. A recipient with an active stored
+   * signature or a pending enrolment cannot be deleted: call
+   * {@link #removeRecipientSignature(RemoveRecipientSignatureParams)} first.
+   *
+   * @param params parameters for the delete recipient request.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public void deleteRecipient(DeleteRecipientParams params)
+      throws IOException {
+    PdfGateCallExecutor.execute(deleteRecipientCall(params));
+  }
+
+  /**
+   * Deletes a stored recipient asynchronously.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the delete recipient request.
+   * @return a future that completes when the recipient has been deleted.
+   */
+  public CompletableFuture<Void> deleteRecipientAsync(DeleteRecipientParams params) {
+    return enqueuer.enqueueAsFuture(deleteRecipientCall(params));
+  }
+
+  /**
+   * Builds a call that expects an empty (no content) response.
+   *
+   * @param params parameters for the delete recipient request.
+   * @return a call that yields no content.
+   */
+  public CallVoid deleteRecipientCall(DeleteRecipientParams params) {
+    return new PdfGateVoidCall(callBuilder.buildDeleteRecipientCall(params));
+  }
+
+  /**
+   * Automatic signing: emails the recipient a link to store a reusable signature
+   * and returns the recipient metadata response.
+   *
+   * <p>The recipient verifies their email with a one-time code, accepts the
+   * authorization text and types, draws or uploads their signature. The link is
+   * valid for 7 days; calling this again replaces a pending request. Once the
+   * enrolment is complete the {@code recipient.signature.enrolled} webhook fires
+   * and envelopes can set {@code autoSign} on this recipient. Rejected when the
+   * recipient has no email or already has an active stored signature.
+   *
+   * @param params parameters for the request recipient signature request.
+   * @return the recipient metadata with {@code signature.status} set to {@code pending}.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateRecipientResponse requestRecipientSignature(
+      RequestRecipientSignatureParams params) throws IOException {
+    return PdfGateCallExecutor.execute(requestRecipientSignatureCall(params));
+  }
+
+  /**
+   * Automatic signing: emails the recipient a link to store a reusable signature
+   * asynchronously and returns the recipient metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the request recipient signature request.
+   * @return a future that completes with the recipient metadata.
+   */
+  public CompletableFuture<PdfGateRecipientResponse> requestRecipientSignatureAsync(
+      RequestRecipientSignatureParams params) {
+    return enqueuer.enqueueAsFuture(requestRecipientSignatureCall(params));
+  }
+
+  /**
+   * Builds a call that expects a recipient JSON response.
+   *
+   * @param params parameters for the request recipient signature request.
+   * @return a call that yields a {@link PdfGateRecipientResponse} response.
+   */
+  public CallRecipient requestRecipientSignatureCall(RequestRecipientSignatureParams params) {
+    return new PdfGateRecipientCall(callBuilder.buildRequestRecipientSignatureCall(params));
+  }
+
+  /**
+   * Automatic signing: removes the stored signature of a recipient, or cancels a
+   * pending enrolment, and returns the recipient metadata response.
+   *
+   * <p>Envelopes already waiting on an automatic signature fall back to a signing
+   * link emailed to the recipient. Removing an active signature fires the
+   * {@code recipient.signature.revoked} webhook. Idempotent: a recipient without
+   * a stored signature is returned unchanged.
+   *
+   * @param params parameters for the remove recipient signature request.
+   * @return the recipient metadata.
+   * @throws PdfGateException when the request fails or the API returns a non-2xx response.
+   */
+  public PdfGateRecipientResponse removeRecipientSignature(
+      RemoveRecipientSignatureParams params) throws IOException {
+    return PdfGateCallExecutor.execute(removeRecipientSignatureCall(params));
+  }
+
+  /**
+   * Automatic signing: removes the stored signature of a recipient asynchronously
+   * and returns the recipient metadata response.
+   *
+   * <p>The returned future completes exceptionally with {@link PdfGateException} on errors.
+   *
+   * @param params parameters for the remove recipient signature request.
+   * @return a future that completes with the recipient metadata.
+   */
+  public CompletableFuture<PdfGateRecipientResponse> removeRecipientSignatureAsync(
+      RemoveRecipientSignatureParams params) {
+    return enqueuer.enqueueAsFuture(removeRecipientSignatureCall(params));
+  }
+
+  /**
+   * Builds a call that expects a recipient JSON response.
+   *
+   * @param params parameters for the remove recipient signature request.
+   * @return a call that yields a {@link PdfGateRecipientResponse} response.
+   */
+  public CallRecipient removeRecipientSignatureCall(RemoveRecipientSignatureParams params) {
+    return new PdfGateRecipientCall(callBuilder.buildRemoveRecipientSignatureCall(params));
+  }
+
+  /**
    * Extracts PDF form field data and returns the JSON response.
    *
    * <p>This SDK currently supports extraction by {@code documentId} only. To upload a file

@@ -17,6 +17,8 @@ public final class EnvelopeRecipientResponse {
   private Instant viewedAt;
   private Integer signingOrder;
   private Instant activatedAt;
+  private boolean autoSign;
+  private boolean sendSignedCopy;
   private List<EnvelopeFieldResponse> fields;
   private String signingLink;
   private String previewLink;
@@ -103,6 +105,26 @@ public final class EnvelopeRecipientResponse {
   }
 
   /**
+   * Returns whether the recipient is signed automatically with their stored
+   * signature (automatic signing).
+   *
+   * @return whether the recipient is signed automatically.
+   */
+  public boolean isAutoSign() {
+    return autoSign;
+  }
+
+  /**
+   * Returns whether the recipient is emailed the signed document when the
+   * document completes.
+   *
+   * @return whether the recipient is emailed the signed document.
+   */
+  public boolean isSendSignedCopy() {
+    return sendSignedCopy;
+  }
+
+  /**
    * Returns the fields assigned to the recipient.
    *
    * @return the fields assigned to the recipient.
@@ -150,6 +172,8 @@ public final class EnvelopeRecipientResponse {
         && Objects.equals(viewedAt, that.viewedAt)
         && Objects.equals(signingOrder, that.signingOrder)
         && Objects.equals(activatedAt, that.activatedAt)
+        && autoSign == that.autoSign
+        && sendSignedCopy == that.sendSignedCopy
         && Objects.equals(fields, that.fields)
         && Objects.equals(signingLink, that.signingLink)
         && Objects.equals(previewLink, that.previewLink);
@@ -158,6 +182,6 @@ public final class EnvelopeRecipientResponse {
   @Override
   public int hashCode() {
     return Objects.hash(email, recipientId, embedded, status, signedAt, viewedAt, signingOrder,
-        activatedAt, fields, signingLink, previewLink);
+        activatedAt, autoSign, sendSignedCopy, fields, signingLink, previewLink);
   }
 }

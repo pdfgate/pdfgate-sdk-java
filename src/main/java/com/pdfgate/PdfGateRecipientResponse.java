@@ -16,6 +16,7 @@ public final class PdfGateRecipientResponse {
   private Instant createdAt;
   private Instant updatedAt;
   private Instant lastUsedAt;
+  private PdfGateRecipientStoredSignature signature;
 
   /**
    * Creates an empty recipient response for JSON deserialization.
@@ -86,6 +87,19 @@ public final class PdfGateRecipientResponse {
     return Optional.ofNullable(lastUsedAt);
   }
 
+  /**
+   * Returns the stored signature of the recipient or the state of its enrolment
+   * (automatic signing), if present.
+   *
+   * <p>Empty until an enrolment was requested with
+   * {@link PdfGate#requestRecipientSignature(RequestRecipientSignatureParams)}.
+   *
+   * @return the stored signature of the recipient, if present.
+   */
+  public Optional<PdfGateRecipientStoredSignature> getSignature() {
+    return Optional.ofNullable(signature);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -101,11 +115,12 @@ public final class PdfGateRecipientResponse {
         && Objects.equals(metadata, that.metadata)
         && Objects.equals(createdAt, that.createdAt)
         && Objects.equals(updatedAt, that.updatedAt)
-        && Objects.equals(lastUsedAt, that.lastUsedAt);
+        && Objects.equals(lastUsedAt, that.lastUsedAt)
+        && Objects.equals(signature, that.signature);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, email, name, metadata, createdAt, updatedAt, lastUsedAt);
+    return Objects.hash(id, email, name, metadata, createdAt, updatedAt, lastUsedAt, signature);
   }
 }

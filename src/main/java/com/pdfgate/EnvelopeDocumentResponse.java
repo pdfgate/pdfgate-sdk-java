@@ -11,6 +11,7 @@ import java.util.Optional;
 public final class EnvelopeDocumentResponse {
   private String sourceDocumentId;
   private String signedDocumentId;
+  private String auditLogDocumentId;
   private List<EnvelopeRecipientResponse> recipients;
   private EnvelopeDocumentStatus status;
   private Instant completedAt;
@@ -37,6 +38,13 @@ public final class EnvelopeDocumentResponse {
    */
   public Optional<String> getSignedDocumentId() {
     return Optional.ofNullable(signedDocumentId);
+  }
+
+  /**
+   * Identifier of the audit log document, present once the document is completed.
+   */
+  public Optional<String> getAuditLogDocumentId() {
+    return Optional.ofNullable(auditLogDocumentId);
   }
 
   /**
@@ -77,6 +85,7 @@ public final class EnvelopeDocumentResponse {
     EnvelopeDocumentResponse that = (EnvelopeDocumentResponse) o;
     return Objects.equals(sourceDocumentId, that.sourceDocumentId)
         && Objects.equals(signedDocumentId, that.signedDocumentId)
+        && Objects.equals(auditLogDocumentId, that.auditLogDocumentId)
         && Objects.equals(recipients, that.recipients)
         && status == that.status
         && Objects.equals(completedAt, that.completedAt);
@@ -84,6 +93,6 @@ public final class EnvelopeDocumentResponse {
 
   @Override
   public int hashCode() {
-    return Objects.hash(sourceDocumentId, signedDocumentId, recipients, status, completedAt);
+    return Objects.hash(sourceDocumentId, signedDocumentId, auditLogDocumentId, recipients, status, completedAt);
   }
 }

@@ -601,6 +601,77 @@ public class PdfGateTest {
   }
 
   @Test
+  public void getEnvelopeParsesSignedAndAuditLogDocumentIds() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "completed",
+        "createdAt", "2024-02-13T15:56:12.607Z",
+        "completedAt", "2024-02-14T10:00:00.000Z",
+        "documents", java.util.Collections.singletonList(mapOf(
+            "sourceDocumentId", "src_123",
+            "signedDocumentId", "doc_signed",
+            "auditLogDocumentId", "doc_audit",
+            "status", "completed",
+            "recipients", java.util.Collections.singletonList(mapOf(
+                "email", "anna@example.com",
+                "status", "signed",
+                "fields", java.util.Collections.emptyList()
+            ))
+        ))
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PDFGateEnvelope result = pdfGateClient.getEnvelope(
+          GetEnvelopeParams.builder().id("env_123").build());
+
+      EnvelopeDocumentResponse document = result.getDocuments().get(0);
+      Assertions.assertEquals(Optional.of("doc_signed"), document.getSignedDocumentId());
+      Assertions.assertEquals(Optional.of("doc_audit"), document.getAuditLogDocumentId());
+    }
+  }
+
+  @Test
+  public void getEnvelopeLeavesAuditLogDocumentIdEmptyWhenAbsent() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "in_progress",
+        "createdAt", "2024-02-13T15:56:12.607Z",
+        "documents", java.util.Collections.singletonList(mapOf(
+            "sourceDocumentId", "src_123",
+            "status", "pending",
+            "recipients", java.util.Collections.singletonList(mapOf(
+                "email", "anna@example.com",
+                "status", "pending",
+                "fields", java.util.Collections.emptyList()
+            ))
+        ))
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PDFGateEnvelope result = pdfGateClient.getEnvelope(
+          GetEnvelopeParams.builder().id("env_123").build());
+
+      EnvelopeDocumentResponse document = result.getDocuments().get(0);
+      Assertions.assertEquals(Optional.empty(), document.getSignedDocumentId());
+      Assertions.assertEquals(Optional.empty(), document.getAuditLogDocumentId());
+    }
+  }
+
+  @Test
   public void createEnvelopeSerializesNestedCamelCaseKeysAndParsesResponse() throws Exception {
     String createdAt = "2024-02-13T15:56:12.607Z";
     String body = PdfGateJson.gson().toJson(mapOf(

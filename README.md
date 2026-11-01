@@ -188,11 +188,12 @@ return a `PDFGateEnvelope`, which includes the envelope `id`, envelope status, p
 recipient state, timestamps, and optional metadata.
 
 `createEmbedLink` returns a `PdfGateEmbedLinkResponse` with the embedded signing `url` and its
-`expiresAt` timestamp. Recipient directory methods `createRecipient`, `getRecipient`, and
-`updateRecipient` return a `PdfGateRecipientResponse`; `listRecipients` returns a
-`PdfGateRecipientListResponse` wrapping the matching recipients.
+`expiresAt` timestamp. Recipient directory methods `createRecipient`, `getRecipient`,
+`updateRecipient`, `requestRecipientSignature`, and `removeRecipientSignature` return a
+`PdfGateRecipientResponse`; `listRecipients` returns a `PdfGateRecipientListResponse` wrapping the
+matching recipients.
 
-`deleteDocument`, `deleteEnvelope`, and `deleteWebhook` return no content. Webhook management methods
+`deleteDocument`, `deleteEnvelope`, `deleteRecipient`, and `deleteWebhook` return no content. Webhook management methods
 `createWebhook` and `getWebhook` return a `PdfGateWebhookResponse`.
 
 Every method has an async counterpart returning a `CompletableFuture` (e.g. `addFormFieldsAsync`,
@@ -325,9 +326,11 @@ client.deleteWebhook(DeleteWebhookParams.builder()
 ```
 
 The subscribable events are exposed via `WebhookEventType`: `ENVELOPE_SENT`, `ENVELOPE_COMPLETED`,
-`ENVELOPE_EXPIRED`, `ENVELOPE_DOCUMENT_COMPLETED`, and `ENVELOPE_RECIPIENT_ACTIVATED` (it became a
-recipient's turn to sign on a document with a signing order). The webhook URL must be publicly
-accessible (localhost is not supported).
+`ENVELOPE_EXPIRED`, `ENVELOPE_VOIDED`, `ENVELOPE_DELETED`, `ENVELOPE_RECIPIENT_SIGNED`,
+`ENVELOPE_RECIPIENT_ACTIVATED` (it became a recipient's turn to sign on a document with a signing
+order), `ENVELOPE_DOCUMENT_COMPLETED`, `RECIPIENT_SIGNATURE_ENROLLED`, and
+`RECIPIENT_SIGNATURE_REVOKED`. The webhook URL must be publicly accessible (localhost is not
+supported).
 
 ## Compress a PDF
 
@@ -416,6 +419,17 @@ PDFGateEnvelope envelope = client.createEnvelope(params);
 one after another, each recipient being emailed their signing link once everyone with a lower value
 has signed; recipients with the same value can sign in parallel, and without it all recipients can
 sign immediately.
+
+Automatic signing is optional:
+
+- `autoSign` applies the stored signature of the referenced recipient on their behalf when their
+  turn to sign comes, with no signing session or email. Requires `recipientId` pointing to a
+  recipient with an active stored signature (see [Automatic signing](#automatic-signing)) and cannot
+  be combined with `embedded`. Every required field of the recipient must already have a value
+  before the document is sent, except signature and auto-filled date fields.
+- `sendSignedCopy` controls whether the recipient is emailed the signed document when the document
+  completes. Defaults to `true` for recipients who sign through the emailed signing link and
+  `false` for embedded and automatic signing recipients.
 
 ## Get an envelope
 
@@ -547,7 +561,16 @@ PdfGateRecipientResponse updated = client.updateRecipient(UpdateRecipientParams.
     .id(recipient.getId())
     .name("Anna Smith-Jones")
     .build());
+
+// Delete a stored recipient.
+client.deleteRecipient(DeleteRecipientParams.builder()
+    .id(recipient.getId())
+    .build());
 ```
+
+Deleting a recipient removes its personal data from the directory; envelopes already sent are not
+affected. A recipient with an active stored signature or a pending enrolment cannot be deleted until
+the signature is removed.
 
 To use a stored recipient in an envelope, pass its id instead of `email` and `name`:
 
@@ -556,6 +579,70 @@ EnvelopeRecipient.builder()
     .recipientId(recipient.getId())
     .build();
 ```
+
+## Automatic signing
+
+A recipient can store a reusable signature once, and later envelopes apply it on their behalf with
+no signing session. Request the enrolment, and PDFGate emails the recipient a link where they verify
+their email with a one-time code, accept the authorization text and type, draw or upload their
+signature. The link is valid for 7 days.
+
+```java
+PdfGateRecipientResponse pending = client.requestRecipientSignature(
+    RequestRecipientSignatureParams.builder()
+        .id(recipient.getId())
+        .build());
+System.out.println(pending.getSignature().get().getStatus()); // PENDING
+
+// Once the recipient completes the enrolment (webhook event
+// `recipient.signature.enrolled`), the signature is active.
+PdfGateRecipientResponse enrolled = client.getRecipient(GetRecipientParams.builder()
+    .id(recipient.getId())
+    .build());
+PdfGateRecipientStoredSignature signature = enrolled.getSignature().get();
+System.out.println(signature.getStatus()); // ACTIVE
+System.out.println(signature.getImage().orElse(null)); // PNG data URL
+
+// Sign automatically: the recipient is signed at send, or when their turn
+// in the signing order comes. No signing email is sent.
+PDFGateEnvelope envelope = client.createEnvelope(CreateEnvelopeParams.builder()
+    .requesterName("HR")
+    .documents(Collections.singletonList(
+        EnvelopeDocument.builder()
+            .sourceDocumentId(documentId)
+            .name("Employment Agreement")
+            .recipients(Arrays.asList(
+                EnvelopeRecipient.builder()
+                    .email("anna@example.com")
+                    .name("Anna Smith")
+                    .role("employee")
+                    .signingOrder(1)
+                    .build(),
+                EnvelopeRecipient.builder()
+                    .recipientId(recipient.getId())
+                    .role("ceo")
+                    .signingOrder(2)
+                    .autoSign(true)
+                    .build()
+            ))
+            .build()
+    ))
+    .build());
+
+// Remove the stored signature or cancel a pending enrolment.
+client.removeRecipientSignature(RemoveRecipientSignatureParams.builder()
+    .id(recipient.getId())
+    .build());
+```
+
+The `PdfGateRecipientStoredSignature` returned by `getSignature()` carries `getStatus()`
+(`StoredSignatureStatus.PENDING`, `ACTIVE` or `REVOKED`), `getRequestedAt()`,
+`getAdoptionMethod()` (`SignatureAdoptionMethod.TYPE_SIGNATURE`, `DRAW_SIGNATURE` or
+`UPLOAD_SIGNATURE`), `getEnrolledAt()`, `getRevokedAt()`, `getLastUsedAt()` and `getUseCount()`.
+The `getImage()` data URL is returned by `getRecipient` only while the signature is active.
+Removing an active signature fires the `recipient.signature.revoked` webhook event, and envelopes
+already waiting on it fall back to a signing link emailed to the recipient. The audit log records
+every automatic signature with the enrolment details.
 
 ## Verify a webhook signature
 

@@ -454,6 +454,49 @@ final class PdfGateCallBuilder {
   }
 
   /**
+   * Builds the call for deleting a stored recipient.
+   */
+  Call buildDeleteRecipientCall(DeleteRecipientParams params) {
+    validateDeleteRecipientParams(params);
+    Request request = authorizedRequestFor(urlBuilder.recipient(params.getId()))
+        .delete()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for requesting a stored signature from a recipient.
+   */
+  Call buildRequestRecipientSignatureCall(RequestRecipientSignatureParams params) {
+    validateRequestRecipientSignatureParams(params);
+    RequestBody body = RequestBody.create(new byte[0], null);
+    Request request = authorizedRequestFor(urlBuilder.requestRecipientSignature(params.getId()))
+        .post(body)
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
+   * Builds the call for removing the stored signature of a recipient.
+   */
+  Call buildRemoveRecipientSignatureCall(RemoveRecipientSignatureParams params) {
+    validateRemoveRecipientSignatureParams(params);
+    Request request = authorizedRequestFor(urlBuilder.recipientSignature(params.getId()))
+        .delete()
+        .build();
+
+    OkHttpClient client = clientWithTimeout(config.getDefaultTimeout());
+
+    return client.newCall(request);
+  }
+
+  /**
    * Builds the call for retrieving an envelope.
    */
   Call buildGetEnvelopeCall(GetEnvelopeParams params) {
@@ -998,6 +1041,42 @@ final class PdfGateCallBuilder {
    * Validates update recipient request parameters.
    */
   private void validateUpdateRecipientParams(UpdateRecipientParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates delete recipient request parameters.
+   */
+  private void validateDeleteRecipientParams(DeleteRecipientParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates request recipient signature parameters.
+   */
+  private void validateRequestRecipientSignatureParams(RequestRecipientSignatureParams params) {
+    if (params == null) {
+      throw new IllegalArgumentException("params must be provided.");
+    }
+    if (Strings.isBlank(params.getId())) {
+      throw new IllegalArgumentException("id must be provided.");
+    }
+  }
+
+  /**
+   * Validates remove recipient signature parameters.
+   */
+  private void validateRemoveRecipientSignatureParams(RemoveRecipientSignatureParams params) {
     if (params == null) {
       throw new IllegalArgumentException("params must be provided.");
     }

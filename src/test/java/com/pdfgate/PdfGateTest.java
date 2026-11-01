@@ -1632,4 +1632,279 @@ public class PdfGateTest {
       Assertions.assertTrue(result.getUpdatedAt().isPresent(), "updatedAt should be parsed");
     }
   }
+
+  @Test
+  public void deleteRecipientSendsDeleteRequestWithoutBody() throws Exception {
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse().setResponseCode(204));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      pdfGateClient.deleteRecipient(DeleteRecipientParams.builder().id("rec_123").build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("DELETE", request.getMethod(), "method should be DELETE");
+      Assertions.assertEquals("/recipient/rec_123", request.getPath(),
+          "path should target the recipient");
+      Assertions.assertEquals(0, request.getBodySize(), "delete should send no body");
+    }
+  }
+
+  @Test
+  public void requestRecipientSignatureSendsPostWithoutBodyAndParsesPendingSignature()
+      throws Exception {
+    String requestedAt = "2024-02-13T15:56:12.607Z";
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "rec_123",
+        "email", "anna@example.com",
+        "signature", mapOf(
+            "status", "pending",
+            "requestedAt", requestedAt,
+            "useCount", 0
+        )
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientResponse result = pdfGateClient.requestRecipientSignature(
+          RequestRecipientSignatureParams.builder()
+              .id("rec_123")
+              .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("POST", request.getMethod(), "method should be POST");
+      Assertions.assertEquals("/recipient/rec_123/signature/request", request.getPath(),
+          "path should target the recipient signature request");
+      Assertions.assertEquals(0, request.getBodySize(), "request should send no body");
+
+      Assertions.assertTrue(result.getSignature().isPresent(), "signature should be parsed");
+      PdfGateRecipientStoredSignature signature = result.getSignature().get();
+      Assertions.assertEquals(StoredSignatureStatus.PENDING, signature.getStatus(),
+          "status should be pending");
+      Assertions.assertEquals(Optional.of(Instant.parse(requestedAt)),
+          signature.getRequestedAt(), "requestedAt should parse as an instant");
+      Assertions.assertEquals(0, signature.getUseCount(), "useCount should be parsed");
+      Assertions.assertFalse(signature.getAdoptionMethod().isPresent(),
+          "absent adoptionMethod should be an empty optional");
+      Assertions.assertFalse(signature.getEnrolledAt().isPresent(),
+          "absent enrolledAt should be an empty optional");
+      Assertions.assertFalse(signature.getImage().isPresent(),
+          "absent image should be an empty optional");
+    }
+  }
+
+  @Test
+  public void getRecipientParsesActiveStoredSignature() throws Exception {
+    String requestedAt = "2024-02-13T15:56:12.607Z";
+    String enrolledAt = "2024-02-14T10:02:33.000Z";
+    String lastUsedAt = "2024-02-20T09:12:45.101Z";
+    String image = "data:image/png;base64,iVBORw0KGgo=";
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "rec_123",
+        "email", "anna@example.com",
+        "signature", mapOf(
+            "status", "active",
+            "requestedAt", requestedAt,
+            "adoptionMethod", "draw_signature",
+            "enrolledAt", enrolledAt,
+            "lastUsedAt", lastUsedAt,
+            "useCount", 3,
+            "image", image
+        )
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientResponse result = pdfGateClient.getRecipient(GetRecipientParams.builder()
+          .id("rec_123")
+          .build());
+
+      Assertions.assertTrue(result.getSignature().isPresent(), "signature should be parsed");
+      PdfGateRecipientStoredSignature signature = result.getSignature().get();
+      Assertions.assertEquals(StoredSignatureStatus.ACTIVE, signature.getStatus(),
+          "status should be active");
+      Assertions.assertEquals(Optional.of(SignatureAdoptionMethod.DRAW_SIGNATURE),
+          signature.getAdoptionMethod(), "adoptionMethod should be parsed");
+      Assertions.assertEquals(Optional.of(Instant.parse(requestedAt)),
+          signature.getRequestedAt(), "requestedAt should parse as an instant");
+      Assertions.assertEquals(Optional.of(Instant.parse(enrolledAt)),
+          signature.getEnrolledAt(), "enrolledAt should parse as an instant");
+      Assertions.assertEquals(Optional.of(Instant.parse(lastUsedAt)),
+          signature.getLastUsedAt(), "lastUsedAt should parse as an instant");
+      Assertions.assertEquals(3, signature.getUseCount(), "useCount should be parsed");
+      Assertions.assertEquals(Optional.of(image), signature.getImage(),
+          "image should be parsed");
+      Assertions.assertFalse(signature.getRevokedAt().isPresent(),
+          "absent revokedAt should be an empty optional");
+    }
+  }
+
+  @Test
+  public void getRecipientWithoutSignatureHasEmptyOptional() throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "rec_123",
+        "email", "anna@example.com"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientResponse result = pdfGateClient.getRecipient(GetRecipientParams.builder()
+          .id("rec_123")
+          .build());
+
+      Assertions.assertFalse(result.getSignature().isPresent(),
+          "absent signature should be an empty optional");
+    }
+  }
+
+  @Test
+  public void removeRecipientSignatureSendsDeleteAndParsesRevokedSignature() throws Exception {
+    String revokedAt = "2024-03-01T08:00:00.000Z";
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "rec_123",
+        "email", "anna@example.com",
+        "signature", mapOf(
+            "status", "revoked",
+            "adoptionMethod", "type_signature",
+            "revokedAt", revokedAt,
+            "useCount", 2
+        )
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(200)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PdfGateRecipientResponse result = pdfGateClient.removeRecipientSignature(
+          RemoveRecipientSignatureParams.builder()
+              .id("rec_123")
+              .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      Assertions.assertEquals("DELETE", request.getMethod(), "method should be DELETE");
+      Assertions.assertEquals("/recipient/rec_123/signature", request.getPath(),
+          "path should target the recipient signature");
+
+      Assertions.assertTrue(result.getSignature().isPresent(), "signature should be parsed");
+      PdfGateRecipientStoredSignature signature = result.getSignature().get();
+      Assertions.assertEquals(StoredSignatureStatus.REVOKED, signature.getStatus(),
+          "status should be revoked");
+      Assertions.assertEquals(Optional.of(Instant.parse(revokedAt)),
+          signature.getRevokedAt(), "revokedAt should parse as an instant");
+      Assertions.assertEquals(Optional.of(SignatureAdoptionMethod.TYPE_SIGNATURE),
+          signature.getAdoptionMethod(), "adoptionMethod should be parsed");
+      Assertions.assertEquals(2, signature.getUseCount(), "useCount should be parsed");
+    }
+  }
+
+  @Test
+  public void createEnvelopeSerializesAutoSignAndSendSignedCopyAndParsesThemBack()
+      throws Exception {
+    String body = PdfGateJson.gson().toJson(mapOf(
+        "id", "env_123",
+        "status", "created",
+        "documents", java.util.Collections.singletonList(mapOf(
+            "sourceDocumentId", "doc_123",
+            "recipients", java.util.Arrays.asList(
+                mapOf(
+                    "email", "anna@example.com",
+                    "status", "pending",
+                    "signingOrder", 1,
+                    "autoSign", false,
+                    "sendSignedCopy", true,
+                    "fields", java.util.Collections.emptyList()
+                ),
+                mapOf(
+                    "email", "ceo@example.com",
+                    "recipientId", "rec_123",
+                    "status", "pending",
+                    "signingOrder", 2,
+                    "autoSign", true,
+                    "sendSignedCopy", false,
+                    "fields", java.util.Collections.emptyList()
+                )),
+            "status", "pending"
+        )),
+        "createdAt", "2024-02-13T15:56:12.607Z"
+    ));
+
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse()
+          .setResponseCode(201)
+          .setHeader("Content-Type", "application/json")
+          .setBody(body));
+      server.start();
+
+      PdfGate pdfGateClient = buildClient(server.url("/").toString());
+      PDFGateEnvelope result = pdfGateClient.createEnvelope(CreateEnvelopeParams.builder()
+          .documents(java.util.Collections.singletonList(
+              EnvelopeDocument.builder()
+                  .sourceDocumentId("doc_123")
+                  .recipients(java.util.Arrays.asList(
+                      EnvelopeRecipient.builder()
+                          .email("anna@example.com")
+                          .name("Anna Smith")
+                          .signingOrder(1)
+                          .build(),
+                      EnvelopeRecipient.builder()
+                          .recipientId("rec_123")
+                          .signingOrder(2)
+                          .autoSign(true)
+                          .sendSignedCopy(false)
+                          .build()))
+                  .build()))
+          .build());
+
+      okhttp3.mockwebserver.RecordedRequest request = server.takeRequest(2, TimeUnit.SECONDS);
+      JsonObject requestJson =
+          PdfGateJson.gson().fromJson(request.getBody().readUtf8(), JsonObject.class);
+      com.google.gson.JsonArray requestRecipients = requestJson.getAsJsonArray("documents")
+          .get(0)
+          .getAsJsonObject()
+          .getAsJsonArray("recipients");
+      JsonObject emailed = requestRecipients.get(0).getAsJsonObject();
+      Assertions.assertFalse(emailed.has("autoSign"),
+          "unset autoSign should be omitted from the request");
+      Assertions.assertFalse(emailed.has("sendSignedCopy"),
+          "unset sendSignedCopy should be omitted from the request");
+      JsonObject automatic = requestRecipients.get(1).getAsJsonObject();
+      Assertions.assertTrue(automatic.get("autoSign").getAsBoolean(),
+          "autoSign should be forwarded");
+      Assertions.assertFalse(automatic.get("sendSignedCopy").getAsBoolean(),
+          "sendSignedCopy should be forwarded");
+
+      EnvelopeRecipientResponse emailedResponse =
+          result.getDocuments().get(0).getRecipients().get(0);
+      Assertions.assertFalse(emailedResponse.isAutoSign(), "autoSign should be parsed");
+      Assertions.assertTrue(emailedResponse.isSendSignedCopy(),
+          "sendSignedCopy should be parsed");
+      EnvelopeRecipientResponse automaticResponse =
+          result.getDocuments().get(0).getRecipients().get(1);
+      Assertions.assertTrue(automaticResponse.isAutoSign(), "autoSign should be parsed");
+      Assertions.assertFalse(automaticResponse.isSendSignedCopy(),
+          "sendSignedCopy should be parsed");
+    }
+  }
 }
